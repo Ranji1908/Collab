@@ -15,7 +15,14 @@ für touristische Destinationen). Inhalte stammen aus dem Konzeptdokument „Reg
 ## Lokal ansehen
 
 Einfach `index.html` im Browser öffnen — kein Build, keine Abhängigkeiten.
-Schriften (Outfit, Inter) kommen von Google Fonts; ohne Internet greifen System-Fallbacks.
+Schriften (Instrument Serif, Inter) kommen von Google Fonts; ohne Internet greifen System-Fallbacks.
+
+## Gestaltung
+
+Ruhiges, redaktionelles Layout: warmes Off-White (`#FBFAF8`), Serif-Headlines
+(Instrument Serif) über Inter-Fließtext, Haarlinien statt Rahmen und Schatten,
+keine Flächenfarben. Die Farbe kommt ausschließlich aus den Produktfotos.
+Alle Maße liegen als Custom Properties am `:root` in `styles.css`.
 
 ## Noch anzupassen
 
