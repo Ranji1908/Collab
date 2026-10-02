@@ -1,0 +1,805 @@
+<title>Qool Klickdummy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: App-Shell mit Kopfleiste + Schrittnavigation, darunter je Schritt ein Arbeitsbereich; Bearbeitung zweispaltig (Kontaktpunktliste | Kriterien). Farben aus Birgits Vorgaben (DTV-Blau #0063a3, Rot #c9070a, Grün #93b05d, Grau #857f76). */
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --surface-2: #eef2f6;
+  --fg: #1d2329;
+  --muted: #5d656d;
+  --line: #d9dee3;
+  --accent: #0063a3;
+  --accent-soft: #99c1da;      /* #0063a3, 40 % */
+  --accent-fg: #ffffff;
+  --danger: #c9070a;
+  --ok: #93b05d;
+  --warn: #f39100;
+  --r0: #9c0b19; --r1: #c9070a; --r2: #f39100; --r3: #93b05d; --r4: #779048; --r5: #5a6e3a; --rn: #b6b2ad;
+  --hint-bg: #fff6e5; --hint-fg: #7a4a00;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #13171b; --surface: #1b2127; --surface-2: #222a32; --fg: #e6e9ec; --muted: #9aa3ab; --line: #333c45;
+  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --rn: #6d6964; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #13171b; --surface: #1b2127; --surface-2: #222a32; --fg: #e6e9ec; --muted: #9aa3ab; --line: #333c45;
+  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --rn: #6d6964; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5 }
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; line-height: 1.2 }
+h1 { font-size: 1.75rem } h2 { font-size: 1.35rem } h3 { font-size: 1.1rem }
+p { margin: 0 }
+button, input, select, textarea { font: inherit; color: inherit }
+button { cursor: pointer }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.num { font-variant-numeric: tabular-nums }
+
+/* Kopf */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20 }
+.top-in { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px }
+.brand { display: flex; align-items: baseline; gap: 10px }
+.brand b { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); letter-spacing: .01em }
+.brand span { color: var(--muted); font-size: .85rem }
+.top-meta { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .85rem }
+.dummy { background: var(--hint-bg); color: var(--hint-fg); padding: 2px 8px; border-radius: 99px; font-weight: 600; font-size: .75rem; letter-spacing: .03em; text-transform: uppercase }
+.role { display: inline-flex; border: 1px solid var(--line); border-radius: 99px; overflow: hidden }
+.role button { border: 0; background: transparent; padding: 3px 10px; font-size: .8rem }
+.role button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg) }
+nav.steps { max-width: 1200px; margin: 0 auto; padding: 0 16px; display: flex; gap: 2px; overflow-x: auto }
+nav.steps button { border: 0; background: none; padding: 8px 12px 10px; border-bottom: 3px solid transparent; white-space: nowrap; color: var(--muted); font-weight: 600 }
+nav.steps button[aria-current="page"] { color: var(--fg); border-bottom-color: var(--accent) }
+nav.steps small { font-weight: 400; margin-right: 4px }
+
+main { max-width: 1200px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 64px; display: grid; gap: 20px }
+.lead { color: var(--muted); max-width: 70ch }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
+
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: var(--radius); font-weight: 600 }
+.btn:hover { border-color: var(--accent) }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg) }
+.btn.ok { background: var(--ok); border-color: var(--ok); color: #142008 }
+.btn.danger { color: var(--danger); border-color: var(--danger) }
+.btn:disabled { opacity: .45; cursor: not-allowed }
+.btn.sm { padding: 4px 10px; font-size: .85rem }
+.link { border: 0; background: none; color: var(--accent); padding: 0; font-weight: 600; text-decoration: underline; text-underline-offset: 2px }
+
+.hint { background: var(--hint-bg); color: var(--hint-fg); border-radius: var(--radius); padding: 10px 14px; font-size: .9rem }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: .75rem; font-weight: 600; background: var(--surface-2); color: var(--muted); white-space: nowrap }
+.chip.ai { background: var(--accent-soft); color: var(--fg) }
+.chip.p { background: var(--surface-2); color: var(--fg) }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 99px; font-weight: 700; font-size: .8rem }
+.st-Entwurf { background: var(--surface-2) } .st-Eingereicht { background: var(--accent-soft) } .st-Nachbesserung { background: var(--warn); color: #2b1a00 } .st-Freigegeben { background: var(--ok); color: #142008 }
+
+/* Website-Check */
+.check-form { display: grid; grid-template-columns: 1fr 220px auto; gap: 10px; align-items: end }
+@media (max-width: 700px) { .check-form { grid-template-columns: 1fr } }
+label.f { display: grid; gap: 4px; font-size: .85rem; font-weight: 600 }
+input[type=text], input[type=url], input[type=date], select, textarea { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0 }
+textarea { min-height: 70px; resize: vertical }
+.scanlog { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: .9rem }
+.scanlog li::before { content: "○ "; color: var(--muted) }
+.scanlog li.done::before { content: "✓ "; color: var(--ok); font-weight: 700 }
+.finding { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line) }
+.finding:first-child { border-top: 0 }
+.finding .sc { width: 30px; height: 30px; border-radius: 4px; display: grid; place-items: center; color: #fff; font-weight: 700 }
+.finding small { color: var(--muted); display: block }
+
+/* Schaltzentrale */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px }
+.kpi { background: var(--accent-soft); border-radius: var(--radius); padding: 10px 12px }
+.kpi .eyebrow { color: var(--fg); opacity: .75 }
+.kpi b { display: block; font-size: 1.15rem; font-family: var(--font-display) }
+.kpi.over { background: var(--danger); color: #fff }
+.bar { height: 6px; background: var(--surface); border-radius: 99px; overflow: hidden; margin-top: 6px }
+.bar i { display: block; height: 100%; background: var(--accent) }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
+.tile { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 8px; background: var(--surface) }
+.tile.done { border-color: var(--ok); box-shadow: inset 4px 0 0 var(--ok) }
+.tile.locked { opacity: .6 }
+.team { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px }
+.team li { display: flex; gap: 10px; align-items: center }
+.av { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-size: .75rem; font-weight: 700; flex: none }
+svg text { fill: var(--fg) }
+
+/* Auswahl Kontaktpunkte / Handlungsfelder */
+.phase { display: grid; gap: 10px }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px }
+.sel { position: relative; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px 12px 10px; text-align: left; display: grid; gap: 6px; min-height: 104px; align-content: start }
+.sel[aria-pressed="true"] { border-color: var(--accent); background: var(--surface-2) }
+.sel .ic { width: 34px; height: 34px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700 }
+.sel .nm { font-weight: 600; line-height: 1.25 }
+.sel .meta { font-size: .75rem; color: var(--muted) }
+.sel .lock { position: absolute; top: 8px; right: 8px; font-size: .8rem }
+.sel .info { position: absolute; bottom: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: .75rem; font-weight: 700; padding: 0 }
+.sel .warnx { color: var(--danger); font-weight: 600 }
+
+/* Bearbeitung */
+.work { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; align-items: start }
+@media (max-width: 860px) { .work { grid-template-columns: 1fr } }
+.kplist { list-style: none; margin: 0; padding: 6px; display: grid; gap: 2px; position: sticky; top: 110px; max-height: calc(100vh - 130px); overflow: auto }
+@media (max-width: 860px) { .kplist { position: static; max-height: none } }
+.kplist button { width: 100%; text-align: left; border: 0; background: none; padding: 7px 8px; border-radius: 4px; display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center }
+.kplist button[aria-current="true"] { background: var(--surface-2); font-weight: 700 }
+.dot { width: 12px; height: 12px; border-radius: 50% }
+.d-rot { background: var(--danger) } .d-orange { background: var(--warn) } .d-gruen { background: var(--ok) } .d-leer { background: var(--rn) }
+.legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: .8rem }
+.legend span { display: inline-flex; gap: 5px; align-items: center }
+.legend i { width: 14px; height: 14px; border-radius: 3px; display: inline-block }
+.hf { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 4px }
+.hf-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 4px }
+.crit { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--line) }
+@media (max-width: 640px) { .crit { grid-template-columns: 1fr auto } .crit .scale { grid-column: 1 / -1 } }
+.crit .t small { display: block; color: var(--muted) }
+.scale { display: flex; gap: 3px }
+.scale button { width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; padding: 0 }
+.scale button[aria-pressed="true"] { color: #fff; border-color: transparent }
+.scale button.sug { outline: 2px dashed var(--accent); outline-offset: 1px }
+.sugline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .85rem; background: var(--surface-2); border-radius: 4px; padding: 6px 10px }
+.kpfoot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px }
+.avg { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700 }
+
+/* Drawer + Assistent */
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 40 }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--surface); z-index: 41; overflow: auto; padding: calc(18px + env(safe-area-inset-top, 0px)) 18px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; align-content: start; box-shadow: -8px 0 24px rgba(0,0,0,.15) }
+.drawer header { display: flex; justify-content: space-between; gap: 10px; align-items: start }
+.x { border: 0; background: none; font-size: 1.4rem; line-height: 1; padding: 2px 6px }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; font-size: .9rem }
+dl.kv dt { color: var(--muted) }
+dl.kv dd { margin: 0 }
+.expl { display: grid; gap: 4px; font-size: .85rem }
+.expl div { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start }
+.expl b { color: #fff; border-radius: 3px; text-align: center }
+.checks { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .9rem }
+.checks label { display: inline-flex; gap: 6px; align-items: center }
+.chat { display: grid; gap: 10px }
+.msg { padding: 10px 12px; border-radius: 8px; max-width: 92%; font-size: .92rem }
+.msg.bot { background: var(--surface-2) }
+.msg.me { background: var(--accent); color: var(--accent-fg); justify-self: end }
+.msg ul { margin: 6px 0 0; padding-left: 18px }
+
+/* Kanban */
+.kanban { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start }
+@media (max-width: 860px) { .kanban { grid-template-columns: 1fr } }
+.col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; min-height: 160px; align-content: start }
+.col.over { outline: 2px dashed var(--accent) }
+.col h3 { display: flex; justify-content: space-between }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: grid; gap: 6px; cursor: grab }
+.card.ai { border-style: dashed; border-color: var(--accent) }
+.card .src { font-size: .78rem; color: var(--muted) }
+.prio-hoch { background: var(--danger); color: #fff } .prio-mittel { background: var(--warn); color: #2b1a00 } .prio-niedrig { background: var(--surface-2); color: var(--fg) }
+.avs { display: flex; gap: 2px }
+.avs .av { width: 24px; height: 24px; font-size: .65rem }
+
+.review { border: 2px solid var(--accent); }
+table.t { width: 100%; border-collapse: collapse; font-size: .9rem }
+table.t th, table.t td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line) }
+.tw { overflow-x: auto }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 16px; border-radius: 99px; z-index: 60; font-weight: 600 }
+@media (prefers-reduced-motion: no-preference) { .toast { animation: up .2s ease-out } @keyframes up { from { transform: translate(-50%, 8px); opacity: 0 } } }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><b>Qool</b><span>ServiceQualität Deutschland · Q</span></div>
+    <div class="top-meta">
+      <span class="dummy">Klickdummy · Beispieldaten</span>
+      <span id="who"></span>
+      <div class="role" role="group" aria-label="Ansicht">
+        <button data-a="role" data-v="betrieb" id="r-b">Betrieb</button>
+        <button data-a="role" data-v="team" id="r-t">DTV-SQD-Team</button>
+      </div>
+      <button class="link" data-a="reset">Zurücksetzen</button>
+    </div>
+  </div>
+  <nav class="steps" id="steps" aria-label="Schritte"></nav>
+</header>
+<main id="app"></main>
+<div id="layer"></div>
+
+<script>
+/* ---------- Stammdaten aus 20260930_SQD_Birgit.xlsx ---------- */
+const BRANCHEN = ["Hotel","Tourist-Information (TI)","Ferienwohnung (FeWo)","Gastronomie","DMO / LMO","Therme/Bad","Museum","Camping","Jugendherberge","Freizeitunternehmen","Bildungseinrichtung","Schifffahrtsunternehmen","Verkehrsunternehmen","Reisebüro","Sonstige"];
+const TYP_B = [4, 10];
+const PHASEN = { A: ["Vor dem Aufenthalt","Während des Aufenthalts","Nach dem Aufenthalt"], B: ["Vor dem Kontakt","Serviceleistungen","Nach dem Kontakt"] };
+const HF = [
+  { k: "gk", name: "Gast/Kunde", short: "GK", lock: true, def: "Alles, was der Gast oder Kunde direkt erlebt: Information, Freundlichkeit, Orientierung und Komfort." },
+  { k: "ma", name: "Mitarbeitende", short: "MA", def: "Arbeitsbedingungen, Abläufe und Ausstattung, die es dem Team ermöglichen, guten Service zu leisten." },
+  { k: "ui", name: "Umfeld/Interessensgruppen", short: "UI", def: "Zusammenarbeit mit Partnern, Lieferanten, Nachbarn und der Region." },
+  { k: "oen", name: "Ökologische Nachhaltigkeit", short: "ÖN", def: "Beim Handlungsfeld „Ökologische Nachhaltigkeit“ steht der verantwortungsvolle Umgang mit natürlichen Ressourcen von der Reduzierung des Verbrauchs über Mülltrennung bis hin zu Biodiversität im Fokus. Ziel ist die langfristige Umweltverträglichkeit des Betriebs. Dieses Handlungsfeld bietet den idealen Einstieg, wenn Sie sich bisher noch nicht intensiv mit dem Thema beschäftigt haben." },
+  { k: "dk", name: "Digitalisierung und KI", short: "DK", def: "Digitale Angebote für Gäste und digitale Werkzeuge im Betrieb, inklusive KI-Einsatz." },
+  { k: "bf", name: "Barrierefreiheit", short: "BF", def: "Zugänglichkeit für Menschen mit Mobilitäts-, Seh-, Hör- oder kognitiven Einschränkungen." }
+];
+// [id, Name, Phase 0-2, Kriterien je Handlungsfeld, Mindestpunktzahl, Branchen-Matrix (P=Pflicht, x=optional, .=nicht vorgesehen)]
+const KP = [
+ [1,"Website",0,[3,1,2,2,3,2],21,"xxxxPxxxxxxxxxx"],[2,"Social Media",0,[3,1,1,2,3,3],27,"xxxxxxxxxxxxxxx"],[3,"Buchung/Abwicklung",0,[3,0,0,3,0,2],27,"PxPxxxxPPxPxxxx"],
+ [4,"Ankunft/Außenbereich",1,[3,0,1,2,2,3],21,"PPPPPPPPPPPPPPx"],[5,"Persönliche Begrüßung/Einweisung",1,[3,1,3,3,3,0],27,".P.PxxPPPPPP.Px"],[6,"Check-In/Check-Out",1,[3,0,2,3,3,1],24,"P.............x"],
+ [7,"Gemeinschaftsflächen/-räume",1,[3,0,1,2,3,3],27,"PP.PPPPPPPPP.Px"],[8,"Hotelzimmer",1,[3,2,3,1,3,0],27,"P.......P.....x"],[9,"Ferienwohnung",1,[3,0,2,1,3,0],27,"..P............"],
+ [10,"Campingplatz/Wohnmobil-Stellplatz",1,[3,0,2,2,3,1],27,".......P......x"],[11,"Wellnessbereich",1,[3,0,2,2,3,1],27,"x....x........x"],[12,"Tagungsraum",1,[0,0,0,0,0,1],27,"x..xx.xxxxP...x"],
+ [13,"Umkleidebereich",1,[3,0,1,1,3,1],24,".....P........x"],[14,"Verkaufsraum",1,[3,3,3,3,3,3],27,".P...xx..x...Px"],[15,"Ausstellung",1,[3,0,1,1,3,3],27,"......P.......x"],
+ [16,"Schwimmhalle",1,[3,1,2,1,2,2],24,"x....P........x"],[17,"Informationsmaterial",1,[3,0,1,2,2,2],21,"xPxxPxPxxxxxPPx"],[18,"Sportangebot",1,[3,0,0,2,3,1],24,"x....P..x.....x"],
+ [19,"Veranstaltungen",1,[3,0,0,2,3,2],27,"xx.xP.xxxxPx..x"],[20,"Tour & Führung",1,[3,0,1,3,2,1],21,".P....P....P..x"],[21,"Beratung",1,[3,0,1,3,3,1],21,".P.........x.Px"],
+ [22,"Speisen & Getränke",1,[2,0,1,2,2,3],27,"x..P.xxxPxxxx.x"],[23,"Sortiment",1,[3,0,2,1,2,2],27,"xx...xxxxx....x"],[24,"Fachgespräch",1,[0,0,0,0,0,0],27,"....P.....P...x"],
+ [25,"Schulung & Wissensmanagement",1,[1,0,0,0,0,0],24,"....x.P...P...x"],[26,"Bezahlung vor Ort",1,[2,0,1,3,2,1],27,"PxxP.PPxxP.PPxx"],
+ [27,"Feedback",2,[3,0,0,3,1,1],21,"xxxxxxxxxxxxxxx"],[28,"Kundenbindung und Beziehungsmanagement",2,[2,0,0,0,0,1],27,"xxxxxxxxxxxxxxx"]
+].map(([id,name,phase,hf,y,br]) => ({ id, name, phase, hf, y, br }));
+const KPDEF = {
+  2: "Gemeint sind hier Social-Media-Kanäle, die Betriebe zur Kommunikation mit Gästen/Kunden, Mitarbeitenden und der Öffentlichkeit nutzen können. Beispiele sind: Instagram, TikTok, Facebook, LinkedIn, XING oder X.",
+  14: "Der Kontaktpunkt „Verkaufsraum“ umfasst alle Bereiche eines Betriebs, in denen Gäste/Kunden vor Ort mit den Produkten des Betriebs in direkten Kontakt kommen. Dazu zählen nicht nur die reine Verkaufsfläche, sondern auch die Präsentation der Produkte, die Gestaltung des Raumes, Beratungs- und Aufenthaltsbereiche sowie unterstützende analoge und digitale Informationsangebote. Der Bezahlprozess oder das spezifische Sortiment sind kein Bestandteil dieses Kontaktpunktes."
+};
+// Kriterientexte: Verkaufsraum = Original aus der Datei; Website/Social Media/Feedback = Beispieltexte für den Dummy
+const CRIT = {
+  14: { gk: ["Im Verkaufsraum können sich die Gäste/Kunden selbstständig über Produkte und Angebote informieren.","Im Verkaufsraum ist immer mindestens ein hilfsbereiter Mitarbeitender anwesend, der bei Fragen unterstützt, ohne aufdringlich zu sein.","Im Verkaufsraum sorgen angenehme Beleuchtung, passende Hintergrundmusik oder freundliche Farben dafür, dass sich die Gäste/Kunden wohlfühlen."],
+        ma: ["Mitarbeitende können Lager und Prospekte schnell erreichen, um diese zügig aufzufüllen.","Die Beratungsplätze sind vom Verkaufsraum räumlich getrennt, sodass Gespräche diskret geführt werden können (z. B. durch Raumteiler oder Trennwände).","Der Verkaufsraum ist übersichtlich gestaltet, sodass Mitarbeitende jederzeit alles im Blick haben."],
+        ui: ["Im Verkaufsraum werden Produkte oder Angebote von lokalen Partnern präsentiert und somit deren Wahrnehmung als aktiver Teil der Gemeinschaft erhöht.","Der Verkaufsraum bietet spezielle Angebote oder Rabatte für das lokale Umfeld oder Stammkunden.","Die Leistungsträger und Lieferanten werden regelmäßig über den aktuellen Bestand der Waren informiert, damit diese ihre nächste Lieferung einplanen können."],
+        oen: ["Im Verkaufsraum werden möglichst schadstoffarme Materialien eingesetzt und Einwegartikel vermieden.","Im Verkaufsraum werden Maßnahmen zur Energieeinsparung umgesetzt (z. B. LED-Beleuchtung, Präsenzmelder, energiearme Displays).","Im Verkaufsraum werden umweltbewusste Kaufentscheidungen durch verständliche Informationen unterstützt (z. B. Kennzeichnung, Hinweise zu Refill/Mehrweg)."],
+        dk: ["Im Verkaufsraum steht den Gästen/Kunden ein WLAN zur Verfügung.","Digitale Infoterminals oder Bildschirme bieten den Gästen/Kunden aktuelle Informationen zu Produkten, Aktionen oder Veranstaltungen.","Für die Gäste/Kunden stehen kostenlos Stromanschlüsse oder Ladestationen für mobile Geräte zur Verfügung."],
+        bf: ["Der Verkaufsraum verfügt über einen Tresen, der auch für Menschen im Rollstuhl gut erreichbar ist (z. B. unterfahrbarer oder absenkbarer Tresen).","Der Verkaufsraum bietet ausreichend Bewegungsflächen für Menschen mit Mobilitätseinschränkungen.","Alle wichtigen Informationen im Verkaufsraum sind auch für Menschen mit visuellen Einschränkungen zugänglich (z. B. große Schrift, kontrastreiche Beschilderung, Piktogramme)."] },
+  1: { gk: ["Öffnungszeiten, Adresse und Kontakt sind auf der Startseite sofort auffindbar.","Die wichtigsten Inhalte sind auch auf Englisch verfügbar.","Die Website ist für Smartphones optimiert."],
+       ma: ["Das Team stellt sich mit Ansprechpartnern auf der Website vor."],
+       ui: ["Die Website verweist auf Angebote regionaler Partner.","Der Veranstaltungskalender der Region ist aktuell."],
+       oen: ["Die Anreise mit Bahn, Bus oder Rad wird beschrieben.","Das Nachhaltigkeitsengagement des Betriebs wird dargestellt."],
+       dk: ["Buchung oder Anfrage ist direkt auf der Website möglich.","Ein Chat oder digitaler Assistent beantwortet Fragen auch außerhalb der Öffnungszeiten.","Die Website ist technisch aktuell (HTTPS, schnelle Ladezeit)."],
+       bf: ["Es gibt eine Barrierefreiheitserklärung bzw. Informationen zur Barrierefreiheit vor Ort.","Bilder haben Alternativtexte und die Seite ist mit Screenreader bedienbar."] },
+  2: { gk: ["Der Betrieb ist auf mindestens einem Kanal aktiv, der zur Zielgruppe passt.","Es erscheinen regelmäßig Beiträge (mindestens zwei pro Monat).","Fragen in Kommentaren und Nachrichten werden innerhalb von 24 Stunden beantwortet."],
+       ma: ["Mitarbeitende werden in Beiträgen sichtbar gemacht."],
+       ui: ["Partner aus der Region werden vorgestellt oder verlinkt."],
+       oen: ["Nachhaltige Angebote werden kommuniziert.","Die Anreise ohne Auto wird beworben."],
+       dk: ["Beiträge werden mit einem Redaktionsplan geplant.","Reichweite und Interaktion werden regelmäßig ausgewertet.","Die Social-Media-Kanäle sind auf der Website verlinkt."],
+       bf: ["Bilder in Beiträgen haben Alternativtexte.","Videos haben Untertitel.","Texte sind ohne reine Emoji- oder Hashtag-Ketten verständlich."] },
+  27: { gk: ["Gäste/Kunden können online und vor Ort Feedback geben.","Auf Online-Bewertungen wird zeitnah und persönlich geantwortet.","Feedback wird regelmäßig ausgewertet und im Team besprochen."] }
+};
+function critText(kp, hfk, i) { return CRIT[kp]?.[hfk]?.[i] || `Kriterium ${HF.find(h => h.k === hfk).short}-${i + 1} (Text folgt aus dem Kriterienkatalog)`; }
+const EXAMPLE_TEXT = (kp, hfk) => !!CRIT[kp]?.[hfk] && kp !== 14;
+
+const SCORE = { N: ["Nicht vorhanden und nicht relevant","var(--rn)"], 0: ["Nicht erfüllt","var(--r0)"], 1: ["Schwach","var(--r1)"], 2: ["Ausbaufähig","var(--r2)"], 3: ["Gut","var(--r3)"], 4: ["Sehr gut","var(--r4)"], 5: ["Exzellent","var(--r5)"] };
+const SCALE = ["N",0,1,2,3,4,5];
+
+const TEAM = [
+  { id: "sh", name: "Sabine Hartmann", role: "Leitung", tags: ["ma","ui"] },
+  { id: "my", name: "Murat Yilmaz", role: "Counter & Beratung", tags: ["gk"] },
+  { id: "jk", name: "Jana Koch", role: "Marketing & Online", tags: ["dk","web"] },
+  { id: "pb", name: "Peter Brandt", role: "Haustechnik", tags: ["oen","bf"] },
+  { id: "lv", name: "Lisa Vogel", role: "Auszubildende", tags: [] }
+];
+const ini = n => n.split(" ").map(s => s[0]).join("");
+function suggestResp(kp, hfk) {
+  const online = [1, 2, 3, 27].includes(kp);
+  if (online && hfk !== "ma") return ["jk"];
+  const t = TEAM.filter(m => m.tags.includes(hfk)).map(m => m.id);
+  return t.length ? t : ["sh"];
+}
+
+/* Website-Check: simulierte Funde → Vorschläge [kp, hf, index, wert, Fundstelle] */
+const SCAN = [
+  [1,"gk",0,5,"Öffnungszeiten und Adresse stehen im Kopfbereich jeder Seite."],
+  [1,"gk",1,2,"Nur 4 von 23 Seiten gibt es auf Englisch (/en)."],
+  [1,"gk",2,4,"Mobile Darstellung vorhanden, Menü auf kleinen Displays teilweise abgeschnitten."],
+  [1,"oen",0,3,"Seite „Anreise“ nennt Bahn und Bus, aber keine Radwege."],
+  [1,"dk",0,3,"Buchungs-Widget für Stadtführungen gefunden, keine Unterkunftssuche."],
+  [1,"dk",2,5,"HTTPS aktiv, Ladezeit Startseite 1,4 s."],
+  [1,"bf",0,0,"Keine Barrierefreiheitserklärung gefunden."],
+  [1,"bf",1,2,"38 von 112 Bildern ohne Alternativtext."],
+  [2,"gk",0,5,"Instagram und Facebook sind von der Website verlinkt."],
+  [2,"gk",1,3,"Instagram: 3 Beiträge in den letzten 30 Tagen."],
+  [2,"dk",2,5,"Beide Kanäle im Footer der Website verlinkt."],
+  [2,"bf",1,1,"5 von 6 Reels ohne Untertitel."],
+  [27,"gk",1,2,"Google-Profil: 4,5 ★ bei 128 Bewertungen, Antwort auf 9 der letzten 40."]
+];
+
+/* ---------- Zustand ---------- */
+const KEY = "qool-dummy-v1";
+function fresh() {
+  return {
+    view: "check", role: "betrieb", branche: 1, url: "www.tourismus-musterstadt.de", scanned: false,
+    kpSel: null, hfSel: ["gk","ma","ui","oen","dk","bf"], kp: 14,
+    ratings: { "14|gk|0": 4, "14|gk|1": 1, "14|gk|2": 3, "14|ma|0": 2, "14|dk|0": 5 },
+    sugg: {}, notes: {}, custom: {},
+    status: "Entwurf", teamComment: "",
+    measures: [
+      { id: 1, kp: 14, hf: "gk", crit: 1, text: "Dienstplan so anpassen, dass zu Stoßzeiten immer eine Person im Verkaufsraum ansprechbar ist.", prio: "hoch", status: "offen", resp: ["sh","my"], start: "2026-11-01", end: "2026-12-15", progress: 0 },
+      { id: 2, kp: 14, hf: "ma", crit: 0, text: "Prospektlager neben den Counter verlegen.", prio: "mittel", status: "in Bearbeitung", resp: ["pb"], start: "2026-10-15", end: "2026-11-30", progress: 40 },
+      { id: 3, kp: 1, hf: "bf", crit: 0, text: "Barrierefreiheitserklärung erstellen und im Footer verlinken.", prio: "niedrig", status: "erledigt", resp: ["jk"], start: "2026-09-01", end: "2026-09-30", progress: 100 }
+    ],
+    nextId: 4
+  };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch (e) { S = fresh(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+const brType = () => TYP_B.includes(S.branche) ? "B" : "A";
+const flag = kp => kp.br[S.branche];
+const avail = () => KP.filter(k => flag(k) !== ".");
+function ensureSel() { if (!S.kpSel) S.kpSel = avail().map(k => k.id); }
+ensureSel();
+const selKps = () => KP.filter(k => S.kpSel.includes(k.id) && flag(k) !== ".");
+const hfIdx = k => HF.findIndex(h => h.k === k);
+
+function critsOf(kp) {
+  const out = [];
+  HF.forEach((h, hi) => { if (!S.hfSel.includes(h.k)) return; for (let i = 0; i < kp.hf[hi]; i++) out.push({ hf: h.k, i, key: `${kp.id}|${h.k}|${i}` }); });
+  return out;
+}
+function kpStats(kp) {
+  const cs = critsOf(kp);
+  const done = cs.filter(c => S.ratings[c.key] !== undefined);
+  const nums = done.map(c => S.ratings[c.key]).filter(v => v !== "N");
+  const avg = nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+  const state = !cs.length ? "leer" : done.length === 0 ? "rot" : done.length < cs.length ? "orange" : "gruen";
+  return { total: cs.length, done: done.length, avg, state };
+}
+function overall() {
+  let t = 0, d = 0, nums = [];
+  selKps().forEach(k => { const s = kpStats(k); t += s.total; d += s.done; critsOf(k).forEach(c => { const v = S.ratings[c.key]; if (v !== undefined && v !== "N") nums.push(v); }); });
+  return { t, d, pct: t ? Math.round(d / t * 100) : 0, avg: nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null };
+}
+function hfAverages() {
+  return HF.map(h => {
+    let nums = [];
+    selKps().forEach(k => critsOf(k).filter(c => c.hf === h.k).forEach(c => { const v = S.ratings[c.key]; if (v !== undefined && v !== "N") nums.push(v); }));
+    return { h, avg: nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null, active: S.hfSel.includes(h.k) };
+  });
+}
+const fmt = v => v === null ? "–" : v.toFixed(1).replace(".", ",");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const dDE = s => s ? s.split("-").reverse().join(".") : "–";
+
+/* ---------- Ansichten ---------- */
+const STEPS = [["check","Website-Check"],["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["edit","Servicekette"],["plan","Maßnahmenplan"]];
+
+function render() {
+  document.getElementById("r-b").setAttribute("aria-pressed", S.role === "betrieb");
+  document.getElementById("r-t").setAttribute("aria-pressed", S.role === "team");
+  document.getElementById("who").textContent = `TI Musterstadt · ${BRANCHEN[S.branche]}`;
+  const steps = S.role === "team" ? [["review","Prüfung"], ...STEPS.slice(1)] : STEPS;
+  if (S.role === "team" && S.view === "check") S.view = "review";
+  if (S.role === "betrieb" && S.view === "review") S.view = "dash";
+  document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ""}><small>${i + 1}</small>${l}</button>`).join("");
+  const app = document.getElementById("app");
+  app.innerHTML = ({ check: vCheck, dash: vDash, kps: vKps, hfs: vHfs, edit: vEdit, plan: vPlan, review: vReview })[S.view]();
+  if (S.view === "plan") bindDnD();
+  save();
+}
+
+function vCheck() {
+  const found = SCAN.filter(([kp]) => S.kpSel.includes(kp));
+  return `
+  <section class="grid2" style="grid-template-columns:minmax(0,1fr)">
+    <div style="display:grid;gap:8px">
+      <div class="eyebrow">Schritt 1 · Vorab-Recherche</div>
+      <h1>Wir schauen uns eure Online-Auftritte vorab an</h1>
+      <p class="lead">Qool liest Website, verlinkte Social-Media-Kanäle und das Google-Profil und belegt passende Kriterien mit einem Vorschlag vor. Ihr bestätigt oder korrigiert jeden Vorschlag später in der Servicekette. Kriterien, die nur vor Ort beurteilt werden können, bleiben unberührt.</p>
+    </div>
+    <form class="panel check-form" data-f="scan">
+      <label class="f">Website des Betriebs<input type="text" id="url" value="${esc(S.url)}"></label>
+      <label class="f">Branche<select id="branche">${BRANCHEN.map((b, i) => `<option value="${i}" ${i === S.branche ? "selected" : ""}>${b}</option>`).join("")}</select></label>
+      <button class="btn primary" type="submit">${S.scanned ? "Erneut prüfen" : "Website prüfen"}</button>
+    </form>
+    <div id="scanarea">${S.scanned ? scanResult(found) : ""}</div>
+  </section>`;
+}
+function scanResult(found) {
+  const byKp = {};
+  found.forEach(f => (byKp[f[0]] ||= []).push(f));
+  const n = found.length;
+  return `<div class="grid2">
+    <div class="panel" style="display:grid;gap:10px">
+      <h2>${n} Vorschläge vorbelegt</h2>
+      <p class="lead">Aus ${S.url} · Kontaktpunkte ${Object.keys(byKp).map(id => KP.find(k => k.id == id).name).join(", ")}</p>
+      <div>${found.map(([kp, hf, i, v, why]) => `<div class="finding"><span class="sc" style="background:${SCORE[v][1]}">${v}</span><div>${esc(critText(kp, hf, i))}<small>${KP.find(k => k.id === kp).name} · ${HF[hfIdx(hf)].name} · ${esc(why)}</small></div></div>`).join("")}</div>
+    </div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="panel" style="display:grid;gap:8px">
+        <h3>Was wir nicht online prüfen können</h3>
+        <p>Alles, was vor Ort passiert: Ankunft, Begrüßung, Verkaufsraum, Beratung, Führungen. Diese Kriterien bewertet ihr selbst, so wie bisher.</p>
+      </div>
+      <div class="hint">Zur Klärung mit dem DTV: Sollen Vorschläge nur vorbelegt werden (so wie hier) oder dürfen eindeutige Kriterien ganz übersprungen werden? Birgit möchte möglichst viele Daten, deshalb ist im Dummy alles bestätigungspflichtig.</div>
+      <button class="btn primary" data-a="go" data-v="dash">Weiter zur Schaltzentrale</button>
+    </div>
+  </div>`;
+}
+
+function spider(vals) {
+  const cx = 170, cy = 150, R = 105, n = vals.length;
+  const pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
+  let g = "";
+  for (let lv = 1; lv <= 5; lv++) g += `<polygon points="${vals.map((_, i) => pt(i, R * lv / 5).join(",")).join(" ")}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
+  vals.forEach((_, i) => { const [x, y] = pt(i, R); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)"/>`; });
+  [1,3,5].forEach(lv => { g += `<text x="${cx + 4}" y="${cy - R * lv / 5 + 4}" font-size="10" opacity=".6">${lv}</text>`; });
+  const has = vals.filter(v => v.avg !== null);
+  if (has.length >= 3) {
+    g += `<polygon points="${vals.map((v, i) => pt(i, R * (v.avg ?? 0) / 5).join(",")).join(" ")}" fill="var(--accent-soft)" fill-opacity=".75" stroke="var(--accent)" stroke-width="2"/>`;
+    vals.forEach((v, i) => { if (v.avg !== null) { const [x, y] = pt(i, R * v.avg / 5); g += `<circle cx="${x}" cy="${y}" r="4" fill="var(--accent)"/>`; } });
+  }
+  vals.forEach((v, i) => {
+    const [x, y] = pt(i, R + 20); const anchor = Math.abs(x - cx) < 5 ? "middle" : x > cx ? "start" : "end";
+    g += `<text x="${x}" y="${y}" font-size="11.5" text-anchor="${anchor}" opacity="${v.active ? 1 : .45}">${v.h.short} ${fmt(v.avg)}</text>`;
+  });
+  return `<svg viewBox="0 0 340 300" width="100%" style="max-width:380px" role="img" aria-label="Spinnendiagramm Durchschnitt je Handlungsfeld">${g}</svg>`;
+}
+
+function vDash() {
+  const o = overall(), hfa = hfAverages();
+  const done = o.t > 0 && o.d === o.t;
+  const mDone = S.measures.filter(m => m.status === "erledigt").length;
+  return `
+  <section style="display:grid;gap:6px">
+    <div class="eyebrow">Schaltzentrale</div>
+    <h1>Tourist-Information Musterstadt</h1>
+  </section>
+  <section class="kpis">
+    <div class="kpi"><span class="eyebrow">Status</span><b><span class="pill st-${S.status}">${S.status}</span></b></div>
+    <div class="kpi"><span class="eyebrow">Gesamtfortschritt</span><b class="num">${o.pct} %</b><div class="bar"><i style="width:${o.pct}%"></i></div></div>
+    <div class="kpi"><span class="eyebrow">Bearbeitungsfrist</span><b class="num">31.03.2027</b></div>
+    <div class="kpi"><span class="eyebrow">Einreichungsfrist</span><b class="num">30.04.2027</b></div>
+    <div class="kpi"><span class="eyebrow">Ablaufdatum Q</span><b class="num">${S.status === "Freigegeben" ? "02.10.2029" : "–"}</b></div>
+    <div class="kpi"><span class="eyebrow">Ø Selbstcheck</span><b class="num">${fmt(o.avg)}</b></div>
+  </section>
+  ${S.status === "Nachbesserung" ? `<div class="hint"><b>Rückmeldung vom DTV-SQD-Team:</b> ${esc(S.teamComment || "Bitte Kriterien mit 0–1 Punkten überarbeiten und Maßnahmen ergänzen.")}</div>` : ""}
+  <section class="grid2">
+    <div class="panel" style="display:grid;gap:8px;justify-items:center">
+      <h3 style="justify-self:start">Ergebnis je Handlungsfeld</h3>
+      ${spider(hfa)}
+      <p class="lead" style="font-size:.85rem;justify-self:start">Laut Vorgabe erscheint das Diagramm erst, wenn in einem Handlungsfeld mindestens 50 % der Kontaktpunkte vollständig bewertet sind. Im Dummy zeigt es den aktuellen Stand.</p>
+    </div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="tiles">
+        <div class="tile ${done ? "done" : ""}">
+          <h3>Unsere Servicekette</h3>
+          <p class="num">${o.d} von ${o.t} Kriterien bewertet · ${selKps().length} Kontaktpunkte</p>
+          <button class="btn ${done ? "ok" : "primary"}" data-a="go" data-v="edit">Servicekette bearbeiten</button>
+        </div>
+        <div class="tile ${mDone === S.measures.length && S.measures.length ? "done" : ""}">
+          <h3>Unser Maßnahmenplan</h3>
+          <p class="num">${S.measures.length} Maßnahmen · ${mDone} erledigt</p>
+          <button class="btn primary" data-a="go" data-v="plan">Maßnahmenplan bearbeiten</button>
+        </div>
+        <div class="tile ${S.status === "Freigegeben" ? "done" : "locked"}">
+          <h3>Unser Feedbackbericht</h3>
+          <p>${S.status === "Freigegeben" ? "Freigegeben. Download im DTV-Kundencenter." : "Wird nach Prüfung durch das DTV-SQD-Team erstellt."}</p>
+        </div>
+      </div>
+      <div class="panel" style="display:grid;gap:8px">
+        <div class="row" style="justify-content:space-between"><h3>Team (aus dem Teamversprechen)</h3><span class="chip">Rollen für KI-Zuordnung</span></div>
+        <ul class="team">${TEAM.map(m => `<li><span class="av">${ini(m.name)}</span><span>${m.name} <small style="color:var(--muted)">· ${m.role}</small></span></li>`).join("")}</ul>
+      </div>
+    </div>
+  </section>`;
+}
+
+function vKps() {
+  const T = brType(), names = PHASEN[T];
+  const groups = [0,1,2].map(p => avail().filter(k => k.phase === p));
+  const n = S.kpSel.filter(id => flag(KP.find(k => k.id === id)) !== ".").length;
+  return `
+  <section style="display:grid;gap:8px">
+    <div class="eyebrow">Servicekette anlegen · Branche ${BRANCHEN[S.branche]} (Typ ${T})</div>
+    <h1>Welche Kontaktpunkte gibt es bei euch?</h1>
+    <p class="lead">Alle Kontaktpunkte sind vorausgewählt. Pflicht-Kontaktpunkte (Schloss) können nicht abgewählt werden. Klickt auf „i“ für die Definition.</p>
+  </section>
+  ${groups.map((g, p) => g.length ? `<section class="phase"><h2>${names[p]}</h2><div class="cards">${g.map(k => {
+    const P = flag(k) === "P", on = S.kpSel.includes(k.id), crits = k.hf.reduce((a, b) => a + b, 0);
+    return `<button class="sel" data-a="kp" data-v="${k.id}" aria-pressed="${on}" ${P ? 'aria-disabled="true"' : ""}>
+      ${P ? '<span class="lock" title="Pflicht-Kontaktpunkt">🔒</span>' : ""}
+      <span class="ic">${k.id}</span><span class="nm">${k.name}</span>
+      <span class="meta">${crits ? `${crits} Kriterien` : '<span class="warnx">Noch keine Kriterien</span>'}${P ? " · Pflicht" : ""}</span>
+      <span class="info" data-a="kpinfo" data-v="${k.id}" role="button" aria-label="Definition ${k.name}">i</span>
+    </button>`; }).join("")}</div></section>` : "").join("")}
+  <div class="row" style="justify-content:space-between">
+    <span class="num">${n} von ${avail().length} ausgewählt</span>
+    <button class="btn primary" data-a="go" data-v="hfs">Kontaktpunkte bestätigen &amp; weiter</button>
+  </div>`;
+}
+
+function vHfs() {
+  const ok = S.hfSel.length >= 3;
+  return `
+  <section style="display:grid;gap:8px">
+    <div class="eyebrow">Servicekette anlegen</div>
+    <h1>Welche Handlungsfelder bearbeitet ihr?</h1>
+    <p class="lead">Gast/Kunde ist Pflicht. Insgesamt müssen mindestens drei Handlungsfelder bearbeitet werden.</p>
+  </section>
+  <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${HF.map(h => {
+    const on = S.hfSel.includes(h.k);
+    return `<button class="sel" data-a="hf" data-v="${h.k}" aria-pressed="${on}">
+      ${h.lock ? '<span class="lock" title="Pflicht-Handlungsfeld">🔒</span>' : ""}
+      <span class="ic">${h.short}</span><span class="nm">${h.name}</span><span class="meta">${h.lock ? "Pflicht" : "optional"}</span>
+      <span class="info" data-a="hfinfo" data-v="${h.k}" role="button" aria-label="Definition ${h.name}">i</span></button>`; }).join("")}</div>
+  <div class="row" style="justify-content:space-between">
+    <span class="num" style="color:${ok ? "inherit" : "var(--danger)"}">${S.hfSel.length} von 6 ausgewählt${ok ? "" : " · bitte mindestens 3 wählen"}</span>
+    <button class="btn primary" data-a="go" data-v="edit" ${ok ? "" : "disabled"}>Handlungsfelder bestätigen &amp; starten</button>
+  </div>`;
+}
+
+function vEdit() {
+  const kps = selKps();
+  if (!kps.find(k => k.id === S.kp)) S.kp = kps[0]?.id;
+  const kp = KP.find(k => k.id === S.kp), st = kpStats(kp), o = overall();
+  const allDone = o.t > 0 && o.d === o.t;
+  const pend = critsOf(kp).filter(c => S.sugg[c.key] && S.ratings[c.key] === undefined).length;
+  const locked = S.status === "Eingereicht" || S.status === "Freigegeben";
+  return `
+  <div class="work">
+    <aside class="panel" style="padding:0">
+      <ul class="kplist">${kps.map(k => { const s = kpStats(k); return `<li><button data-a="selkp" data-v="${k.id}" aria-current="${k.id === S.kp}"><span class="dot d-${s.state}"></span><span>${k.name}</span><small class="num">${s.done}/${s.total}</small></button></li>`; }).join("")}</ul>
+    </aside>
+    <section class="panel" style="display:grid;gap:14px;min-width:0">
+      <div style="display:grid;gap:6px">
+        <div class="eyebrow">Kontaktpunkt ${kp.id} · ${PHASEN[brType()][kp.phase]}</div>
+        <h1>${kp.name}</h1>
+        <p class="lead">${esc(KPDEF[kp.id] || "Begriffserläuterung folgt vom DTV.")}</p>
+      </div>
+      <div class="legend">${SCALE.map(s => `<span><i style="background:${SCORE[s][1]}"></i>${s} = ${SCORE[s][0]}</span>`).join("")}</div>
+      ${pend ? `<div class="sugline"><span class="chip ai">Website-Check</span>${pend} Vorschläge warten auf eure Bestätigung (gestrichelt markiert).<button class="btn sm" data-a="acceptall">Alle übernehmen</button></div>` : ""}
+      ${locked ? `<div class="hint">Die Servicekette ist ${S.status.toLowerCase()} und kann gerade nicht bearbeitet werden.</div>` : ""}
+      ${HF.filter(h => S.hfSel.includes(h.k)).map(h => {
+        const cnt = kp.hf[hfIdx(h.k)], custom = S.custom[`${kp.id}|${h.k}`] || [];
+        if (!cnt && !custom.length) return `<div class="hf"><div class="hf-head"><h3>${h.name}</h3><span class="chip">keine Kriterien für diesen Kontaktpunkt</span></div></div>`;
+        return `<div class="hf">
+          <div class="hf-head"><h3>${h.name}</h3>${EXAMPLE_TEXT(kp.id, h.k) ? '<span class="chip">Beispieltexte</span>' : ""}<button class="link" data-a="bot" data-v="${h.k}" style="margin-left:auto">Assistent ${h.short} fragen</button></div>
+          ${Array.from({ length: cnt }, (_, i) => critRow(kp, h, i, locked)).join("")}
+          ${custom.map((t, j) => critRow(kp, h, "c" + j, locked, t)).join("")}
+          ${locked ? "" : `<div><button class="link" data-a="addcustom" data-v="${h.k}">+ Eigenes Kriterium ergänzen</button> <small style="color:var(--muted)">(zählt nicht in die Wertung)</small></div>`}
+        </div>`; }).join("")}
+      <div class="kpfoot">
+        <div><div class="eyebrow">Ø dieser Kontaktpunkt</div><span class="avg num">${fmt(st.avg)}</span> ${st.avg === null ? "" : st.avg >= 3 ? '<span class="pill st-Freigegeben">≥ 3,0 erreicht</span>' : '<span class="pill" style="background:var(--danger);color:#fff">unter 3,0</span>'}</div>
+        <div class="row">
+          ${S.role === "betrieb" && !locked ? `<button class="btn" data-a="nextkp">Speichern &amp; weiter</button>
+          <button class="btn primary" data-a="submit" ${allDone ? "" : "disabled"} title="${allDone ? "" : "Erst alle Kriterien bewerten"}">Servicekette einreichen</button>` : ""}
+        </div>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted)">Berechnung: Summe aller mit 0–5 bewerteten DTV-Kriterien geteilt durch deren Anzahl. N und eigene Kriterien zählen nicht.</p>
+    </section>
+  </div>`;
+}
+function critRow(kp, h, i, locked, customText) {
+  const key = `${kp.id}|${h.k}|${i}`, v = S.ratings[key], sg = S.sugg[key];
+  const text = customText ?? critText(kp.id, h.k, i);
+  const hasM = S.measures.some(m => m.kp === kp.id && m.hf === h.k && m.crit === i);
+  return `<div class="crit">
+    <div class="t">${customText ? '<span class="chip">eigenes Kriterium</span> ' : ""}${esc(text)}${S.notes[key] ? `<small>Notiz: ${esc(S.notes[key])}</small>` : ""}</div>
+    <div class="scale" role="radiogroup" aria-label="Bewertung">${SCALE.map(s => `<button data-a="rate" data-k="${key}" data-v="${s}" aria-pressed="${v === s}" class="${v === undefined && sg && sg.v === s ? "sug" : ""}" style="${v === s ? `background:${SCORE[s][1]}` : ""}" ${locked ? "disabled" : ""} title="${SCORE[s][0]}">${s}</button>`).join("")}</div>
+    <button class="btn sm" data-a="detail" data-k="${key}">${hasM ? "Maßnahme ✓" : "Details"}</button>
+    ${v === undefined && sg ? `<div class="sugline"><span class="chip ai">Vorschlag ${sg.v}</span>${esc(sg.why)}<button class="btn sm" data-a="rate" data-k="${key}" data-v="${sg.v}">Übernehmen</button></div>` : ""}
+  </div>`;
+}
+
+function vPlan() {
+  const cols = [["offen","Zu erledigen"],["in Bearbeitung","In Bearbeitung"],["erledigt","Erledigt"]];
+  return `
+  <section class="row" style="justify-content:space-between;align-items:end">
+    <div style="display:grid;gap:6px"><div class="eyebrow">Maßnahmenplan</div><h1>Unser Maßnahmenplan</h1>
+    <p class="lead">Maßnahmen aus der Servicekette landen hier automatisch. Karten per Drag &amp; Drop verschieben, mit dem Stift bearbeiten.</p></div>
+    <button class="btn primary" data-a="aisuggest">KI-Vorschläge holen</button>
+  </section>
+  <section class="kanban">${cols.map(([k, l]) => { const ms = S.measures.filter(m => m.status === k); return `
+    <div class="col" data-col="${k}"><h3><span>${l}</span><span class="num">${ms.length}</span></h3>
+    ${ms.map(card).join("") || '<p style="color:var(--muted);font-size:.85rem">Keine Maßnahmen</p>'}</div>`; }).join("")}</section>`;
+}
+function card(m) {
+  const kp = KP.find(k => k.id === m.kp), h = HF[hfIdx(m.hf)];
+  return `<article class="card ${m.ai ? "ai" : ""}" draggable="true" data-id="${m.id}">
+    <div class="row" style="justify-content:space-between"><span class="pill prio-${m.prio}">${m.prio}</span>${m.ai ? '<span class="chip ai">KI-Vorschlag</span>' : ""}</div>
+    <div>${esc(m.text)}</div>
+    <div class="src">${kp.name} · ${h.name}</div>
+    <div class="row" style="justify-content:space-between">
+      <div class="avs">${m.resp.map(r => { const t = TEAM.find(x => x.id === r); return `<span class="av" title="${t.name}">${ini(t.name)}</span>`; }).join("")}</div>
+      <span class="num" style="font-size:.8rem;color:var(--muted)">${dDE(m.start)} – ${dDE(m.end)}</span>
+    </div>
+    <div class="bar" style="background:var(--surface-2)"><i style="width:${m.progress}%"></i></div>
+    <div class="row" style="justify-content:space-between">
+      ${m.ai ? `<span class="row"><button class="btn sm ok" data-a="aiok" data-v="${m.id}">Übernehmen</button><button class="btn sm" data-a="aidel" data-v="${m.id}">Verwerfen</button></span>` : `<label class="f" style="font-weight:400;grid-template-columns:auto 1fr;align-items:center;gap:6px"><span class="num">${m.progress} %</span></label>`}
+      <button class="link" data-a="editm" data-v="${m.id}" aria-label="Maßnahme bearbeiten">✎ Bearbeiten</button>
+    </div>
+  </article>`;
+}
+
+function vReview() {
+  const o = overall();
+  const rows = selKps().map(k => ({ k, s: kpStats(k) }));
+  return `
+  <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><h1>Prüfung der Servicekette</h1>
+  <p class="lead">Das SQD-Team sieht jeden Betrieb jederzeit mit (auch während der Bearbeitung) und gibt nach dem Einreichen frei oder zur Nachbesserung zurück.</p></section>
+  <section class="panel review" style="display:grid;gap:12px">
+    <div class="row" style="justify-content:space-between"><h2>Tourist-Information Musterstadt</h2><span class="pill st-${S.status}">${S.status}</span></div>
+    <div class="tw"><table class="t"><thead><tr><th>Kontaktpunkt</th><th>Bewertet</th><th>Ø</th><th></th></tr></thead><tbody>
+      ${rows.map(({ k, s }) => `<tr><td>${k.name}</td><td class="num">${s.done}/${s.total}</td><td class="num">${fmt(s.avg)}</td><td>${s.avg === null ? "" : s.avg >= 3 ? "✓" : '<b style="color:var(--danger)">unter 3,0</b>'}</td></tr>`).join("")}
+      <tr><th>Gesamt</th><th class="num">${o.d}/${o.t}</th><th class="num">${fmt(o.avg)}</th><th></th></tr></tbody></table></div>
+    <label class="f">Kommentar an den Betrieb<textarea id="tc">${esc(S.teamComment)}</textarea></label>
+    <div class="row">
+      <button class="btn ok" data-a="approve" ${S.status === "Eingereicht" ? "" : "disabled"}>Freigeben</button>
+      <button class="btn danger" data-a="reject" ${S.status === "Eingereicht" ? "" : "disabled"}>Zur Nachbesserung zurückgeben</button>
+      ${S.status !== "Eingereicht" ? `<span style="color:var(--muted);font-size:.9rem">Freigabe ist möglich, sobald der Betrieb eingereicht hat.</span>` : ""}
+    </div>
+    <div class="hint">Offen beim DTV: Was passiert, wenn auch nach der Nachbesserung die Mindestpunktzahl nicht erreicht wird?</div>
+  </section>`;
+}
+
+/* ---------- Overlays ---------- */
+const layer = document.getElementById("layer");
+function drawer(html) { layer.innerHTML = `<div class="scrim" data-a="close"></div><aside class="drawer" role="dialog" aria-modal="true">${html}</aside>`; layer.querySelector(".drawer button, .drawer input, .drawer textarea")?.focus(); }
+function close() { layer.innerHTML = ""; }
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2200); }
+
+function infoDrawer(title, text) { drawer(`<header><div><div class="eyebrow">Definition</div><h2>${title}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header><p>${esc(text)}</p><button class="btn" data-a="close">Schließen</button>`); }
+
+function measureForm(m, ctx) {
+  return `
+    <label class="f">Maßnahme<textarea id="m-text">${esc(m.text || "")}</textarea></label>
+    <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
+      <label class="f">Priorität<select id="m-prio">${["hoch","mittel","niedrig"].map(p => `<option ${m.prio === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
+      <label class="f">Status<select id="m-status">${["offen","in Bearbeitung","erledigt"].map(p => `<option ${m.status === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
+      <label class="f">Start<input type="date" id="m-start" value="${m.start || ""}"></label>
+      <label class="f">Ende<input type="date" id="m-end" value="${m.end || ""}"></label>
+      <label class="f">Fortschritt<select id="m-prog">${Array.from({ length: 11 }, (_, i) => i * 10).map(p => `<option value="${p}" ${+m.progress === p ? "selected" : ""}>${p} %</option>`).join("")}</select></label>
+    </div>
+    <div style="display:grid;gap:4px"><span class="eyebrow">Verantwortlich ${ctx?.sug ? '<span class="chip ai">KI-Vorschlag vorausgewählt</span>' : ""}</span>
+      <div class="checks">${TEAM.map(t => `<label><input type="checkbox" value="${t.id}" class="m-resp" ${m.resp?.includes(t.id) ? "checked" : ""}>${t.name} <small style="color:var(--muted)">${t.role}</small></label>`).join("")}</div></div>`;
+}
+function readForm() {
+  return { text: document.getElementById("m-text").value.trim(), prio: document.getElementById("m-prio").value, status: document.getElementById("m-status").value,
+    start: document.getElementById("m-start").value, end: document.getElementById("m-end").value, progress: +document.getElementById("m-prog").value,
+    resp: [...document.querySelectorAll(".m-resp:checked")].map(x => x.value) };
+}
+
+function detailDrawer(key) {
+  const [kpId, hfk, iRaw] = key.split("|"); const kp = KP.find(k => k.id === +kpId), h = HF[hfIdx(hfk)];
+  const i = iRaw.startsWith("c") ? iRaw : +iRaw;
+  const text = typeof i === "string" ? S.custom[`${kpId}|${hfk}`][+i.slice(1)] : critText(kp.id, hfk, i);
+  const existing = S.measures.find(m => m.kp === kp.id && m.hf === hfk && m.crit === i);
+  const m = existing || { prio: "mittel", status: "offen", progress: 0, resp: suggestResp(kp.id, hfk), text: "" };
+  const v = S.ratings[key];
+  drawer(`
+    <header><div><div class="eyebrow">Detailansicht Kriterium</div><h2>${esc(text)}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+    <dl class="kv"><dt>Kontaktpunkt</dt><dd>${kp.name}</dd><dt>Handlungsfeld</dt><dd>${h.name}</dd><dt>Bewertung</dt><dd>${v === undefined ? "noch offen" : `${v} · ${SCORE[v][0]}`}</dd></dl>
+    <div style="display:grid;gap:6px"><span class="eyebrow">Erläuterungen (aus dem CRM)</span>
+      <div class="expl">${SCALE.map(s => `<div><b style="background:${SCORE[s][1]}">${s}</b><span>${s === "N" ? "Das Kriterium trifft auf den Betrieb nicht zu." : s === 0 ? "Gibt es nicht, obwohl es relevant wäre." : s === 5 ? "Vorbildlich umgesetzt, wird regelmäßig überprüft." : "Erläuterung zur Stufe folgt vom DTV."}</span></div>`).join("")}</div></div>
+    <label class="f">Notizen<textarea id="d-note">${esc(S.notes[key] || "")}</textarea></label>
+    <div style="display:grid;gap:10px;border-top:1px solid var(--line);padding-top:12px">
+      <div class="row" style="justify-content:space-between"><h3>Maßnahme</h3><button class="btn sm" data-a="aitext" data-k="${key}">KI-Formulierung</button></div>
+      ${measureForm(m, { sug: !existing })}
+    </div>
+    <div class="row"><button class="btn" data-a="close">Schließen</button><button class="btn primary" data-a="savedetail" data-k="${key}">Speichern</button></div>`);
+}
+
+const BOT = {
+  gk: "Bei Gast/Kunde geht es um alles, was Besucher direkt erleben. Für eure TI passt dafür am besten Murat (Counter & Beratung).",
+  ma: "Themen zu Mitarbeitenden betreffen Dienstpläne, Arbeitsplätze und Abläufe. Das entscheidet bei euch Sabine (Leitung).",
+  ui: "Partner, Lieferanten und Region laufen bei euch über Sabine (Leitung).",
+  oen: "Energie, Material und Müll fallen bei euch in die Haustechnik, also Peter.",
+  dk: "Digitale Themen und Online-Auftritte betreut Jana (Marketing & Online).",
+  bf: "Bauliche Barrierefreiheit gehört zu Peter (Haustechnik), barrierefreie Online-Inhalte zu Jana."
+};
+function botDrawer(hfk, extra = []) {
+  const h = HF[hfIdx(hfk)], kp = KP.find(k => k.id === S.kp);
+  const low = critsOf(kp).filter(c => c.hf === hfk && typeof S.ratings[c.key] === "number" && S.ratings[c.key] <= 2);
+  drawer(`
+    <header><div><div class="eyebrow">Assistent · ${h.name}</div><h2>${kp.name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+    <div class="chat" id="chat">
+      <div class="msg bot">Hallo! Ich helfe euch beim Handlungsfeld <b>${h.name}</b>. Ich kenne euer Team aus dem Teamversprechen und kann Maßnahmen vorschlagen und zuordnen.</div>
+      ${extra.join("")}
+    </div>
+    <div class="row">
+      <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="who">Wer ist bei uns zuständig?</button>
+      <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="idea">Maßnahmen vorschlagen</button>
+      <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="explain">Was heißt „N“?</button>
+    </div>
+    <form class="row" data-f="botfree" data-v="${hfk}" style="flex-wrap:nowrap"><input type="text" id="botin" placeholder="Frage eingeben…" aria-label="Frage an den Assistenten"><button class="btn primary" type="submit">Senden</button></form>
+    <p style="font-size:.8rem;color:var(--muted)">Klickdummy: Antworten sind vorbereitet. ${low.length} Kriterien in diesem Feld haben 0–2 Punkte.</p>`);
+}
+function botAnswer(hfk, q) {
+  const kp = KP.find(k => k.id === S.kp);
+  if (q === "who") return `<div class="msg bot">${BOT[hfk]}</div>`;
+  if (q === "explain") return `<div class="msg bot">„N“ heißt: Das Kriterium gibt es bei euch nicht und es ist auch nicht relevant, z. B. WLAN in einem Raum ohne Aufenthalt. N fließt nicht in den Durchschnitt ein. Wenn etwas fehlt, aber sinnvoll wäre, nehmt 0.</div>`;
+  const low = critsOf(kp).filter(c => c.hf === hfk && typeof S.ratings[c.key] === "number" && S.ratings[c.key] <= 2);
+  if (!low.length) return `<div class="msg bot">In diesem Handlungsfeld gibt es beim ${kp.name} keine Kriterien mit 0–2 Punkten. Bewertet zuerst die Kriterien, dann schlage ich gezielt etwas vor.</div>`;
+  const resp = suggestResp(kp.id, hfk).map(id => TEAM.find(t => t.id === id).name.split(" ")[0]).join(" und ");
+  return `<div class="msg bot">Für diese Kriterien mit wenig Punkten schlage ich vor:<ul>${low.map(c => `<li>${esc(ideaFor(c))} <i>(zuständig: ${resp})</i> <button class="link" data-a="botadd" data-k="${c.key}">übernehmen</button></li>`).join("")}</ul></div>`;
+}
+function ideaFor(c) {
+  const t = critText(+c.key.split("|")[0], c.hf, c.i);
+  const map = { gk: "Klare Zuständigkeit im Dienstplan festlegen und Gästen sichtbar machen", ma: "Arbeitsabläufe mit dem Team besprechen und Engpässe beseitigen", ui: "Zwei regionale Partner gezielt ansprechen und Kooperation vereinbaren", oen: "Verbrauch erfassen und eine konkrete Einsparmaßnahme umsetzen", dk: "Digitales Angebot einrichten und auf der Website bewerben", bf: "Barriere prüfen lassen und kurzfristige Lösung umsetzen" };
+  return `${map[c.hf]}: „${t.length > 70 ? t.slice(0, 68) + "…" : t}“`;
+}
+
+/* ---------- Aktionen ---------- */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el) return;
+  const a = el.dataset.a, v = el.dataset.v, k = el.dataset.k;
+  if (a === "kpinfo" || a === "hfinfo") e.stopPropagation();
+  switch (a) {
+    case "go": S.view = v; close(); render(); scrollTo(0, 0); break;
+    case "role": S.role = v; S.view = v === "team" ? "review" : "dash"; render(); break;
+    case "reset": try { localStorage.removeItem(KEY); } catch (er) {} S = fresh(); ensureSel(); render(); toast("Dummy zurückgesetzt"); break;
+    case "kp": { const kp = KP.find(x => x.id === +v); if (flag(kp) === "P") { toast("Pflicht-Kontaktpunkt, kann nicht abgewählt werden"); break; }
+      S.kpSel = S.kpSel.includes(kp.id) ? S.kpSel.filter(x => x !== kp.id) : [...S.kpSel, kp.id]; render(); break; }
+    case "kpinfo": { const kp = KP.find(x => x.id === +v); infoDrawer(kp.name, KPDEF[kp.id] || "Die Definition dieses Kontaktpunkts liefert der DTV."); break; }
+    case "hf": { const h = HF[hfIdx(v)]; if (h.lock) { toast("Gast/Kunde ist Pflicht"); break; }
+      S.hfSel = S.hfSel.includes(v) ? S.hfSel.filter(x => x !== v) : [...S.hfSel, v]; render(); break; }
+    case "hfinfo": { const h = HF[hfIdx(v)]; infoDrawer(h.name, h.def); break; }
+    case "selkp": S.kp = +v; render(); scrollTo(0, 0); break;
+    case "rate": { const val = v === "N" ? "N" : +v; if (S.ratings[k] === val) delete S.ratings[k]; else S.ratings[k] = val; render(); break; }
+    case "acceptall": critsOf(KP.find(x => x.id === S.kp)).forEach(c => { if (S.sugg[c.key] && S.ratings[c.key] === undefined) S.ratings[c.key] = S.sugg[c.key].v; }); render(); toast("Vorschläge übernommen"); break;
+    case "nextkp": { const ks = selKps(), i = ks.findIndex(x => x.id === S.kp); S.kp = ks[(i + 1) % ks.length].id; render(); scrollTo(0, 0); toast("Zwischengespeichert"); break; }
+    case "addcustom": { const key = `${S.kp}|${v}`; (S.custom[key] ||= []).push("Eigenes Kriterium des Betriebs (Text bearbeiten in den Details)"); render(); break; }
+    case "submit": S.status = "Eingereicht"; render(); toast("Servicekette eingereicht. Das DTV-SQD-Team wird benachrichtigt."); break;
+    case "detail": detailDrawer(k); break;
+    case "aitext": { const [kpId, hfk, i] = k.split("|"); document.getElementById("m-text").value = ideaFor({ key: k, hf: hfk, i: +i }) + "."; toast("Formulierung vorgeschlagen"); break; }
+    case "savedetail": {
+      const [kpId, hfk, iRaw] = k.split("|"); const i = iRaw.startsWith("c") ? iRaw : +iRaw;
+      S.notes[k] = document.getElementById("d-note").value.trim();
+      const f = readForm(); const ex = S.measures.find(m => m.kp === +kpId && m.hf === hfk && m.crit === i);
+      if (f.text) { if (ex) Object.assign(ex, f); else S.measures.push({ id: S.nextId++, kp: +kpId, hf: hfk, crit: i, ...f }); }
+      close(); render(); toast(f.text ? "Gespeichert, Maßnahme im Maßnahmenplan" : "Gespeichert"); break; }
+    case "bot": botDrawer(v); break;
+    case "botq": { const chat = document.getElementById("chat"); const label = el.textContent;
+      chat.insertAdjacentHTML("beforeend", `<div class="msg me">${esc(label)}</div>` + botAnswer(v, el.dataset.q)); chat.lastElementChild.scrollIntoView({ block: "nearest" }); break; }
+    case "botadd": { const [kpId, hfk, i] = k.split("|");
+      if (!S.measures.some(m => m.kp === +kpId && m.hf === hfk && m.crit === +i))
+        S.measures.push({ id: S.nextId++, kp: +kpId, hf: hfk, crit: +i, text: ideaFor({ key: k, hf: hfk, i: +i }) + ".", prio: "mittel", status: "offen", resp: suggestResp(+kpId, hfk), start: "", end: "", progress: 0 });
+      el.replaceWith(Object.assign(document.createElement("b"), { textContent: "im Maßnahmenplan" })); save(); break; }
+    case "aisuggest": {
+      const add = [
+        { kp: 1, hf: "gk", crit: 1, text: "Die 10 meistbesuchten Seiten ins Englische übersetzen lassen (KI-Übersetzung + Korrektur).", prio: "mittel", resp: ["jk"] },
+        { kp: 14, hf: "bf", crit: 0, text: "Absenkbaren Tresenbereich (80 cm) am Counter nachrüsten, Angebot vom Schreiner einholen.", prio: "hoch", resp: ["pb","sh"] }
+      ].filter(n => !S.measures.some(m => m.text === n.text));
+      add.forEach(n => S.measures.push({ id: S.nextId++, status: "offen", start: "", end: "", progress: 0, ai: true, ...n }));
+      render(); toast(add.length ? `${add.length} Vorschläge hinzugefügt` : "Keine neuen Vorschläge"); break; }
+    case "aiok": { const m = S.measures.find(x => x.id === +v); delete m.ai; render(); break; }
+    case "aidel": S.measures = S.measures.filter(x => x.id !== +v); render(); break;
+    case "editm": { const m = S.measures.find(x => x.id === +v);
+      drawer(`<header><div><div class="eyebrow">Maßnahme bearbeiten</div><h2>${KP.find(x => x.id === m.kp).name} · ${HF[hfIdx(m.hf)].name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+        ${measureForm(m)}<div class="row"><button class="btn danger" data-a="delm" data-v="${m.id}">Löschen</button><button class="btn" data-a="close">Schließen</button><button class="btn primary" data-a="savem" data-v="${m.id}">Speichern</button></div>`); break; }
+    case "savem": { const m = S.measures.find(x => x.id === +v); Object.assign(m, readForm()); delete m.ai; close(); render(); toast("Gespeichert"); break; }
+    case "delm": S.measures = S.measures.filter(x => x.id !== +v); close(); render(); break;
+    case "approve": S.teamComment = document.getElementById("tc").value; S.status = "Freigegeben"; render(); toast("Freigegeben. Q-Lizenz würde jetzt im CRM angelegt."); break;
+    case "reject": S.teamComment = document.getElementById("tc").value; S.status = "Nachbesserung"; render(); toast("Zur Nachbesserung zurückgegeben"); break;
+    case "close": close(); break;
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+document.addEventListener("submit", e => {
+  e.preventDefault();
+  const f = e.target.dataset.f;
+  if (f === "scan") {
+    S.url = document.getElementById("url").value.trim() || S.url;
+    const nb = +document.getElementById("branche").value;
+    if (nb !== S.branche) { S.branche = nb; S.kpSel = null; ensureSel(); }
+    const steps = ["Startseite und Unterseiten lesen","Impressum, Öffnungszeiten, Anreise","Verlinkte Social-Media-Kanäle","Google-Unternehmensprofil und Bewertungen","Barrierefreiheit (Alternativtexte, Erklärung)"];
+    const area = document.getElementById("scanarea");
+    area.innerHTML = `<div class="panel"><ul class="scanlog">${steps.map(s => `<li>${s}</li>`).join("")}</ul></div>`;
+    const lis = area.querySelectorAll("li"); let i = 0;
+    const tick = () => { if (i < lis.length) { lis[i++].className = "done"; setTimeout(tick, 350); } else {
+      S.scanned = true; S.sugg = {}; SCAN.forEach(([kp, hf, ix, v, why]) => { S.sugg[`${kp}|${hf}|${ix}`] = { v, why }; }); render(); } };
+    setTimeout(tick, 250);
+  }
+  if (f === "botfree") {
+    const inp = document.getElementById("botin"), q = inp.value.trim(); if (!q) return;
+    const chat = document.getElementById("chat");
+    chat.insertAdjacentHTML("beforeend", `<div class="msg me">${esc(q)}</div><div class="msg bot">Im Klickdummy sind nur die Schnellfragen vorbereitet. Im echten Tool beantwortet hier ein Sprachmodell die Frage mit dem Kriterienkatalog, euren Bewertungen und eurem Team als Kontext.</div>`);
+    inp.value = ""; chat.lastElementChild.scrollIntoView({ block: "nearest" });
+  }
+});
+
+/* Drag & Drop im Kanban */
+function bindDnD() {
+  document.querySelectorAll(".card").forEach(c => c.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", c.dataset.id); }));
+  document.querySelectorAll(".col").forEach(col => {
+    col.addEventListener("dragover", e => { e.preventDefault(); col.classList.add("over"); });
+    col.addEventListener("dragleave", () => col.classList.remove("over"));
+    col.addEventListener("drop", e => { e.preventDefault(); const m = S.measures.find(x => x.id === +e.dataTransfer.getData("text/plain")); if (!m) return;
+      m.status = col.dataset.col; if (m.status === "erledigt") m.progress = 100; render(); });
+  });
+}
+
+render();
+</script>
