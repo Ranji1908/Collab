@@ -3,32 +3,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <style>
-/* Layout: App-Shell mit Kopfleiste + Schrittnavigation, darunter je Schritt ein Arbeitsbereich; Bearbeitung zweispaltig (Kontaktpunktliste | Kriterien). Farben aus Birgits Vorgaben (DTV-Blau #0063a3, Rot #c9070a, Grün #93b05d, Grau #857f76). */
+/* Layout: App-Shell mit Kopfleiste (DTV-Logo, Qool, Rolle) + Schrittnavigation, darunter je Schritt ein Arbeitsbereich; Bearbeitung zweispaltig. Farben aus Birgits Vorgaben (DTV-Blau #0063a3, Rot #c9070a, Grün #93b05d, Grau #857f76). */
 :root {
-  --bg: #f6f7f8;
-  --surface: #ffffff;
-  --surface-2: #eef2f6;
-  --fg: #1d2329;
-  --muted: #5d656d;
-  --line: #d9dee3;
-  --accent: #0063a3;
-  --accent-soft: #99c1da;      /* #0063a3, 40 % */
-  --accent-fg: #ffffff;
-  --danger: #c9070a;
-  --ok: #93b05d;
-  --warn: #f39100;
+  --bg: #f6f7f8; --surface: #ffffff; --surface-2: #eef2f6; --fg: #1d2329; --muted: #5d656d; --line: #d9dee3;
+  --accent: #0063a3; --accent-soft: #99c1da; --accent-fg: #ffffff;
+  --danger: #c9070a; --ok: #93b05d; --warn: #f39100;
   --r0: #9c0b19; --r1: #c9070a; --r2: #f39100; --r3: #93b05d; --r4: #779048; --r5: #5a6e3a; --rn: #b6b2ad;
-  --hint-bg: #fff6e5; --hint-fg: #7a4a00;
+  --hint-bg: #fff6e5; --hint-fg: #7a4a00; --flag-bg: #fdecec; --flag-fg: #8a0a0c;
   --font-display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
   --font-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
   --radius: 6px;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #13171b; --surface: #1b2127; --surface-2: #222a32; --fg: #e6e9ec; --muted: #9aa3ab; --line: #333c45;
-  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --rn: #6d6964; color-scheme: dark } }
+  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --flag-bg: #3d1517; --flag-fg: #ffb3b3; --rn: #6d6964; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #13171b; --surface: #1b2127; --surface-2: #222a32; --fg: #e6e9ec; --muted: #9aa3ab; --line: #333c45;
-  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --rn: #6d6964; color-scheme: dark }
+  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --flag-bg: #3d1517; --flag-fg: #ffb3b3; --rn: #6d6964; color-scheme: dark }
 
 * { box-sizing: border-box }
 body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5 }
@@ -40,13 +31,16 @@ button { cursor: pointer }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
 .num { font-variant-numeric: tabular-nums }
 
-/* Kopf */
 .top { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20 }
-.top-in { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px }
-.brand { display: flex; align-items: baseline; gap: 10px }
-.brand b { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); letter-spacing: .01em }
-.brand span { color: var(--muted); font-size: .85rem }
+.top-in { max-width: 1200px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px }
+.brand { display: flex; align-items: center; gap: 14px }
+.logo { background: #fff; border-radius: 4px; padding: 3px 6px; display: block; line-height: 0 }
+.logo img { height: 44px; width: auto }
+.brand-txt { display: grid; line-height: 1.1; border-left: 1px solid var(--line); padding-left: 14px }
+.brand-txt b { font-family: var(--font-display); font-size: 1.45rem; color: var(--accent) }
+.brand-txt span { color: var(--muted); font-size: .8rem }
 .top-meta { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .85rem }
+.top-meta select { width: auto; padding: 3px 8px; font-size: .85rem }
 .dummy { background: var(--hint-bg); color: var(--hint-fg); padding: 2px 8px; border-radius: 99px; font-weight: 600; font-size: .75rem; letter-spacing: .03em; text-transform: uppercase }
 .role { display: inline-flex; border: 1px solid var(--line); border-radius: 99px; overflow: hidden }
 .role button { border: 0; background: transparent; padding: 3px 10px; font-size: .8rem }
@@ -57,14 +51,14 @@ nav.steps button[aria-current="page"] { color: var(--fg); border-bottom-color: v
 nav.steps small { font-weight: 400; margin-right: 4px }
 
 main { max-width: 1200px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 64px; display: grid; gap: 20px }
-.lead { color: var(--muted); max-width: 70ch }
+.lead { color: var(--muted); max-width: 72ch }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
 .eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
 
 .btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: var(--radius); font-weight: 600 }
-.btn:hover { border-color: var(--accent) }
+.btn:hover:not(:disabled) { border-color: var(--accent) }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg) }
 .btn.ok { background: var(--ok); border-color: var(--ok); color: #142008 }
 .btn.danger { color: var(--danger); border-color: var(--danger) }
@@ -75,42 +69,30 @@ main { max-width: 1200px; margin: 0 auto; padding-inline: 16px; padding-block: 2
 .hint { background: var(--hint-bg); color: var(--hint-fg); border-radius: var(--radius); padding: 10px 14px; font-size: .9rem }
 .chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: .75rem; font-weight: 600; background: var(--surface-2); color: var(--muted); white-space: nowrap }
 .chip.ai { background: var(--accent-soft); color: var(--fg) }
-.chip.p { background: var(--surface-2); color: var(--fg) }
+.chip.flag { background: var(--flag-bg); color: var(--flag-fg) }
+.chip.own { background: var(--ok); color: #142008 }
 .pill { display: inline-block; padding: 2px 10px; border-radius: 99px; font-weight: 700; font-size: .8rem }
 .st-Entwurf { background: var(--surface-2) } .st-Eingereicht { background: var(--accent-soft) } .st-Nachbesserung { background: var(--warn); color: #2b1a00 } .st-Freigegeben { background: var(--ok); color: #142008 }
-
-/* Website-Check */
-.check-form { display: grid; grid-template-columns: 1fr 220px auto; gap: 10px; align-items: end }
-@media (max-width: 700px) { .check-form { grid-template-columns: 1fr } }
 label.f { display: grid; gap: 4px; font-size: .85rem; font-weight: 600 }
-input[type=text], input[type=url], input[type=date], select, textarea { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0 }
-textarea { min-height: 70px; resize: vertical }
-.scanlog { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: .9rem }
-.scanlog li::before { content: "○ "; color: var(--muted) }
-.scanlog li.done::before { content: "✓ "; color: var(--ok); font-weight: 700 }
-.finding { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line) }
-.finding:first-child { border-top: 0 }
-.finding .sc { width: 30px; height: 30px; border-radius: 4px; display: grid; place-items: center; color: #fff; font-weight: 700 }
-.finding small { color: var(--muted); display: block }
+input[type=text], input[type=date], select, textarea { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0 }
+textarea { min-height: 80px; resize: vertical }
 
-/* Schaltzentrale */
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px }
 .kpi { background: var(--accent-soft); border-radius: var(--radius); padding: 10px 12px }
 .kpi .eyebrow { color: var(--fg); opacity: .75 }
 .kpi b { display: block; font-size: 1.15rem; font-family: var(--font-display) }
-.kpi.over { background: var(--danger); color: #fff }
 .bar { height: 6px; background: var(--surface); border-radius: 99px; overflow: hidden; margin-top: 6px }
 .bar i { display: block; height: 100%; background: var(--accent) }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
-.tile { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 8px; background: var(--surface) }
+.tile { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 8px; background: var(--surface); align-content: start }
 .tile.done { border-color: var(--ok); box-shadow: inset 4px 0 0 var(--ok) }
 .tile.locked { opacity: .6 }
-.team { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px }
-.team li { display: flex; gap: 10px; align-items: center }
-.av { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-size: .75rem; font-weight: 700; flex: none }
+.team { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px }
+.team li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center }
+.av { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-size: .72rem; font-weight: 700; flex: none }
+.av.sm { width: 22px; height: 22px; font-size: .62rem }
 svg text { fill: var(--fg) }
 
-/* Auswahl Kontaktpunkte / Handlungsfelder */
 .phase { display: grid; gap: 10px }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px }
 .sel { position: relative; border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 12px 12px 10px; text-align: left; display: grid; gap: 6px; min-height: 104px; align-content: start }
@@ -119,19 +101,29 @@ svg text { fill: var(--fg) }
 .sel .nm { font-weight: 600; line-height: 1.25 }
 .sel .meta { font-size: .75rem; color: var(--muted) }
 .sel .lock { position: absolute; top: 8px; right: 8px; font-size: .8rem }
-.sel .info { position: absolute; bottom: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: .75rem; font-weight: 700; padding: 0 }
-.sel .warnx { color: var(--danger); font-weight: 600 }
+.sel .info { position: absolute; bottom: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: .75rem; font-weight: 700; display: grid; place-items: center }
+.warnx { color: var(--danger); font-weight: 600 }
 
-/* Bearbeitung */
-.work { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 16px; align-items: start }
+.assign { display: grid; grid-template-columns: minmax(0, 1fr) 200px 70px; gap: 8px 14px; align-items: center }
+.assign > .h { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
+@media (max-width: 560px) { .assign { grid-template-columns: minmax(0, 1fr) 150px } .assign .cnt { display: none } }
+.load { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px }
+.load div { background: var(--surface-2); border-radius: var(--radius); padding: 8px 10px; display: grid; grid-template-columns: 28px 1fr; gap: 2px 10px; align-items: center }
+.load small { grid-column: 2; color: var(--muted) }
+
+.work { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; align-items: start }
 @media (max-width: 860px) { .work { grid-template-columns: 1fr } }
-.kplist { list-style: none; margin: 0; padding: 6px; display: grid; gap: 2px; position: sticky; top: 110px; max-height: calc(100vh - 130px); overflow: auto }
-@media (max-width: 860px) { .kplist { position: static; max-height: none } }
-.kplist button { width: 100%; text-align: left; border: 0; background: none; padding: 7px 8px; border-radius: 4px; display: grid; grid-template-columns: 12px 1fr auto; gap: 8px; align-items: center }
+.kpside { display: grid; gap: 0; position: sticky; top: 118px; max-height: calc(100vh - 136px); overflow: auto }
+@media (max-width: 860px) { .kpside { position: static; max-height: none } }
+.kpside .filter { display: flex; gap: 4px; padding: 8px; border-bottom: 1px solid var(--line) }
+.kpside .filter button { flex: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 4px; padding: 4px; font-size: .8rem; font-weight: 600 }
+.kpside .filter button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent) }
+.kplist { list-style: none; margin: 0; padding: 6px; display: grid; gap: 2px }
+.kplist button { width: 100%; text-align: left; border: 0; background: none; padding: 6px 8px; border-radius: 4px; display: grid; grid-template-columns: 12px 1fr auto auto; gap: 8px; align-items: center }
 .kplist button[aria-current="true"] { background: var(--surface-2); font-weight: 700 }
 .dot { width: 12px; height: 12px; border-radius: 50% }
 .d-rot { background: var(--danger) } .d-orange { background: var(--warn) } .d-gruen { background: var(--ok) } .d-leer { background: var(--rn) }
-.legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: .8rem }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: .8rem }
 .legend span { display: inline-flex; gap: 5px; align-items: center }
 .legend i { width: 14px; height: 14px; border-radius: 3px; display: inline-block }
 .hf { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 4px }
@@ -142,57 +134,64 @@ svg text { fill: var(--fg) }
 .scale { display: flex; gap: 3px }
 .scale button { width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--line); background: var(--surface); font-weight: 700; padding: 0 }
 .scale button[aria-pressed="true"] { color: #fff; border-color: transparent }
-.scale button.sug { outline: 2px dashed var(--accent); outline-offset: 1px }
-.sugline { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .85rem; background: var(--surface-2); border-radius: 4px; padding: 6px 10px }
 .kpfoot { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px }
 .avg { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700 }
 
-/* Drawer + Assistent */
 .scrim { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 40 }
-.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100%); background: var(--surface); z-index: 41; overflow: auto; padding: calc(18px + env(safe-area-inset-top, 0px)) 18px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; align-content: start; box-shadow: -8px 0 24px rgba(0,0,0,.15) }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(540px, 100%); background: var(--surface); z-index: 41; overflow: auto; padding: calc(18px + env(safe-area-inset-top, 0px)) 18px calc(18px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 14px; align-content: start; box-shadow: -8px 0 24px rgba(0,0,0,.15) }
 .drawer header { display: flex; justify-content: space-between; gap: 10px; align-items: start }
 .x { border: 0; background: none; font-size: 1.4rem; line-height: 1; padding: 2px 6px }
 dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; font-size: .9rem }
-dl.kv dt { color: var(--muted) }
-dl.kv dd { margin: 0 }
+dl.kv dt { color: var(--muted) } dl.kv dd { margin: 0 }
 .expl { display: grid; gap: 4px; font-size: .85rem }
 .expl div { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start }
 .expl b { color: #fff; border-radius: 3px; text-align: center }
 .checks { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .9rem }
 .checks label { display: inline-flex; gap: 6px; align-items: center }
+.fb { border: 1px solid var(--accent-soft); border-radius: var(--radius); padding: 12px; display: grid; gap: 8px; background: var(--surface-2) }
+.fb ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .9rem }
+.fb li { display: grid; grid-template-columns: 20px 1fr; gap: 6px }
+.fb .y { color: var(--r5); font-weight: 700 } .fb .n { color: var(--danger); font-weight: 700 }
+.fb q { font-style: italic }
 .chat { display: grid; gap: 10px }
 .msg { padding: 10px 12px; border-radius: 8px; max-width: 92%; font-size: .92rem }
 .msg.bot { background: var(--surface-2) }
 .msg.me { background: var(--accent); color: var(--accent-fg); justify-self: end }
 .msg ul { margin: 6px 0 0; padding-left: 18px }
 
-/* Kanban */
 .kanban { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start }
 @media (max-width: 860px) { .kanban { grid-template-columns: 1fr } }
 .col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; min-height: 160px; align-content: start }
 .col.over { outline: 2px dashed var(--accent) }
 .col h3 { display: flex; justify-content: space-between }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: grid; gap: 6px; cursor: grab }
-.card.ai { border-style: dashed; border-color: var(--accent) }
 .card .src { font-size: .78rem; color: var(--muted) }
 .prio-hoch { background: var(--danger); color: #fff } .prio-mittel { background: var(--warn); color: #2b1a00 } .prio-niedrig { background: var(--surface-2); color: var(--fg) }
 .avs { display: flex; gap: 2px }
-.avs .av { width: 24px; height: 24px; font-size: .65rem }
 
-.review { border: 2px solid var(--accent); }
+.flags { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px }
+.flags li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; padding: 10px 12px; border-radius: var(--radius); background: var(--flag-bg); color: var(--flag-fg) }
+.flags li.info { background: var(--surface-2); color: var(--fg) }
+.flags b { font-weight: 700 }
+.flags small { display: block; opacity: .85 }
+.origin { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--surface-2) }
+.origin i { display: block; height: 100% }
 table.t { width: 100%; border-collapse: collapse; font-size: .9rem }
 table.t th, table.t td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line) }
 .tw { overflow-x: auto }
-.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 16px; border-radius: 99px; z-index: 60; font-weight: 600 }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 16px; border-radius: 99px; z-index: 60; font-weight: 600; max-width: calc(100% - 32px); text-align: center }
 @media (prefers-reduced-motion: no-preference) { .toast { animation: up .2s ease-out } @keyframes up { from { transform: translate(-50%, 8px); opacity: 0 } } }
 </style>
 
 <header class="top">
   <div class="top-in">
-    <div class="brand"><b>Qool</b><span>ServiceQualität Deutschland · Q</span></div>
+    <div class="brand">
+      <span class="logo"><img src="data:image/png;base64,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" alt="DTV Deutscher Tourismusverband e.V." width="65" height="40"></span>
+      <span class="brand-txt"><b>Qool</b><span>ServiceQualität Deutschland · Q</span></span>
+    </div>
     <div class="top-meta">
       <span class="dummy">Klickdummy · Beispieldaten</span>
-      <span id="who"></span>
+      <label id="mewrap" class="row" style="gap:6px">Angemeldet als <select id="me" aria-label="Angemeldet als"></select></label>
       <div class="role" role="group" aria-label="Ansicht">
         <button data-a="role" data-v="betrieb" id="r-b">Betrieb</button>
         <button data-a="role" data-v="team" id="r-t">DTV-SQD-Team</button>
@@ -270,44 +269,36 @@ const TEAM = [
   { id: "pb", name: "Peter Brandt", role: "Haustechnik", tags: ["oen","bf"] },
   { id: "lv", name: "Lisa Vogel", role: "Auszubildende", tags: [] }
 ];
+const member = id => TEAM.find(t => t.id === id);
 const ini = n => n.split(" ").map(s => s[0]).join("");
+const first = id => member(id).name.split(" ")[0];
+// Zuordnung Kontaktpunkt → Rolle (für „Nach Rollen verteilen“)
+const ROLE_FOR_KP = { 1: "jk", 2: "jk", 3: "jk", 27: "jk", 28: "jk", 4: "pb", 7: "pb", 11: "pb", 12: "pb", 13: "pb", 16: "pb", 25: "sh", 24: "sh", 20: "lv", 19: "lv", 15: "lv", 18: "lv" };
 function suggestResp(kp, hfk) {
-  const online = [1, 2, 3, 27].includes(kp);
-  if (online && hfk !== "ma") return ["jk"];
+  if ([1, 2, 3, 27].includes(kp) && hfk !== "ma") return ["jk"];
   const t = TEAM.filter(m => m.tags.includes(hfk)).map(m => m.id);
   return t.length ? t : ["sh"];
 }
-
-/* Website-Check: simulierte Funde → Vorschläge [kp, hf, index, wert, Fundstelle] */
-const SCAN = [
-  [1,"gk",0,5,"Öffnungszeiten und Adresse stehen im Kopfbereich jeder Seite."],
-  [1,"gk",1,2,"Nur 4 von 23 Seiten gibt es auf Englisch (/en)."],
-  [1,"gk",2,4,"Mobile Darstellung vorhanden, Menü auf kleinen Displays teilweise abgeschnitten."],
-  [1,"oen",0,3,"Seite „Anreise“ nennt Bahn und Bus, aber keine Radwege."],
-  [1,"dk",0,3,"Buchungs-Widget für Stadtführungen gefunden, keine Unterkunftssuche."],
-  [1,"dk",2,5,"HTTPS aktiv, Ladezeit Startseite 1,4 s."],
-  [1,"bf",0,0,"Keine Barrierefreiheitserklärung gefunden."],
-  [1,"bf",1,2,"38 von 112 Bildern ohne Alternativtext."],
-  [2,"gk",0,5,"Instagram und Facebook sind von der Website verlinkt."],
-  [2,"gk",1,3,"Instagram: 3 Beiträge in den letzten 30 Tagen."],
-  [2,"dk",2,5,"Beide Kanäle im Footer der Website verlinkt."],
-  [2,"bf",1,1,"5 von 6 Reels ohne Untertitel."],
-  [27,"gk",1,2,"Google-Profil: 4,5 ★ bei 128 Bewertungen, Antwort auf 9 der letzten 40."]
-];
+const ORIGIN = { eigen: ["eigene Formulierung", "var(--r5)"], ueberarbeitet: ["eigene, nach KI-Rückmeldung überarbeitet", "var(--accent)"] };
 
 /* ---------- Zustand ---------- */
-const KEY = "qool-dummy-v1";
+const KEY = "qool-dummy-v2";
 function fresh() {
   return {
-    view: "check", role: "betrieb", branche: 1, url: "www.tourismus-musterstadt.de", scanned: false,
-    kpSel: null, hfSel: ["gk","ma","ui","oen","dk","bf"], kp: 14,
-    ratings: { "14|gk|0": 4, "14|gk|1": 1, "14|gk|2": 3, "14|ma|0": 2, "14|dk|0": 5 },
-    sugg: {}, notes: {}, custom: {},
-    status: "Entwurf", teamComment: "",
+    view: "dash", role: "betrieb", me: "my", branche: 1, kpSel: null, hfSel: ["gk","ma","ui","oen","dk","bf"], kp: 14, mine: false,
+    assign: { 1: "jk", 2: "jk", 3: "jk", 27: "jk", 28: "jk", 4: "pb", 7: "pb", 5: "my", 14: "my", 17: "my", 21: "my", 23: "my", 26: "my", 19: "lv", 20: "lv", 25: "sh" },
+    ratings: {
+      "14|gk|0": 4, "14|gk|1": 1, "14|gk|2": 3, "14|ma|0": 2, "14|ma|1": 3, "14|ma|2": 4, "14|ui|0": 3, "14|ui|1": "N", "14|ui|2": 2,
+      "14|oen|0": 3, "14|oen|1": 4, "14|oen|2": 2, "14|dk|0": 5, "14|dk|1": 1, "14|dk|2": 3, "14|bf|0": 4, "14|bf|1": 3,
+      "1|gk|0": 5, "1|gk|1": 1, "1|gk|2": 4, "1|dk|0": 3, "1|dk|2": 5, "1|bf|0": 0,
+      "2|gk|0": 5, "2|gk|1": 5, "2|gk|2": 5, "2|ma|0": 5, "2|dk|0": 5, "2|dk|1": 5, "2|dk|2": 5
+    },
+    notes: { "14|bf|0": "Tresen ist 110 cm hoch und nicht unterfahrbar.", "14|dk|1": "Bildschirm ist seit dem Sommer defekt." },
+    custom: {}, status: "Entwurf", teamComment: "",
     measures: [
-      { id: 1, kp: 14, hf: "gk", crit: 1, text: "Dienstplan so anpassen, dass zu Stoßzeiten immer eine Person im Verkaufsraum ansprechbar ist.", prio: "hoch", status: "offen", resp: ["sh","my"], start: "2026-11-01", end: "2026-12-15", progress: 0 },
-      { id: 2, kp: 14, hf: "ma", crit: 0, text: "Prospektlager neben den Counter verlegen.", prio: "mittel", status: "in Bearbeitung", resp: ["pb"], start: "2026-10-15", end: "2026-11-30", progress: 40 },
-      { id: 3, kp: 1, hf: "bf", crit: 0, text: "Barrierefreiheitserklärung erstellen und im Footer verlinken.", prio: "niedrig", status: "erledigt", resp: ["jk"], start: "2026-09-01", end: "2026-09-30", progress: 100 }
+      { id: 1, kp: 14, hf: "gk", crit: 1, text: "Dienstplan so anpassen, dass von 10 bis 16 Uhr immer eine Person im Verkaufsraum ansprechbar ist. Wird im Teammeeting im November festgelegt.", prio: "hoch", status: "offen", resp: ["sh","my"], start: "2026-11-01", end: "2026-12-15", progress: 0, origin: "ueberarbeitet" },
+      { id: 2, kp: 14, hf: "ma", crit: 0, text: "Prospektlager vom Keller in den Raum neben dem Counter verlegen.", prio: "mittel", status: "in Bearbeitung", resp: ["pb"], start: "2026-10-15", end: "2026-11-30", progress: 40, origin: "eigen" },
+      { id: 3, kp: 1, hf: "bf", crit: 0, text: "Website verbessern.", prio: "niedrig", status: "offen", resp: [], start: "", end: "", progress: 0, origin: "eigen" }
     ],
     nextId: 4
   };
@@ -323,89 +314,87 @@ function ensureSel() { if (!S.kpSel) S.kpSel = avail().map(k => k.id); }
 ensureSel();
 const selKps = () => KP.filter(k => S.kpSel.includes(k.id) && flag(k) !== ".");
 const hfIdx = k => HF.findIndex(h => h.k === k);
+const kpById = id => KP.find(k => k.id === +id);
 
 function critsOf(kp) {
   const out = [];
   HF.forEach((h, hi) => { if (!S.hfSel.includes(h.k)) return; for (let i = 0; i < kp.hf[hi]; i++) out.push({ hf: h.k, i, key: `${kp.id}|${h.k}|${i}` }); });
   return out;
 }
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
 function kpStats(kp) {
-  const cs = critsOf(kp);
-  const done = cs.filter(c => S.ratings[c.key] !== undefined);
+  const cs = critsOf(kp), done = cs.filter(c => S.ratings[c.key] !== undefined);
   const nums = done.map(c => S.ratings[c.key]).filter(v => v !== "N");
-  const avg = nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
   const state = !cs.length ? "leer" : done.length === 0 ? "rot" : done.length < cs.length ? "orange" : "gruen";
-  return { total: cs.length, done: done.length, avg, state };
+  return { total: cs.length, done: done.length, avg: mean(nums), nums, state };
 }
 function overall() {
   let t = 0, d = 0, nums = [];
-  selKps().forEach(k => { const s = kpStats(k); t += s.total; d += s.done; critsOf(k).forEach(c => { const v = S.ratings[c.key]; if (v !== undefined && v !== "N") nums.push(v); }); });
-  return { t, d, pct: t ? Math.round(d / t * 100) : 0, avg: nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null };
+  selKps().forEach(k => { const s = kpStats(k); t += s.total; d += s.done; nums.push(...s.nums); });
+  return { t, d, pct: t ? Math.round(d / t * 100) : 0, avg: mean(nums) };
 }
 function hfAverages() {
   return HF.map(h => {
-    let nums = [];
+    const nums = [];
     selKps().forEach(k => critsOf(k).filter(c => c.hf === h.k).forEach(c => { const v = S.ratings[c.key]; if (v !== undefined && v !== "N") nums.push(v); }));
-    return { h, avg: nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null, active: S.hfSel.includes(h.k) };
+    return { h, avg: mean(nums), active: S.hfSel.includes(h.k) };
   });
 }
 const fmt = v => v === null ? "–" : v.toFixed(1).replace(".", ",");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const dDE = s => s ? s.split("-").reverse().join(".") : "–";
 
+/* ---------- KI-Rückmeldung zu einer selbst geschriebenen Maßnahme (im Dummy regelbasiert) ---------- */
+const VAGUE = /\b(verbessern|optimieren|prüfen|überprüfen|mehr|besser|ggf|eventuell|irgendwann|anpassen)\b/i;
+function measureFeedback(m, critT) {
+  const t = (m.text || "").trim();
+  const words = s => new Set(s.toLowerCase().match(/[a-zäöüß]{5,}/g) || []);
+  const cw = words(critT), tw = words(t);
+  const overlap = [...tw].some(w => [...cw].some(c => c.slice(0, 6) === w.slice(0, 6)));
+  const checks = [
+    [t.length >= 40, "Konkret beschrieben", "Noch sehr knapp. Was genau wird getan, wo und womit?"],
+    [!VAGUE.test(t) || /\d/.test(t), "Messbar formuliert", "Woran merkt ihr, dass die Maßnahme erledigt ist? Eine Zahl, ein Ort oder ein Ergebnis hilft."],
+    [overlap, "Bezug zum Kriterium erkennbar", "Der Bezug zum Kriterium ist nicht erkennbar. Welche Schwachstelle löst die Maßnahme?"],
+    [m.resp?.length > 0, "Verantwortliche festgelegt", "Wer kümmert sich darum? Bitte mindestens eine Person auswählen."],
+    [!!m.end, "Termin gesetzt", "Bis wann soll die Maßnahme umgesetzt sein?"]
+  ];
+  const q = ["Was würde ein Gast nach der Umsetzung anders erleben?", "Was müsstet ihr dafür als Erstes tun?", "Gibt es etwas, das ihr mit wenig Aufwand schon nächste Woche ändern könnt?"];
+  return { checks, score: checks.filter(c => c[0]).length, question: q[t.length % q.length] };
+}
+
+/* ---------- Plausibilitätsprüfung (für SQD-Team, im Dummy regelbasiert) ---------- */
+const NEG = /\b(nicht|kein|keine|fehlt|defekt|kaputt|stufe|zu hoch|zu klein)\b/i;
+function plausibility() {
+  const out = [];
+  selKps().forEach(k => {
+    const s = kpStats(k);
+    if (s.nums.length >= 4 && s.nums.every(v => v === 5)) out.push({ sev: "flag", kp: k.id, t: "Nur Höchstwerte", d: `Alle ${s.nums.length} bewerteten Kriterien mit 5, ohne Notiz. Nachfragen, ob realistisch bewertet wurde.` });
+    critsOf(k).forEach(c => {
+      const v = S.ratings[c.key], note = S.notes[c.key];
+      if (typeof v === "number" && v >= 4 && note && NEG.test(note)) out.push({ sev: "flag", kp: k.id, key: c.key, t: "Notiz passt nicht zur Bewertung", d: `„${critText(k.id, c.hf, c.i)}“ mit ${v} bewertet, Notiz: „${note}“` });
+      if (typeof v === "number" && v <= 1 && !S.measures.some(m => m.kp === k.id && m.hf === c.hf && m.crit === c.i)) out.push({ sev: "flag", kp: k.id, key: c.key, t: "Schwachstelle ohne Maßnahme", d: `„${critText(k.id, c.hf, c.i)}“ mit ${v} bewertet, aber keine Maßnahme hinterlegt.` });
+    });
+    const done = critsOf(k).filter(c => S.ratings[c.key] !== undefined), ns = done.filter(c => S.ratings[c.key] === "N");
+    if (done.length >= 4 && ns.length / done.length > .5) out.push({ sev: "info", kp: k.id, t: "Viele „N“", d: `${ns.length} von ${done.length} Kriterien als nicht relevant markiert.` });
+  });
+  S.measures.forEach(m => { const f = measureFeedback(m, critText(m.kp, m.hf, m.crit)); if (f.score <= 2) out.push({ sev: "flag", kp: m.kp, t: "Maßnahme zu unkonkret", d: `„${m.text}“ erfüllt nur ${f.score} von 5 Punkten (konkret, messbar, Bezug, Verantwortliche, Termin).` }); });
+  return out;
+}
+
 /* ---------- Ansichten ---------- */
-const STEPS = [["check","Website-Check"],["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["edit","Servicekette"],["plan","Maßnahmenplan"]];
+const STEPS = [["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["team","Aufteilung im Team"],["edit","Servicekette"],["plan","Maßnahmenplan"]];
 
 function render() {
   document.getElementById("r-b").setAttribute("aria-pressed", S.role === "betrieb");
   document.getElementById("r-t").setAttribute("aria-pressed", S.role === "team");
-  document.getElementById("who").textContent = `TI Musterstadt · ${BRANCHEN[S.branche]}`;
-  const steps = S.role === "team" ? [["review","Prüfung"], ...STEPS.slice(1)] : STEPS;
-  if (S.role === "team" && S.view === "check") S.view = "review";
+  document.getElementById("mewrap").hidden = S.role !== "betrieb";
+  document.getElementById("me").innerHTML = TEAM.map(t => `<option value="${t.id}" ${t.id === S.me ? "selected" : ""}>${t.name}</option>`).join("");
+  const steps = S.role === "team" ? [["review","Prüfung"], ...STEPS] : STEPS;
   if (S.role === "betrieb" && S.view === "review") S.view = "dash";
   document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ""}><small>${i + 1}</small>${l}</button>`).join("");
-  const app = document.getElementById("app");
-  app.innerHTML = ({ check: vCheck, dash: vDash, kps: vKps, hfs: vHfs, edit: vEdit, plan: vPlan, review: vReview })[S.view]();
+  document.getElementById("app").innerHTML = ({ dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, review: vReview })[S.view]();
   if (S.view === "plan") bindDnD();
   save();
-}
-
-function vCheck() {
-  const found = SCAN.filter(([kp]) => S.kpSel.includes(kp));
-  return `
-  <section class="grid2" style="grid-template-columns:minmax(0,1fr)">
-    <div style="display:grid;gap:8px">
-      <div class="eyebrow">Schritt 1 · Vorab-Recherche</div>
-      <h1>Wir schauen uns eure Online-Auftritte vorab an</h1>
-      <p class="lead">Qool liest Website, verlinkte Social-Media-Kanäle und das Google-Profil und belegt passende Kriterien mit einem Vorschlag vor. Ihr bestätigt oder korrigiert jeden Vorschlag später in der Servicekette. Kriterien, die nur vor Ort beurteilt werden können, bleiben unberührt.</p>
-    </div>
-    <form class="panel check-form" data-f="scan">
-      <label class="f">Website des Betriebs<input type="text" id="url" value="${esc(S.url)}"></label>
-      <label class="f">Branche<select id="branche">${BRANCHEN.map((b, i) => `<option value="${i}" ${i === S.branche ? "selected" : ""}>${b}</option>`).join("")}</select></label>
-      <button class="btn primary" type="submit">${S.scanned ? "Erneut prüfen" : "Website prüfen"}</button>
-    </form>
-    <div id="scanarea">${S.scanned ? scanResult(found) : ""}</div>
-  </section>`;
-}
-function scanResult(found) {
-  const byKp = {};
-  found.forEach(f => (byKp[f[0]] ||= []).push(f));
-  const n = found.length;
-  return `<div class="grid2">
-    <div class="panel" style="display:grid;gap:10px">
-      <h2>${n} Vorschläge vorbelegt</h2>
-      <p class="lead">Aus ${S.url} · Kontaktpunkte ${Object.keys(byKp).map(id => KP.find(k => k.id == id).name).join(", ")}</p>
-      <div>${found.map(([kp, hf, i, v, why]) => `<div class="finding"><span class="sc" style="background:${SCORE[v][1]}">${v}</span><div>${esc(critText(kp, hf, i))}<small>${KP.find(k => k.id === kp).name} · ${HF[hfIdx(hf)].name} · ${esc(why)}</small></div></div>`).join("")}</div>
-    </div>
-    <div style="display:grid;gap:16px;align-content:start">
-      <div class="panel" style="display:grid;gap:8px">
-        <h3>Was wir nicht online prüfen können</h3>
-        <p>Alles, was vor Ort passiert: Ankunft, Begrüßung, Verkaufsraum, Beratung, Führungen. Diese Kriterien bewertet ihr selbst, so wie bisher.</p>
-      </div>
-      <div class="hint">Zur Klärung mit dem DTV: Sollen Vorschläge nur vorbelegt werden (so wie hier) oder dürfen eindeutige Kriterien ganz übersprungen werden? Birgit möchte möglichst viele Daten, deshalb ist im Dummy alles bestätigungspflichtig.</div>
-      <button class="btn primary" data-a="go" data-v="dash">Weiter zur Schaltzentrale</button>
-    </div>
-  </div>`;
 }
 
 function spider(vals) {
@@ -415,8 +404,7 @@ function spider(vals) {
   for (let lv = 1; lv <= 5; lv++) g += `<polygon points="${vals.map((_, i) => pt(i, R * lv / 5).join(",")).join(" ")}" fill="none" stroke="var(--line)" stroke-width="1"/>`;
   vals.forEach((_, i) => { const [x, y] = pt(i, R); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--line)"/>`; });
   [1,3,5].forEach(lv => { g += `<text x="${cx + 4}" y="${cy - R * lv / 5 + 4}" font-size="10" opacity=".6">${lv}</text>`; });
-  const has = vals.filter(v => v.avg !== null);
-  if (has.length >= 3) {
+  if (vals.filter(v => v.avg !== null).length >= 3) {
     g += `<polygon points="${vals.map((v, i) => pt(i, R * (v.avg ?? 0) / 5).join(",")).join(" ")}" fill="var(--accent-soft)" fill-opacity=".75" stroke="var(--accent)" stroke-width="2"/>`;
     vals.forEach((v, i) => { if (v.avg !== null) { const [x, y] = pt(i, R * v.avg / 5); g += `<circle cx="${x}" cy="${y}" r="4" fill="var(--accent)"/>`; } });
   }
@@ -427,24 +415,28 @@ function spider(vals) {
   return `<svg viewBox="0 0 340 300" width="100%" style="max-width:380px" role="img" aria-label="Spinnendiagramm Durchschnitt je Handlungsfeld">${g}</svg>`;
 }
 
+function memberLoad(id) {
+  const ks = selKps().filter(k => S.assign[k.id] === id);
+  let t = 0, d = 0; ks.forEach(k => { const s = kpStats(k); t += s.total; d += s.done; });
+  return { n: ks.length, t, d };
+}
+
 function vDash() {
-  const o = overall(), hfa = hfAverages();
-  const done = o.t > 0 && o.d === o.t;
+  const o = overall(), hfa = hfAverages(), done = o.t > 0 && o.d === o.t;
   const mDone = S.measures.filter(m => m.status === "erledigt").length;
+  const mine = memberLoad(S.me);
   return `
-  <section style="display:grid;gap:6px">
-    <div class="eyebrow">Schaltzentrale</div>
-    <h1>Tourist-Information Musterstadt</h1>
-  </section>
+  <section style="display:grid;gap:6px"><div class="eyebrow">Schaltzentrale</div><h1>Tourist-Information Musterstadt</h1>
+    <p class="lead">Hallo ${first(S.me)}, dir sind ${mine.n} Kontaktpunkte mit ${mine.t} Kriterien zugeteilt. ${mine.d} davon hast du bewertet.</p></section>
   <section class="kpis">
     <div class="kpi"><span class="eyebrow">Status</span><b><span class="pill st-${S.status}">${S.status}</span></b></div>
     <div class="kpi"><span class="eyebrow">Gesamtfortschritt</span><b class="num">${o.pct} %</b><div class="bar"><i style="width:${o.pct}%"></i></div></div>
     <div class="kpi"><span class="eyebrow">Bearbeitungsfrist</span><b class="num">31.03.2027</b></div>
     <div class="kpi"><span class="eyebrow">Einreichungsfrist</span><b class="num">30.04.2027</b></div>
-    <div class="kpi"><span class="eyebrow">Ablaufdatum Q</span><b class="num">${S.status === "Freigegeben" ? "02.10.2029" : "–"}</b></div>
+    <div class="kpi"><span class="eyebrow">Ablaufdatum Q</span><b class="num">${S.status === "Freigegeben" ? "05.10.2029" : "–"}</b></div>
     <div class="kpi"><span class="eyebrow">Ø Selbstcheck</span><b class="num">${fmt(o.avg)}</b></div>
   </section>
-  ${S.status === "Nachbesserung" ? `<div class="hint"><b>Rückmeldung vom DTV-SQD-Team:</b> ${esc(S.teamComment || "Bitte Kriterien mit 0–1 Punkten überarbeiten und Maßnahmen ergänzen.")}</div>` : ""}
+  ${S.status === "Nachbesserung" ? `<div class="hint"><b>Rückmeldung vom DTV-SQD-Team:</b> ${esc(S.teamComment || "Bitte die markierten Stellen überarbeiten.")}</div>` : ""}
   <section class="grid2">
     <div class="panel" style="display:grid;gap:8px;justify-items:center">
       <h3 style="justify-self:start">Ergebnis je Handlungsfeld</h3>
@@ -453,24 +445,18 @@ function vDash() {
     </div>
     <div style="display:grid;gap:12px;align-content:start">
       <div class="tiles">
-        <div class="tile ${done ? "done" : ""}">
-          <h3>Unsere Servicekette</h3>
-          <p class="num">${o.d} von ${o.t} Kriterien bewertet · ${selKps().length} Kontaktpunkte</p>
-          <button class="btn ${done ? "ok" : "primary"}" data-a="go" data-v="edit">Servicekette bearbeiten</button>
-        </div>
-        <div class="tile ${mDone === S.measures.length && S.measures.length ? "done" : ""}">
-          <h3>Unser Maßnahmenplan</h3>
-          <p class="num">${S.measures.length} Maßnahmen · ${mDone} erledigt</p>
-          <button class="btn primary" data-a="go" data-v="plan">Maßnahmenplan bearbeiten</button>
-        </div>
-        <div class="tile ${S.status === "Freigegeben" ? "done" : "locked"}">
-          <h3>Unser Feedbackbericht</h3>
-          <p>${S.status === "Freigegeben" ? "Freigegeben. Download im DTV-Kundencenter." : "Wird nach Prüfung durch das DTV-SQD-Team erstellt."}</p>
-        </div>
+        <div class="tile ${done ? "done" : ""}"><h3>Unsere Servicekette</h3><p class="num">${o.d} von ${o.t} Kriterien bewertet · ${selKps().length} Kontaktpunkte</p>
+          <button class="btn ${done ? "ok" : "primary"}" data-a="go" data-v="edit">Servicekette bearbeiten</button></div>
+        <div class="tile"><h3>Unser Maßnahmenplan</h3><p class="num">${S.measures.length} Maßnahmen · ${mDone} erledigt</p>
+          <button class="btn primary" data-a="go" data-v="plan">Maßnahmenplan bearbeiten</button></div>
+        <div class="tile ${S.status === "Freigegeben" ? "done" : "locked"}"><h3>Unser Feedbackbericht</h3>
+          <p>${S.status === "Freigegeben" ? "Freigegeben. Download im DTV-Kundencenter." : "Wird nach Prüfung durch das DTV-SQD-Team erstellt."}</p></div>
       </div>
-      <div class="panel" style="display:grid;gap:8px">
-        <div class="row" style="justify-content:space-between"><h3>Team (aus dem Teamversprechen)</h3><span class="chip">Rollen für KI-Zuordnung</span></div>
-        <ul class="team">${TEAM.map(m => `<li><span class="av">${ini(m.name)}</span><span>${m.name} <small style="color:var(--muted)">· ${m.role}</small></span></li>`).join("")}</ul>
+      <div class="panel" style="display:grid;gap:10px">
+        <div class="row" style="justify-content:space-between"><h3>Team und Fortschritt</h3><button class="link" data-a="go" data-v="team">Aufteilung ändern</button></div>
+        <ul class="team">${TEAM.map(m => { const l = memberLoad(m.id), p = l.t ? Math.round(l.d / l.t * 100) : 0; return `<li><span class="av">${ini(m.name)}</span>
+          <span style="min-width:0">${m.name} <small style="color:var(--muted)">· ${m.role}</small><div class="bar" style="background:var(--surface-2)"><i style="width:${p}%"></i></div></span>
+          <small class="num" style="color:var(--muted)">${l.n} KP · ${p} %</small></li>`; }).join("")}</ul>
       </div>
     </div>
   </section>`;
@@ -479,23 +465,23 @@ function vDash() {
 function vKps() {
   const T = brType(), names = PHASEN[T];
   const groups = [0,1,2].map(p => avail().filter(k => k.phase === p));
-  const n = S.kpSel.filter(id => flag(KP.find(k => k.id === id)) !== ".").length;
   return `
   <section style="display:grid;gap:8px">
-    <div class="eyebrow">Servicekette anlegen · Branche ${BRANCHEN[S.branche]} (Typ ${T})</div>
+    <div class="eyebrow">Servicekette anlegen</div>
     <h1>Welche Kontaktpunkte gibt es bei euch?</h1>
     <p class="lead">Alle Kontaktpunkte sind vorausgewählt. Pflicht-Kontaktpunkte (Schloss) können nicht abgewählt werden. Klickt auf „i“ für die Definition.</p>
+    <label class="f" style="max-width:320px">Branche (im Dummy umschaltbar)<select id="branche">${BRANCHEN.map((b, i) => `<option value="${i}" ${i === S.branche ? "selected" : ""}>${b}</option>`).join("")}</select></label>
   </section>
   ${groups.map((g, p) => g.length ? `<section class="phase"><h2>${names[p]}</h2><div class="cards">${g.map(k => {
     const P = flag(k) === "P", on = S.kpSel.includes(k.id), crits = k.hf.reduce((a, b) => a + b, 0);
-    return `<button class="sel" data-a="kp" data-v="${k.id}" aria-pressed="${on}" ${P ? 'aria-disabled="true"' : ""}>
+    return `<button class="sel" data-a="kp" data-v="${k.id}" aria-pressed="${on}">
       ${P ? '<span class="lock" title="Pflicht-Kontaktpunkt">🔒</span>' : ""}
       <span class="ic">${k.id}</span><span class="nm">${k.name}</span>
       <span class="meta">${crits ? `${crits} Kriterien` : '<span class="warnx">Noch keine Kriterien</span>'}${P ? " · Pflicht" : ""}</span>
       <span class="info" data-a="kpinfo" data-v="${k.id}" role="button" aria-label="Definition ${k.name}">i</span>
     </button>`; }).join("")}</div></section>` : "").join("")}
   <div class="row" style="justify-content:space-between">
-    <span class="num">${n} von ${avail().length} ausgewählt</span>
+    <span class="num">${selKps().length} von ${avail().length} ausgewählt · ${selKps().reduce((a, k) => a + critsOf(k).length, 0)} Kriterien</span>
     <button class="btn primary" data-a="go" data-v="hfs">Kontaktpunkte bestätigen &amp; weiter</button>
   </div>`;
 }
@@ -503,138 +489,176 @@ function vKps() {
 function vHfs() {
   const ok = S.hfSel.length >= 3;
   return `
-  <section style="display:grid;gap:8px">
-    <div class="eyebrow">Servicekette anlegen</div>
-    <h1>Welche Handlungsfelder bearbeitet ihr?</h1>
-    <p class="lead">Gast/Kunde ist Pflicht. Insgesamt müssen mindestens drei Handlungsfelder bearbeitet werden.</p>
-  </section>
-  <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${HF.map(h => {
-    const on = S.hfSel.includes(h.k);
-    return `<button class="sel" data-a="hf" data-v="${h.k}" aria-pressed="${on}">
+  <section style="display:grid;gap:8px"><div class="eyebrow">Servicekette anlegen</div><h1>Welche Handlungsfelder bearbeitet ihr?</h1>
+    <p class="lead">Gast/Kunde ist Pflicht. Insgesamt müssen mindestens drei Handlungsfelder bearbeitet werden.</p></section>
+  <div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${HF.map(h => `<button class="sel" data-a="hf" data-v="${h.k}" aria-pressed="${S.hfSel.includes(h.k)}">
       ${h.lock ? '<span class="lock" title="Pflicht-Handlungsfeld">🔒</span>' : ""}
       <span class="ic">${h.short}</span><span class="nm">${h.name}</span><span class="meta">${h.lock ? "Pflicht" : "optional"}</span>
-      <span class="info" data-a="hfinfo" data-v="${h.k}" role="button" aria-label="Definition ${h.name}">i</span></button>`; }).join("")}</div>
+      <span class="info" data-a="hfinfo" data-v="${h.k}" role="button" aria-label="Definition ${h.name}">i</span></button>`).join("")}</div>
   <div class="row" style="justify-content:space-between">
     <span class="num" style="color:${ok ? "inherit" : "var(--danger)"}">${S.hfSel.length} von 6 ausgewählt${ok ? "" : " · bitte mindestens 3 wählen"}</span>
-    <button class="btn primary" data-a="go" data-v="edit" ${ok ? "" : "disabled"}>Handlungsfelder bestätigen &amp; starten</button>
+    <button class="btn primary" data-a="go" data-v="team" ${ok ? "" : "disabled"}>Handlungsfelder bestätigen &amp; weiter</button>
+  </div>`;
+}
+
+function vTeam() {
+  const kps = selKps(), open = kps.filter(k => !S.assign[k.id]).length;
+  return `
+  <section class="row" style="justify-content:space-between;align-items:end">
+    <div style="display:grid;gap:8px"><div class="eyebrow">Servicekette anlegen</div><h1>Wer bewertet welchen Kontaktpunkt?</h1>
+      <p class="lead">Verteilt die Kontaktpunkte im Team. Jede Person sieht dann ihre eigenen Kontaktpunkte zuerst und bewertet nur diese. Die Leitung behält den Überblick und reicht am Ende ein.</p></div>
+    <button class="btn" data-a="autoassign">Nach Rollen verteilen</button>
+  </section>
+  <section class="load">${TEAM.map(m => { const l = memberLoad(m.id); return `<div><span class="av">${ini(m.name)}</span><b>${m.name}</b><small class="num">${l.n} Kontaktpunkte · ${l.t} Kriterien</small></div>`; }).join("")}</section>
+  <section class="panel assign">
+    <span class="h">Kontaktpunkt</span><span class="h">Zuständig</span><span class="h cnt">Kriterien</span>
+    ${kps.map(k => `<span>${k.name}${flag(k) === "P" ? ' <span class="chip">Pflicht</span>' : ""}</span>
+      <select data-assign="${k.id}" aria-label="Zuständig für ${k.name}"><option value="">– noch offen –</option>${TEAM.map(t => `<option value="${t.id}" ${S.assign[k.id] === t.id ? "selected" : ""}>${t.name}</option>`).join("")}</select>
+      <span class="num cnt">${critsOf(k).length}</span>`).join("")}
+  </section>
+  <div class="row" style="justify-content:space-between">
+    <span style="color:${open ? "var(--danger)" : "inherit"}">${open ? `${open} Kontaktpunkte noch ohne Zuständigkeit` : "Alle Kontaktpunkte sind verteilt"}</span>
+    <button class="btn primary" data-a="go" data-v="edit">Aufteilung bestätigen &amp; starten</button>
   </div>`;
 }
 
 function vEdit() {
-  const kps = selKps();
-  if (!kps.find(k => k.id === S.kp)) S.kp = kps[0]?.id;
-  const kp = KP.find(k => k.id === S.kp), st = kpStats(kp), o = overall();
+  const all = selKps();
+  const kps = S.mine && S.role === "betrieb" ? all.filter(k => S.assign[k.id] === S.me) : all;
+  if (!all.find(k => k.id === S.kp)) S.kp = all[0]?.id;
+  if (kps.length && !kps.find(k => k.id === S.kp)) S.kp = kps[0].id;
+  const kp = kpById(S.kp), st = kpStats(kp), o = overall();
   const allDone = o.t > 0 && o.d === o.t;
-  const pend = critsOf(kp).filter(c => S.sugg[c.key] && S.ratings[c.key] === undefined).length;
-  const locked = S.status === "Eingereicht" || S.status === "Freigegeben";
+  const locked = S.status === "Eingereicht" || S.status === "Freigegeben" || S.role === "team";
+  const owner = S.assign[kp.id];
+  const isLead = S.me === "sh";
   return `
   <div class="work">
-    <aside class="panel" style="padding:0">
-      <ul class="kplist">${kps.map(k => { const s = kpStats(k); return `<li><button data-a="selkp" data-v="${k.id}" aria-current="${k.id === S.kp}"><span class="dot d-${s.state}"></span><span>${k.name}</span><small class="num">${s.done}/${s.total}</small></button></li>`; }).join("")}</ul>
+    <aside class="panel kpside" style="padding:0">
+      ${S.role === "betrieb" ? `<div class="filter"><button data-a="mine" data-v="1" aria-pressed="${S.mine}">Meine (${all.filter(k => S.assign[k.id] === S.me).length})</button><button data-a="mine" data-v="0" aria-pressed="${!S.mine}">Alle (${all.length})</button></div>` : ""}
+      <ul class="kplist">${kps.map(k => { const s = kpStats(k), a = S.assign[k.id]; return `<li><button data-a="selkp" data-v="${k.id}" aria-current="${k.id === S.kp}"><span class="dot d-${s.state}"></span><span>${k.name}</span>${a ? `<span class="av sm" title="${member(a).name}">${ini(member(a).name)}</span>` : "<span></span>"}<small class="num">${s.done}/${s.total}</small></button></li>`; }).join("") || '<li style="padding:10px;color:var(--muted)">Dir sind keine Kontaktpunkte zugeteilt.</li>'}</ul>
     </aside>
     <section class="panel" style="display:grid;gap:14px;min-width:0">
       <div style="display:grid;gap:6px">
         <div class="eyebrow">Kontaktpunkt ${kp.id} · ${PHASEN[brType()][kp.phase]}</div>
-        <h1>${kp.name}</h1>
+        <div class="row" style="justify-content:space-between"><h1>${kp.name}</h1>
+          ${owner ? `<span class="row" style="gap:6px"><span class="av">${ini(member(owner).name)}</span><span>zuständig: ${member(owner).name}</span></span>` : '<span class="chip flag">noch niemand zuständig</span>'}</div>
         <p class="lead">${esc(KPDEF[kp.id] || "Begriffserläuterung folgt vom DTV.")}</p>
       </div>
       <div class="legend">${SCALE.map(s => `<span><i style="background:${SCORE[s][1]}"></i>${s} = ${SCORE[s][0]}</span>`).join("")}</div>
-      ${pend ? `<div class="sugline"><span class="chip ai">Website-Check</span>${pend} Vorschläge warten auf eure Bestätigung (gestrichelt markiert).<button class="btn sm" data-a="acceptall">Alle übernehmen</button></div>` : ""}
-      ${locked ? `<div class="hint">Die Servicekette ist ${S.status.toLowerCase()} und kann gerade nicht bearbeitet werden.</div>` : ""}
+      ${S.role === "betrieb" && owner && owner !== S.me && !locked ? `<div class="hint">Diesen Kontaktpunkt bewertet ${member(owner).name}. Du kannst trotzdem reinschauen und ergänzen.</div>` : ""}
+      ${S.status === "Eingereicht" || S.status === "Freigegeben" ? `<div class="hint">Die Servicekette ist ${S.status.toLowerCase()} und kann gerade nicht bearbeitet werden.</div>` : ""}
       ${HF.filter(h => S.hfSel.includes(h.k)).map(h => {
         const cnt = kp.hf[hfIdx(h.k)], custom = S.custom[`${kp.id}|${h.k}`] || [];
         if (!cnt && !custom.length) return `<div class="hf"><div class="hf-head"><h3>${h.name}</h3><span class="chip">keine Kriterien für diesen Kontaktpunkt</span></div></div>`;
         return `<div class="hf">
-          <div class="hf-head"><h3>${h.name}</h3>${EXAMPLE_TEXT(kp.id, h.k) ? '<span class="chip">Beispieltexte</span>' : ""}<button class="link" data-a="bot" data-v="${h.k}" style="margin-left:auto">Assistent ${h.short} fragen</button></div>
+          <div class="hf-head"><h3>${h.name}</h3>${EXAMPLE_TEXT(kp.id, h.k) ? '<span class="chip">Beispieltexte</span>' : ""}${S.role === "betrieb" ? `<button class="link" data-a="bot" data-v="${h.k}" style="margin-left:auto">Assistent ${h.short} fragen</button>` : ""}</div>
           ${Array.from({ length: cnt }, (_, i) => critRow(kp, h, i, locked)).join("")}
           ${custom.map((t, j) => critRow(kp, h, "c" + j, locked, t)).join("")}
           ${locked ? "" : `<div><button class="link" data-a="addcustom" data-v="${h.k}">+ Eigenes Kriterium ergänzen</button> <small style="color:var(--muted)">(zählt nicht in die Wertung)</small></div>`}
         </div>`; }).join("")}
       <div class="kpfoot">
         <div><div class="eyebrow">Ø dieser Kontaktpunkt</div><span class="avg num">${fmt(st.avg)}</span> ${st.avg === null ? "" : st.avg >= 3 ? '<span class="pill st-Freigegeben">≥ 3,0 erreicht</span>' : '<span class="pill" style="background:var(--danger);color:#fff">unter 3,0</span>'}</div>
-        <div class="row">
-          ${S.role === "betrieb" && !locked ? `<button class="btn" data-a="nextkp">Speichern &amp; weiter</button>
-          <button class="btn primary" data-a="submit" ${allDone ? "" : "disabled"} title="${allDone ? "" : "Erst alle Kriterien bewerten"}">Servicekette einreichen</button>` : ""}
-        </div>
+        <div class="row">${!locked ? `<button class="btn" data-a="nextkp">Speichern &amp; weiter</button>
+          ${isLead ? `<button class="btn primary" data-a="submit" ${allDone ? "" : "disabled"}>Servicekette einreichen</button>` : ""}` : ""}</div>
       </div>
+      ${!locked && !allDone ? `<p style="font-size:.85rem;color:var(--muted)">Einreichen ist möglich, sobald alle ${o.t} Kriterien bewertet sind (aktuell ${o.d}). Eingereicht wird von der Leitung (Sabine Hartmann).</p>` : ""}
       <p style="font-size:.8rem;color:var(--muted)">Berechnung: Summe aller mit 0–5 bewerteten DTV-Kriterien geteilt durch deren Anzahl. N und eigene Kriterien zählen nicht.</p>
     </section>
   </div>`;
 }
 function critRow(kp, h, i, locked, customText) {
-  const key = `${kp.id}|${h.k}|${i}`, v = S.ratings[key], sg = S.sugg[key];
+  const key = `${kp.id}|${h.k}|${i}`, v = S.ratings[key];
   const text = customText ?? critText(kp.id, h.k, i);
   const hasM = S.measures.some(m => m.kp === kp.id && m.hf === h.k && m.crit === i);
+  const contra = typeof v === "number" && v >= 4 && S.notes[key] && NEG.test(S.notes[key]);
+  const needM = typeof v === "number" && v <= 1 && !hasM && !customText;
   return `<div class="crit">
-    <div class="t">${customText ? '<span class="chip">eigenes Kriterium</span> ' : ""}${esc(text)}${S.notes[key] ? `<small>Notiz: ${esc(S.notes[key])}</small>` : ""}</div>
-    <div class="scale" role="radiogroup" aria-label="Bewertung">${SCALE.map(s => `<button data-a="rate" data-k="${key}" data-v="${s}" aria-pressed="${v === s}" class="${v === undefined && sg && sg.v === s ? "sug" : ""}" style="${v === s ? `background:${SCORE[s][1]}` : ""}" ${locked ? "disabled" : ""} title="${SCORE[s][0]}">${s}</button>`).join("")}</div>
+    <div class="t">${customText ? '<span class="chip">eigenes Kriterium</span> ' : ""}${esc(text)}
+      ${S.notes[key] ? `<small>Notiz: ${esc(S.notes[key])}</small>` : ""}
+      ${contra ? '<span class="chip flag">Bitte prüfen: Notiz passt nicht zur Bewertung</span>' : ""}
+      ${needM ? '<span class="chip flag">Maßnahme fehlt</span>' : ""}</div>
+    <div class="scale" role="radiogroup" aria-label="Bewertung">${SCALE.map(s => `<button data-a="rate" data-k="${key}" data-v="${s}" aria-pressed="${v === s}" style="${v === s ? `background:${SCORE[s][1]}` : ""}" ${locked ? "disabled" : ""} title="${SCORE[s][0]}">${s}</button>`).join("")}</div>
     <button class="btn sm" data-a="detail" data-k="${key}">${hasM ? "Maßnahme ✓" : "Details"}</button>
-    ${v === undefined && sg ? `<div class="sugline"><span class="chip ai">Vorschlag ${sg.v}</span>${esc(sg.why)}<button class="btn sm" data-a="rate" data-k="${key}" data-v="${sg.v}">Übernehmen</button></div>` : ""}
   </div>`;
 }
 
 function vPlan() {
   const cols = [["offen","Zu erledigen"],["in Bearbeitung","In Bearbeitung"],["erledigt","Erledigt"]];
   return `
-  <section class="row" style="justify-content:space-between;align-items:end">
-    <div style="display:grid;gap:6px"><div class="eyebrow">Maßnahmenplan</div><h1>Unser Maßnahmenplan</h1>
-    <p class="lead">Maßnahmen aus der Servicekette landen hier automatisch. Karten per Drag &amp; Drop verschieben, mit dem Stift bearbeiten.</p></div>
-    <button class="btn primary" data-a="aisuggest">KI-Vorschläge holen</button>
-  </section>
+  <section style="display:grid;gap:6px"><div class="eyebrow">Maßnahmenplan</div><h1>Unser Maßnahmenplan</h1>
+    <p class="lead">Ihr formuliert die Maßnahmen selbst. Die KI gibt nur Rückmeldung, ob eine Maßnahme konkret, messbar und zugeordnet ist, und stellt Rückfragen. Karten per Drag &amp; Drop verschieben, mit dem Stift bearbeiten.</p></section>
   <section class="kanban">${cols.map(([k, l]) => { const ms = S.measures.filter(m => m.status === k); return `
     <div class="col" data-col="${k}"><h3><span>${l}</span><span class="num">${ms.length}</span></h3>
     ${ms.map(card).join("") || '<p style="color:var(--muted);font-size:.85rem">Keine Maßnahmen</p>'}</div>`; }).join("")}</section>`;
 }
 function card(m) {
-  const kp = KP.find(k => k.id === m.kp), h = HF[hfIdx(m.hf)];
-  return `<article class="card ${m.ai ? "ai" : ""}" draggable="true" data-id="${m.id}">
-    <div class="row" style="justify-content:space-between"><span class="pill prio-${m.prio}">${m.prio}</span>${m.ai ? '<span class="chip ai">KI-Vorschlag</span>' : ""}</div>
+  const kp = kpById(m.kp), h = HF[hfIdx(m.hf)], f = measureFeedback(m, critText(m.kp, m.hf, m.crit));
+  return `<article class="card" draggable="true" data-id="${m.id}">
+    <div class="row" style="justify-content:space-between"><span class="pill prio-${m.prio}">${m.prio}</span>
+      <span class="chip ${f.score >= 4 ? "own" : f.score <= 2 ? "flag" : ""}" title="konkret, messbar, Bezug, Verantwortliche, Termin">Qualität ${f.score}/5</span></div>
     <div>${esc(m.text)}</div>
-    <div class="src">${kp.name} · ${h.name}</div>
+    <div class="src">${kp.name} · ${h.name} · ${ORIGIN[m.origin || "eigen"][0]}</div>
     <div class="row" style="justify-content:space-between">
-      <div class="avs">${m.resp.map(r => { const t = TEAM.find(x => x.id === r); return `<span class="av" title="${t.name}">${ini(t.name)}</span>`; }).join("")}</div>
+      <div class="avs">${m.resp.map(r => `<span class="av sm" title="${member(r).name}">${ini(member(r).name)}</span>`).join("") || '<span class="chip flag">niemand zuständig</span>'}</div>
       <span class="num" style="font-size:.8rem;color:var(--muted)">${dDE(m.start)} – ${dDE(m.end)}</span>
     </div>
     <div class="bar" style="background:var(--surface-2)"><i style="width:${m.progress}%"></i></div>
-    <div class="row" style="justify-content:space-between">
-      ${m.ai ? `<span class="row"><button class="btn sm ok" data-a="aiok" data-v="${m.id}">Übernehmen</button><button class="btn sm" data-a="aidel" data-v="${m.id}">Verwerfen</button></span>` : `<label class="f" style="font-weight:400;grid-template-columns:auto 1fr;align-items:center;gap:6px"><span class="num">${m.progress} %</span></label>`}
-      <button class="link" data-a="editm" data-v="${m.id}" aria-label="Maßnahme bearbeiten">✎ Bearbeiten</button>
-    </div>
+    <div class="row" style="justify-content:space-between"><span class="num" style="font-size:.8rem">${m.progress} %</span><button class="link" data-a="editm" data-v="${m.id}">✎ Bearbeiten</button></div>
   </article>`;
 }
 
 function vReview() {
-  const o = overall();
+  const o = overall(), fl = plausibility(), byKp = {};
+  fl.forEach(f => (byKp[f.kp] ||= []).push(f));
   const rows = selKps().map(k => ({ k, s: kpStats(k) }));
+  const orig = { eigen: 0, ueberarbeitet: 0 }; S.measures.forEach(m => orig[m.origin || "eigen"]++);
+  const nM = S.measures.length || 1;
+  const red = fl.filter(f => f.sev === "flag").length;
   return `
   <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><h1>Prüfung der Servicekette</h1>
-  <p class="lead">Das SQD-Team sieht jeden Betrieb jederzeit mit (auch während der Bearbeitung) und gibt nach dem Einreichen frei oder zur Nachbesserung zurück.</p></section>
-  <section class="panel review" style="display:grid;gap:12px">
-    <div class="row" style="justify-content:space-between"><h2>Tourist-Information Musterstadt</h2><span class="pill st-${S.status}">${S.status}</span></div>
-    <div class="tw"><table class="t"><thead><tr><th>Kontaktpunkt</th><th>Bewertet</th><th>Ø</th><th></th></tr></thead><tbody>
-      ${rows.map(({ k, s }) => `<tr><td>${k.name}</td><td class="num">${s.done}/${s.total}</td><td class="num">${fmt(s.avg)}</td><td>${s.avg === null ? "" : s.avg >= 3 ? "✓" : '<b style="color:var(--danger)">unter 3,0</b>'}</td></tr>`).join("")}
-      <tr><th>Gesamt</th><th class="num">${o.d}/${o.t}</th><th class="num">${fmt(o.avg)}</th><th></th></tr></tbody></table></div>
-    <label class="f">Kommentar an den Betrieb<textarea id="tc">${esc(S.teamComment)}</textarea></label>
-    <div class="row">
-      <button class="btn ok" data-a="approve" ${S.status === "Eingereicht" ? "" : "disabled"}>Freigeben</button>
-      <button class="btn danger" data-a="reject" ${S.status === "Eingereicht" ? "" : "disabled"}>Zur Nachbesserung zurückgeben</button>
-      ${S.status !== "Eingereicht" ? `<span style="color:var(--muted);font-size:.9rem">Freigabe ist möglich, sobald der Betrieb eingereicht hat.</span>` : ""}
+    <p class="lead">Die KI bereitet die Prüfung vor: Sie fasst zusammen und markiert Auffälligkeiten. Die Entscheidung trifft das SQD-Team.</p></section>
+  <section class="grid2">
+    <div class="panel" style="display:grid;gap:12px;align-content:start">
+      <div class="row" style="justify-content:space-between"><h2>Tourist-Information Musterstadt</h2><span class="pill st-${S.status}">${S.status}</span></div>
+      <div class="hint" style="background:var(--surface-2);color:var(--fg)"><span class="chip ai">KI-Zusammenfassung</span><p style="margin-top:6px">${o.d} von ${o.t} Kriterien bewertet, Durchschnitt ${fmt(o.avg)}. ${rows.filter(r => r.s.avg !== null && r.s.avg < 3).length} Kontaktpunkte liegen unter 3,0. Es gibt ${red} Auffälligkeiten, die eine Rückfrage wert sind. ${S.measures.length} Maßnahmen, alle selbst formuliert.</p></div>
+      <div style="display:grid;gap:6px"><span class="eyebrow">Herkunft der Maßnahmen</span>
+        <div class="origin">${Object.entries(orig).map(([k, n]) => `<i style="width:${n / nM * 100}%;background:${ORIGIN[k][1]}" title="${ORIGIN[k][0]}: ${n}"></i>`).join("")}</div>
+        <div class="legend">${Object.entries(orig).map(([k, n]) => `<span><i style="background:${ORIGIN[k][1]}"></i>${ORIGIN[k][0]}: ${n}</span>`).join("")}</div></div>
+      <div class="tw"><table class="t"><thead><tr><th>Kontaktpunkt</th><th>Bewertet</th><th>Ø</th><th>Hinweise</th></tr></thead><tbody>
+        ${rows.filter(r => r.s.done).map(({ k, s }) => `<tr><td><button class="link" data-a="openkp" data-v="${k.id}">${k.name}</button></td><td class="num">${s.done}/${s.total}</td><td class="num">${s.avg === null ? "–" : s.avg >= 3 ? fmt(s.avg) : `<b style="color:var(--danger)">${fmt(s.avg)}</b>`}</td><td>${(byKp[k.id] || []).length ? `<span class="chip flag">${byKp[k.id].length}</span>` : ""}</td></tr>`).join("")}
+        <tr><th>Gesamt</th><th class="num">${o.d}/${o.t}</th><th class="num">${fmt(o.avg)}</th><th></th></tr></tbody></table></div>
+      <p style="font-size:.8rem;color:var(--muted)">Kontaktpunkte ohne Bewertungen sind ausgeblendet.</p>
     </div>
-    <div class="hint">Offen beim DTV: Was passiert, wenn auch nach der Nachbesserung die Mindestpunktzahl nicht erreicht wird?</div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="panel" style="display:grid;gap:10px">
+        <div class="row" style="justify-content:space-between"><h3>Plausibilitätsprüfung</h3><span class="chip ai">KI</span></div>
+        <ul class="flags">${fl.map(f => `<li class="${f.sev === "info" ? "info" : ""}"><span>${f.sev === "info" ? "ℹ" : "⚠"}</span><span><b>${f.t}</b> · ${kpById(f.kp).name}<small>${esc(f.d)}</small></span><button class="link" data-a="cite" data-v="${esc(f.t + ": " + f.d)}">Zitieren</button></li>`).join("") || "<li class='info'><span>✓</span><span>Keine Auffälligkeiten</span><span></span></li>"}</ul>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <label class="f">Kommentar an den Betrieb<textarea id="tc">${esc(S.teamComment)}</textarea></label>
+        <div class="row">
+          <button class="btn ok" data-a="approve" ${S.status === "Eingereicht" ? "" : "disabled"}>Freigeben</button>
+          <button class="btn danger" data-a="reject" ${S.status === "Eingereicht" ? "" : "disabled"}>Zur Nachbesserung zurückgeben</button>
+        </div>
+        ${S.status !== "Eingereicht" ? `<p style="color:var(--muted);font-size:.85rem">Entscheiden ist möglich, sobald der Betrieb eingereicht hat. Mitlesen geht schon während der Bearbeitung.</p>` : ""}
+        <div class="hint">Offen beim DTV: Was passiert, wenn auch nach der Nachbesserung die Mindestpunktzahl nicht erreicht wird?</div>
+      </div>
+    </div>
   </section>`;
 }
 
 /* ---------- Overlays ---------- */
 const layer = document.getElementById("layer");
-function drawer(html) { layer.innerHTML = `<div class="scrim" data-a="close"></div><aside class="drawer" role="dialog" aria-modal="true">${html}</aside>`; layer.querySelector(".drawer button, .drawer input, .drawer textarea")?.focus(); }
+function drawer(html) { layer.innerHTML = `<div class="scrim" data-a="close"></div><aside class="drawer" role="dialog" aria-modal="true">${html}</aside>`; layer.querySelector(".drawer .x")?.focus(); }
 function close() { layer.innerHTML = ""; }
-function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2200); }
-
+function toast(t) { const d = document.createElement("div"); d.className = "toast"; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 2400); }
 function infoDrawer(title, text) { drawer(`<header><div><div class="eyebrow">Definition</div><h2>${title}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header><p>${esc(text)}</p><button class="btn" data-a="close">Schließen</button>`); }
 
-function measureForm(m, ctx) {
+let draftOrigin = "eigen";
+function measureForm(m, critT, ro) {
   return `
-    <label class="f">Maßnahme<textarea id="m-text">${esc(m.text || "")}</textarea></label>
+    <label class="f">Maßnahme in eigenen Worten<textarea id="m-text" placeholder="Was genau macht ihr, wer kümmert sich, bis wann?" ${ro ? "readonly" : ""}>${esc(m.text || "")}</textarea></label>
     <div class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
       <label class="f">Priorität<select id="m-prio">${["hoch","mittel","niedrig"].map(p => `<option ${m.prio === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
       <label class="f">Status<select id="m-status">${["offen","in Bearbeitung","erledigt"].map(p => `<option ${m.status === p ? "selected" : ""}>${p}</option>`).join("")}</select></label>
@@ -642,73 +666,76 @@ function measureForm(m, ctx) {
       <label class="f">Ende<input type="date" id="m-end" value="${m.end || ""}"></label>
       <label class="f">Fortschritt<select id="m-prog">${Array.from({ length: 11 }, (_, i) => i * 10).map(p => `<option value="${p}" ${+m.progress === p ? "selected" : ""}>${p} %</option>`).join("")}</select></label>
     </div>
-    <div style="display:grid;gap:4px"><span class="eyebrow">Verantwortlich ${ctx?.sug ? '<span class="chip ai">KI-Vorschlag vorausgewählt</span>' : ""}</span>
-      <div class="checks">${TEAM.map(t => `<label><input type="checkbox" value="${t.id}" class="m-resp" ${m.resp?.includes(t.id) ? "checked" : ""}>${t.name} <small style="color:var(--muted)">${t.role}</small></label>`).join("")}</div></div>`;
+    <div style="display:grid;gap:4px"><span class="eyebrow">Verantwortlich</span>
+      <div class="checks">${TEAM.map(t => `<label><input type="checkbox" value="${t.id}" class="m-resp" ${m.resp?.includes(t.id) ? "checked" : ""}>${t.name} <small style="color:var(--muted)">${t.role}</small></label>`).join("")}</div></div>
+    <div class="row"><button class="btn" data-a="feedback" data-c="${esc(critT)}">KI-Rückmeldung zu meiner Maßnahme</button><small style="color:var(--muted)">Die KI schreibt nichts um, sie gibt nur Hinweise.</small></div>
+    <div id="fb"></div>`;
 }
 function readForm() {
   return { text: document.getElementById("m-text").value.trim(), prio: document.getElementById("m-prio").value, status: document.getElementById("m-status").value,
     start: document.getElementById("m-start").value, end: document.getElementById("m-end").value, progress: +document.getElementById("m-prog").value,
     resp: [...document.querySelectorAll(".m-resp:checked")].map(x => x.value) };
 }
+function renderFeedback(critT) {
+  const f = measureFeedback(readForm(), critT), box = document.getElementById("fb");
+  if (!readForm().text) { box.innerHTML = `<div class="fb">Schreibt zuerst eure eigene Maßnahme. Danach gibt die KI Rückmeldung.</div>`; return; }
+  draftOrigin = "ueberarbeitet";
+  box.innerHTML = `<div class="fb"><div class="row" style="justify-content:space-between"><b>Rückmeldung</b><span class="chip ${f.score >= 4 ? "own" : "flag"}">${f.score} von 5</span></div>
+    <ul>${f.checks.map(([ok, yes, no]) => `<li><span class="${ok ? "y" : "n"}">${ok ? "✓" : "!"}</span><span>${ok ? yes : no}</span></li>`).join("")}</ul>
+    <div>Rückfrage: <q>${f.question}</q></div></div>`;
+}
 
 function detailDrawer(key) {
-  const [kpId, hfk, iRaw] = key.split("|"); const kp = KP.find(k => k.id === +kpId), h = HF[hfIdx(hfk)];
+  const [kpId, hfk, iRaw] = key.split("|"); const kp = kpById(kpId), h = HF[hfIdx(hfk)];
   const i = iRaw.startsWith("c") ? iRaw : +iRaw;
   const text = typeof i === "string" ? S.custom[`${kpId}|${hfk}`][+i.slice(1)] : critText(kp.id, hfk, i);
-  const existing = S.measures.find(m => m.kp === kp.id && m.hf === hfk && m.crit === i);
-  const m = existing || { prio: "mittel", status: "offen", progress: 0, resp: suggestResp(kp.id, hfk), text: "" };
-  const v = S.ratings[key];
+  const ex = S.measures.find(m => m.kp === kp.id && m.hf === hfk && m.crit === i);
+  const m = ex || { prio: "mittel", status: "offen", progress: 0, resp: [], text: "" };
+  const v = S.ratings[key], ro = S.role === "team";
+  draftOrigin = ex?.origin || "eigen";
   drawer(`
     <header><div><div class="eyebrow">Detailansicht Kriterium</div><h2>${esc(text)}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
     <dl class="kv"><dt>Kontaktpunkt</dt><dd>${kp.name}</dd><dt>Handlungsfeld</dt><dd>${h.name}</dd><dt>Bewertung</dt><dd>${v === undefined ? "noch offen" : `${v} · ${SCORE[v][0]}`}</dd></dl>
     <div style="display:grid;gap:6px"><span class="eyebrow">Erläuterungen (aus dem CRM)</span>
       <div class="expl">${SCALE.map(s => `<div><b style="background:${SCORE[s][1]}">${s}</b><span>${s === "N" ? "Das Kriterium trifft auf den Betrieb nicht zu." : s === 0 ? "Gibt es nicht, obwohl es relevant wäre." : s === 5 ? "Vorbildlich umgesetzt, wird regelmäßig überprüft." : "Erläuterung zur Stufe folgt vom DTV."}</span></div>`).join("")}</div></div>
-    <label class="f">Notizen<textarea id="d-note">${esc(S.notes[key] || "")}</textarea></label>
-    <div style="display:grid;gap:10px;border-top:1px solid var(--line);padding-top:12px">
-      <div class="row" style="justify-content:space-between"><h3>Maßnahme</h3><button class="btn sm" data-a="aitext" data-k="${key}">KI-Formulierung</button></div>
-      ${measureForm(m, { sug: !existing })}
-    </div>
-    <div class="row"><button class="btn" data-a="close">Schließen</button><button class="btn primary" data-a="savedetail" data-k="${key}">Speichern</button></div>`);
+    <label class="f">Notizen<textarea id="d-note" ${ro ? "readonly" : ""}>${esc(S.notes[key] || "")}</textarea></label>
+    <div style="display:grid;gap:10px;border-top:1px solid var(--line);padding-top:12px"><h3>Maßnahme</h3>${measureForm(m, text, ro)}</div>
+    <div class="row"><button class="btn" data-a="close">Schließen</button>${ro ? "" : `<button class="btn primary" data-a="savedetail" data-k="${key}">Speichern</button>`}</div>`);
 }
 
 const BOT = {
-  gk: "Bei Gast/Kunde geht es um alles, was Besucher direkt erleben. Für eure TI passt dafür am besten Murat (Counter & Beratung).",
+  gk: "Bei Gast/Kunde geht es um alles, was Besucher direkt erleben. Bei euch ist dafür Murat (Counter & Beratung) die naheliegende Person.",
   ma: "Themen zu Mitarbeitenden betreffen Dienstpläne, Arbeitsplätze und Abläufe. Das entscheidet bei euch Sabine (Leitung).",
   ui: "Partner, Lieferanten und Region laufen bei euch über Sabine (Leitung).",
-  oen: "Energie, Material und Müll fallen bei euch in die Haustechnik, also Peter.",
+  oen: "Energie, Material und Müll fallen bei euch in die Haustechnik, also zu Peter.",
   dk: "Digitale Themen und Online-Auftritte betreut Jana (Marketing & Online).",
   bf: "Bauliche Barrierefreiheit gehört zu Peter (Haustechnik), barrierefreie Online-Inhalte zu Jana."
 };
-function botDrawer(hfk, extra = []) {
-  const h = HF[hfIdx(hfk)], kp = KP.find(k => k.id === S.kp);
-  const low = critsOf(kp).filter(c => c.hf === hfk && typeof S.ratings[c.key] === "number" && S.ratings[c.key] <= 2);
+const THINK = {
+  gk: ["Wann war zuletzt ein Gast unzufrieden, und woran lag es?","Was fragen Gäste am Counter am häufigsten, obwohl es eigentlich irgendwo steht?"],
+  ma: ["Was hält euer Team im Alltag am meisten auf?","Was würde eine neue Kollegin am ersten Tag am meisten verwirren?"],
+  ui: ["Welche Partner in der Region kennen eure Gäste noch nicht?","Wen könntet ihr mit wenig Aufwand stärker einbinden?"],
+  oen: ["Wo verbraucht ihr Energie, obwohl niemand im Raum ist?","Was werft ihr jede Woche weg, das vermeidbar wäre?"],
+  dk: ["Welche Frage beantwortet ihr jeden Tag mehrfach, die auch digital beantwortet werden könnte?","Was davon funktioniert heute nicht zuverlässig?"],
+  bf: ["Kommt eine Person im Rollstuhl ohne Hilfe von der Straße bis an euren Counter?","Könnte jemand mit Sehbehinderung eure wichtigsten Infos lesen?"]
+};
+function botDrawer(hfk) {
+  const h = HF[hfIdx(hfk)], kp = kpById(S.kp);
   drawer(`
     <header><div><div class="eyebrow">Assistent · ${h.name}</div><h2>${kp.name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
-    <div class="chat" id="chat">
-      <div class="msg bot">Hallo! Ich helfe euch beim Handlungsfeld <b>${h.name}</b>. Ich kenne euer Team aus dem Teamversprechen und kann Maßnahmen vorschlagen und zuordnen.</div>
-      ${extra.join("")}
-    </div>
+    <div class="chat" id="chat"><div class="msg bot">Hallo ${first(S.me)}! Ich helfe beim Handlungsfeld <b>${h.name}</b>: Ich erkläre Kriterien, sage, wer im Team zuständig sein könnte, und stelle Fragen, die beim Nachdenken helfen. Maßnahmen formuliert ihr selbst.</div></div>
     <div class="row">
       <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="who">Wer ist bei uns zuständig?</button>
-      <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="idea">Maßnahmen vorschlagen</button>
+      <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="think">Denkanstöße</button>
       <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="explain">Was heißt „N“?</button>
     </div>
-    <form class="row" data-f="botfree" data-v="${hfk}" style="flex-wrap:nowrap"><input type="text" id="botin" placeholder="Frage eingeben…" aria-label="Frage an den Assistenten"><button class="btn primary" type="submit">Senden</button></form>
-    <p style="font-size:.8rem;color:var(--muted)">Klickdummy: Antworten sind vorbereitet. ${low.length} Kriterien in diesem Feld haben 0–2 Punkte.</p>`);
+    <form class="row" data-f="botfree" style="flex-wrap:nowrap"><input type="text" id="botin" placeholder="Frage eingeben…" aria-label="Frage an den Assistenten"><button class="btn primary" type="submit">Senden</button></form>
+    <p style="font-size:.8rem;color:var(--muted)">Klickdummy: Antworten sind vorbereitet.</p>`);
 }
 function botAnswer(hfk, q) {
-  const kp = KP.find(k => k.id === S.kp);
   if (q === "who") return `<div class="msg bot">${BOT[hfk]}</div>`;
-  if (q === "explain") return `<div class="msg bot">„N“ heißt: Das Kriterium gibt es bei euch nicht und es ist auch nicht relevant, z. B. WLAN in einem Raum ohne Aufenthalt. N fließt nicht in den Durchschnitt ein. Wenn etwas fehlt, aber sinnvoll wäre, nehmt 0.</div>`;
-  const low = critsOf(kp).filter(c => c.hf === hfk && typeof S.ratings[c.key] === "number" && S.ratings[c.key] <= 2);
-  if (!low.length) return `<div class="msg bot">In diesem Handlungsfeld gibt es beim ${kp.name} keine Kriterien mit 0–2 Punkten. Bewertet zuerst die Kriterien, dann schlage ich gezielt etwas vor.</div>`;
-  const resp = suggestResp(kp.id, hfk).map(id => TEAM.find(t => t.id === id).name.split(" ")[0]).join(" und ");
-  return `<div class="msg bot">Für diese Kriterien mit wenig Punkten schlage ich vor:<ul>${low.map(c => `<li>${esc(ideaFor(c))} <i>(zuständig: ${resp})</i> <button class="link" data-a="botadd" data-k="${c.key}">übernehmen</button></li>`).join("")}</ul></div>`;
-}
-function ideaFor(c) {
-  const t = critText(+c.key.split("|")[0], c.hf, c.i);
-  const map = { gk: "Klare Zuständigkeit im Dienstplan festlegen und Gästen sichtbar machen", ma: "Arbeitsabläufe mit dem Team besprechen und Engpässe beseitigen", ui: "Zwei regionale Partner gezielt ansprechen und Kooperation vereinbaren", oen: "Verbrauch erfassen und eine konkrete Einsparmaßnahme umsetzen", dk: "Digitales Angebot einrichten und auf der Website bewerben", bf: "Barriere prüfen lassen und kurzfristige Lösung umsetzen" };
-  return `${map[c.hf]}: „${t.length > 70 ? t.slice(0, 68) + "…" : t}“`;
+  if (q === "explain") return `<div class="msg bot">„N“ heißt: Das Kriterium gibt es bei euch nicht und es ist auch nicht relevant. N fließt nicht in den Durchschnitt ein. Wenn etwas fehlt, aber sinnvoll wäre, nehmt 0.</div>`;
+  return `<div class="msg bot">Ein paar Fragen zum Nachdenken, bevor ihr Maßnahmen formuliert:<ul>${THINK[hfk].map(t => `<li>${t}</li>`).join("")}</ul></div>`;
 }
 
 /* ---------- Aktionen ---------- */
@@ -720,72 +747,56 @@ document.addEventListener("click", e => {
     case "go": S.view = v; close(); render(); scrollTo(0, 0); break;
     case "role": S.role = v; S.view = v === "team" ? "review" : "dash"; render(); break;
     case "reset": try { localStorage.removeItem(KEY); } catch (er) {} S = fresh(); ensureSel(); render(); toast("Dummy zurückgesetzt"); break;
-    case "kp": { const kp = KP.find(x => x.id === +v); if (flag(kp) === "P") { toast("Pflicht-Kontaktpunkt, kann nicht abgewählt werden"); break; }
+    case "kp": { const kp = kpById(v); if (flag(kp) === "P") { toast("Pflicht-Kontaktpunkt, kann nicht abgewählt werden"); break; }
       S.kpSel = S.kpSel.includes(kp.id) ? S.kpSel.filter(x => x !== kp.id) : [...S.kpSel, kp.id]; render(); break; }
-    case "kpinfo": { const kp = KP.find(x => x.id === +v); infoDrawer(kp.name, KPDEF[kp.id] || "Die Definition dieses Kontaktpunkts liefert der DTV."); break; }
-    case "hf": { const h = HF[hfIdx(v)]; if (h.lock) { toast("Gast/Kunde ist Pflicht"); break; }
-      S.hfSel = S.hfSel.includes(v) ? S.hfSel.filter(x => x !== v) : [...S.hfSel, v]; render(); break; }
+    case "kpinfo": { const kp = kpById(v); infoDrawer(kp.name, KPDEF[kp.id] || "Die Definition dieses Kontaktpunkts liefert der DTV."); break; }
+    case "hf": if (HF[hfIdx(v)].lock) { toast("Gast/Kunde ist Pflicht"); break; }
+      S.hfSel = S.hfSel.includes(v) ? S.hfSel.filter(x => x !== v) : [...S.hfSel, v]; render(); break;
     case "hfinfo": { const h = HF[hfIdx(v)]; infoDrawer(h.name, h.def); break; }
+    case "autoassign": selKps().forEach(kp => { S.assign[kp.id] = ROLE_FOR_KP[kp.id] || "my"; }); render(); toast("Nach Rollen verteilt"); break;
+    case "mine": S.mine = v === "1"; render(); break;
     case "selkp": S.kp = +v; render(); scrollTo(0, 0); break;
+    case "openkp": S.kp = +v; S.view = "edit"; render(); scrollTo(0, 0); break;
     case "rate": { const val = v === "N" ? "N" : +v; if (S.ratings[k] === val) delete S.ratings[k]; else S.ratings[k] = val; render(); break; }
-    case "acceptall": critsOf(KP.find(x => x.id === S.kp)).forEach(c => { if (S.sugg[c.key] && S.ratings[c.key] === undefined) S.ratings[c.key] = S.sugg[c.key].v; }); render(); toast("Vorschläge übernommen"); break;
-    case "nextkp": { const ks = selKps(), i = ks.findIndex(x => x.id === S.kp); S.kp = ks[(i + 1) % ks.length].id; render(); scrollTo(0, 0); toast("Zwischengespeichert"); break; }
-    case "addcustom": { const key = `${S.kp}|${v}`; (S.custom[key] ||= []).push("Eigenes Kriterium des Betriebs (Text bearbeiten in den Details)"); render(); break; }
+    case "nextkp": { const ks = selKps().filter(x => !S.mine || S.assign[x.id] === S.me); const i = ks.findIndex(x => x.id === S.kp); if (ks.length) S.kp = ks[(i + 1) % ks.length].id; render(); scrollTo(0, 0); toast("Zwischengespeichert"); break; }
+    case "addcustom": { const key = `${S.kp}|${v}`; (S.custom[key] ||= []).push("Eigenes Kriterium des Betriebs"); render(); break; }
     case "submit": S.status = "Eingereicht"; render(); toast("Servicekette eingereicht. Das DTV-SQD-Team wird benachrichtigt."); break;
     case "detail": detailDrawer(k); break;
-    case "aitext": { const [kpId, hfk, i] = k.split("|"); document.getElementById("m-text").value = ideaFor({ key: k, hf: hfk, i: +i }) + "."; toast("Formulierung vorgeschlagen"); break; }
+    case "feedback": renderFeedback(el.dataset.c); break;
     case "savedetail": {
       const [kpId, hfk, iRaw] = k.split("|"); const i = iRaw.startsWith("c") ? iRaw : +iRaw;
-      S.notes[k] = document.getElementById("d-note").value.trim();
+      S.notes[k] = document.getElementById("d-note").value.trim(); if (!S.notes[k]) delete S.notes[k];
       const f = readForm(); const ex = S.measures.find(m => m.kp === +kpId && m.hf === hfk && m.crit === i);
-      if (f.text) { if (ex) Object.assign(ex, f); else S.measures.push({ id: S.nextId++, kp: +kpId, hf: hfk, crit: i, ...f }); }
+      if (f.text) { if (ex) Object.assign(ex, f, { origin: draftOrigin }); else S.measures.push({ id: S.nextId++, kp: +kpId, hf: hfk, crit: i, origin: draftOrigin, ...f }); }
       close(); render(); toast(f.text ? "Gespeichert, Maßnahme im Maßnahmenplan" : "Gespeichert"); break; }
     case "bot": botDrawer(v); break;
-    case "botq": { const chat = document.getElementById("chat"); const label = el.textContent;
-      chat.insertAdjacentHTML("beforeend", `<div class="msg me">${esc(label)}</div>` + botAnswer(v, el.dataset.q)); chat.lastElementChild.scrollIntoView({ block: "nearest" }); break; }
-    case "botadd": { const [kpId, hfk, i] = k.split("|");
-      if (!S.measures.some(m => m.kp === +kpId && m.hf === hfk && m.crit === +i))
-        S.measures.push({ id: S.nextId++, kp: +kpId, hf: hfk, crit: +i, text: ideaFor({ key: k, hf: hfk, i: +i }) + ".", prio: "mittel", status: "offen", resp: suggestResp(+kpId, hfk), start: "", end: "", progress: 0 });
-      el.replaceWith(Object.assign(document.createElement("b"), { textContent: "im Maßnahmenplan" })); save(); break; }
-    case "aisuggest": {
-      const add = [
-        { kp: 1, hf: "gk", crit: 1, text: "Die 10 meistbesuchten Seiten ins Englische übersetzen lassen (KI-Übersetzung + Korrektur).", prio: "mittel", resp: ["jk"] },
-        { kp: 14, hf: "bf", crit: 0, text: "Absenkbaren Tresenbereich (80 cm) am Counter nachrüsten, Angebot vom Schreiner einholen.", prio: "hoch", resp: ["pb","sh"] }
-      ].filter(n => !S.measures.some(m => m.text === n.text));
-      add.forEach(n => S.measures.push({ id: S.nextId++, status: "offen", start: "", end: "", progress: 0, ai: true, ...n }));
-      render(); toast(add.length ? `${add.length} Vorschläge hinzugefügt` : "Keine neuen Vorschläge"); break; }
-    case "aiok": { const m = S.measures.find(x => x.id === +v); delete m.ai; render(); break; }
-    case "aidel": S.measures = S.measures.filter(x => x.id !== +v); render(); break;
-    case "editm": { const m = S.measures.find(x => x.id === +v);
-      drawer(`<header><div><div class="eyebrow">Maßnahme bearbeiten</div><h2>${KP.find(x => x.id === m.kp).name} · ${HF[hfIdx(m.hf)].name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
-        ${measureForm(m)}<div class="row"><button class="btn danger" data-a="delm" data-v="${m.id}">Löschen</button><button class="btn" data-a="close">Schließen</button><button class="btn primary" data-a="savem" data-v="${m.id}">Speichern</button></div>`); break; }
-    case "savem": { const m = S.measures.find(x => x.id === +v); Object.assign(m, readForm()); delete m.ai; close(); render(); toast("Gespeichert"); break; }
+    case "botq": { const chat = document.getElementById("chat");
+      chat.insertAdjacentHTML("beforeend", `<div class="msg me">${esc(el.textContent)}</div>` + botAnswer(v, el.dataset.q)); chat.lastElementChild.scrollIntoView({ block: "nearest" }); break; }
+    case "editm": { const m = S.measures.find(x => x.id === +v), ct = critText(m.kp, m.hf, m.crit); draftOrigin = m.origin || "eigen";
+      drawer(`<header><div><div class="eyebrow">Maßnahme bearbeiten</div><h2>${kpById(m.kp).name} · ${HF[hfIdx(m.hf)].name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+        <p class="lead" style="font-size:.9rem">Kriterium: ${esc(ct)}</p>
+        ${measureForm(m, ct, S.role === "team")}<div class="row">${S.role === "team" ? "" : `<button class="btn danger" data-a="delm" data-v="${m.id}">Löschen</button>`}<button class="btn" data-a="close">Schließen</button>${S.role === "team" ? "" : `<button class="btn primary" data-a="savem" data-v="${m.id}">Speichern</button>`}</div>`); break; }
+    case "savem": { const m = S.measures.find(x => x.id === +v); Object.assign(m, readForm(), { origin: draftOrigin }); close(); render(); toast("Gespeichert"); break; }
     case "delm": S.measures = S.measures.filter(x => x.id !== +v); close(); render(); break;
+    case "cite": { const tc = document.getElementById("tc"); tc.value = (tc.value ? tc.value + "\n" : "") + "• " + v; S.teamComment = tc.value; save(); toast("In den Kommentar übernommen"); break; }
     case "approve": S.teamComment = document.getElementById("tc").value; S.status = "Freigegeben"; render(); toast("Freigegeben. Q-Lizenz würde jetzt im CRM angelegt."); break;
     case "reject": S.teamComment = document.getElementById("tc").value; S.status = "Nachbesserung"; render(); toast("Zur Nachbesserung zurückgegeben"); break;
     case "close": close(); break;
   }
 });
+document.addEventListener("change", e => {
+  if (e.target.id === "me") { S.me = e.target.value; render(); }
+  if (e.target.id === "branche") { S.branche = +e.target.value; S.kpSel = null; ensureSel(); render(); }
+  if (e.target.dataset.assign) { const id = e.target.dataset.assign; if (e.target.value) S.assign[id] = e.target.value; else delete S.assign[id]; render(); }
+  if (e.target.id === "tc") { S.teamComment = e.target.value; save(); }
+});
 document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 document.addEventListener("submit", e => {
   e.preventDefault();
-  const f = e.target.dataset.f;
-  if (f === "scan") {
-    S.url = document.getElementById("url").value.trim() || S.url;
-    const nb = +document.getElementById("branche").value;
-    if (nb !== S.branche) { S.branche = nb; S.kpSel = null; ensureSel(); }
-    const steps = ["Startseite und Unterseiten lesen","Impressum, Öffnungszeiten, Anreise","Verlinkte Social-Media-Kanäle","Google-Unternehmensprofil und Bewertungen","Barrierefreiheit (Alternativtexte, Erklärung)"];
-    const area = document.getElementById("scanarea");
-    area.innerHTML = `<div class="panel"><ul class="scanlog">${steps.map(s => `<li>${s}</li>`).join("")}</ul></div>`;
-    const lis = area.querySelectorAll("li"); let i = 0;
-    const tick = () => { if (i < lis.length) { lis[i++].className = "done"; setTimeout(tick, 350); } else {
-      S.scanned = true; S.sugg = {}; SCAN.forEach(([kp, hf, ix, v, why]) => { S.sugg[`${kp}|${hf}|${ix}`] = { v, why }; }); render(); } };
-    setTimeout(tick, 250);
-  }
-  if (f === "botfree") {
+  if (e.target.dataset.f === "botfree") {
     const inp = document.getElementById("botin"), q = inp.value.trim(); if (!q) return;
     const chat = document.getElementById("chat");
-    chat.insertAdjacentHTML("beforeend", `<div class="msg me">${esc(q)}</div><div class="msg bot">Im Klickdummy sind nur die Schnellfragen vorbereitet. Im echten Tool beantwortet hier ein Sprachmodell die Frage mit dem Kriterienkatalog, euren Bewertungen und eurem Team als Kontext.</div>`);
+    chat.insertAdjacentHTML("beforeend", `<div class="msg me">${esc(q)}</div><div class="msg bot">Im Klickdummy sind nur die Schnellfragen vorbereitet. Im echten Tool beantwortet hier ein Sprachmodell die Frage mit dem Kriterienkatalog und eurem Team als Kontext. Fertige Maßnahmen schreibt es bewusst nicht.</div>`);
     inp.value = ""; chat.lastElementChild.scrollIntoView({ block: "nearest" });
   }
 });
