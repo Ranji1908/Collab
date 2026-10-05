@@ -159,6 +159,15 @@ dl.kv dt { color: var(--muted) } dl.kv dd { margin: 0 }
 .msg.me { background: var(--accent); color: var(--accent-fg); justify-self: end }
 .msg ul { margin: 6px 0 0; padding-left: 18px }
 
+.fab { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 30; width: 60px; height: 60px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-fg); display: grid; place-items: center; box-shadow: 0 6px 18px rgba(0,0,0,.25) }
+.fab:hover { filter: brightness(1.08) }
+.fab svg { width: 30px; height: 30px; fill: currentColor }
+.fab .tip { position: absolute; right: 70px; white-space: nowrap; background: var(--fg); color: var(--bg); font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; opacity: 0; pointer-events: none; transition: opacity .15s }
+.fab:hover .tip, .fab:focus-visible .tip { opacity: 1 }
+.hfpick { display: flex; flex-wrap: wrap; gap: 6px }
+.hfpick button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 3px 10px; font-size: .8rem; font-weight: 600 }
+.hfpick button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent) }
+.msg.bot { border-bottom-left-radius: 2px } .msg.me { border-bottom-right-radius: 2px }
 .kanban { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start }
 @media (max-width: 860px) { .kanban { grid-template-columns: 1fr } }
 .col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; min-height: 160px; align-content: start }
@@ -202,6 +211,7 @@ table.t th, table.t td { text-align: left; padding: 6px 8px; border-bottom: 1px 
   <nav class="steps" id="steps" aria-label="Schritte"></nav>
 </header>
 <main id="app"></main>
+<button class="fab" id="fab" data-a="bot" aria-label="Assistent öffnen" hidden><span class="tip">Assistent fragen</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C6.5 3 2 6.9 2 11.6c0 2.4 1.2 4.6 3.1 6.1-.2 1.4-.9 2.7-2 3.6 2.1.1 4.1-.7 5.5-1.9 1.1.3 2.2.5 3.4.5 5.5 0 10-3.9 10-8.6S17.5 3 12 3Zm-4.5 10a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Zm4.5 0a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Zm4.5 0a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z"/></svg></button>
 <div id="layer"></div>
 
 <script>
@@ -393,6 +403,7 @@ function render() {
   if (S.role === "betrieb" && S.view === "review") S.view = "dash";
   document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ""}><small>${i + 1}</small>${l}</button>`).join("");
   document.getElementById("app").innerHTML = ({ dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, review: vReview })[S.view]();
+  document.getElementById("fab").hidden = S.role !== "betrieb";
   if (S.view === "plan") bindDnD();
   save();
 }
@@ -552,7 +563,7 @@ function vEdit() {
         const cnt = kp.hf[hfIdx(h.k)], custom = S.custom[`${kp.id}|${h.k}`] || [];
         if (!cnt && !custom.length) return `<div class="hf"><div class="hf-head"><h3>${h.name}</h3><span class="chip">keine Kriterien für diesen Kontaktpunkt</span></div></div>`;
         return `<div class="hf">
-          <div class="hf-head"><h3>${h.name}</h3>${EXAMPLE_TEXT(kp.id, h.k) ? '<span class="chip">Beispieltexte</span>' : ""}${S.role === "betrieb" ? `<button class="link" data-a="bot" data-v="${h.k}" style="margin-left:auto">Assistent ${h.short} fragen</button>` : ""}</div>
+          <div class="hf-head"><h3>${h.name}</h3>${EXAMPLE_TEXT(kp.id, h.k) ? '<span class="chip">Beispieltexte</span>' : ""}</div>
           ${Array.from({ length: cnt }, (_, i) => critRow(kp, h, i, locked)).join("")}
           ${custom.map((t, j) => critRow(kp, h, "c" + j, locked, t)).join("")}
           ${locked ? "" : `<div><button class="link" data-a="addcustom" data-v="${h.k}">+ Eigenes Kriterium ergänzen</button> <small style="color:var(--muted)">(zählt nicht in die Wertung)</small></div>`}
@@ -720,9 +731,12 @@ const THINK = {
   bf: ["Kommt eine Person im Rollstuhl ohne Hilfe von der Straße bis an euren Counter?","Könnte jemand mit Sehbehinderung eure wichtigsten Infos lesen?"]
 };
 function botDrawer(hfk) {
+  if (!hfk || !S.hfSel.includes(hfk)) hfk = S.botHf && S.hfSel.includes(S.botHf) ? S.botHf : S.hfSel[0];
+  S.botHf = hfk; save();
   const h = HF[hfIdx(hfk)], kp = kpById(S.kp);
   drawer(`
     <header><div><div class="eyebrow">Assistent · ${h.name}</div><h2>${kp.name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+    <div class="hfpick" role="group" aria-label="Handlungsfeld">${HF.filter(x => S.hfSel.includes(x.k)).map(x => `<button data-a="bot" data-v="${x.k}" aria-pressed="${x.k === hfk}">${x.name}</button>`).join("")}</div>
     <div class="chat" id="chat"><div class="msg bot">Hallo ${first(S.me)}! Ich helfe beim Handlungsfeld <b>${h.name}</b>: Ich erkläre Kriterien, sage, wer im Team zuständig sein könnte, und stelle Fragen, die beim Nachdenken helfen. Maßnahmen formuliert ihr selbst.</div></div>
     <div class="row">
       <button class="btn sm" data-a="botq" data-v="${hfk}" data-q="who">Wer ist bei uns zuständig?</button>
