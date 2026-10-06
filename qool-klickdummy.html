@@ -325,11 +325,11 @@ const SCORE = { N: ["Nicht vorhanden und nicht relevant","var(--rn)"], 0: ["Nich
 const SCALE = ["N",0,1,2,3,4,5];
 
 const DEFAULT_TEAM = [
-  { id: "sh", name: "Sabine Hartmann", role: "Leitung", tags: ["ma","ui"] },
-  { id: "my", name: "Murat Yilmaz", role: "Counter & Beratung", tags: ["gk"] },
-  { id: "jk", name: "Jana Koch", role: "Marketing & Online", tags: ["dk","web"] },
-  { id: "pb", name: "Peter Brandt", role: "Haustechnik", tags: ["oen","bf"] },
-  { id: "lv", name: "Lisa Vogel", role: "Auszubildende", tags: [] }
+  { id: "sh", name: "Sabine Hartmann", role: "Leitung", tags: ["ma","ui"], email: "s.hartmann@musterstadt-tourismus.example", kord: true },
+  { id: "my", name: "Murat Yilmaz", role: "Counter & Beratung", tags: ["gk"], email: "m.yilmaz@musterstadt-tourismus.example", kord: false },
+  { id: "jk", name: "Jana Koch", role: "Marketing & Online", tags: ["dk","web"], email: "j.koch@musterstadt-tourismus.example", kord: false },
+  { id: "pb", name: "Peter Brandt", role: "Haustechnik", tags: ["oen","bf"], email: "p.brandt@musterstadt-tourismus.example", kord: false },
+  { id: "lv", name: "Lisa Vogel", role: "Auszubildende", tags: [], email: "l.vogel@musterstadt-tourismus.example", kord: false }
 ];
 let TEAM = DEFAULT_TEAM;
 const member = id => TEAM.find(t => t.id === id) || { name: "Unbekannt", role: "" };
@@ -453,7 +453,7 @@ function plausibility() {
 }
 
 /* ---------- Ansichten ---------- */
-const STEPS = [["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["team","Aufteilung im Team"],["edit","Servicekette"],["plan","Maßnahmenplan"]];
+const STEPS = [["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["team","Team & Aufteilung"],["edit","Servicekette"],["plan","Maßnahmenplan"]];
 
 function render() {
   document.getElementById("r-b").setAttribute("aria-pressed", S.role === "betrieb");
@@ -531,7 +531,7 @@ function vDash() {
           <p>${S.status === "Freigegeben" ? "Freigegeben. Download im DTV-Kundencenter." : "Wird nach Prüfung durch das DTV-SQD-Team erstellt."}</p></div>
       </div>
       <div class="panel" style="display:grid;gap:10px">
-        <div class="row" style="justify-content:space-between"><h3>Team und Fortschritt</h3><button class="link" data-a="go" data-v="team">Aufteilung ändern</button></div>
+        <div class="row" style="justify-content:space-between"><h3>Team und Fortschritt</h3><button class="link" data-a="go" data-v="team">Team verwalten</button></div>
         <ul class="team">${TEAM.map(m => { const l = memberLoad(m.id), p = l.t ? Math.round(l.d / l.t * 100) : 0; return `<li><span class="av">${ini(m.name)}</span>
           <span style="min-width:0">${m.name} <small style="color:var(--muted)">· ${m.role}</small><div class="bar" style="background:var(--surface-2)"><i style="width:${p}%"></i></div></span>
           <small class="num" style="color:var(--muted)">${l.n} KP · ${p} %</small></li>`; }).join("")}</ul>
@@ -583,11 +583,12 @@ function vTeam() {
   const kps = selKps(), open = kps.filter(k => !S.assign[k.id]).length;
   return `
   <section class="row" style="justify-content:space-between;align-items:end">
-    <div style="display:grid;gap:8px"><div class="eyebrow">Servicekette anlegen</div><h1>Wer bewertet welchen Kontaktpunkt?</h1>
-      <p class="lead">Verteilt die Kontaktpunkte im Team. Jede Person sieht dann ihre eigenen Kontaktpunkte zuerst und bewertet nur diese. Die Leitung behält den Überblick und reicht am Ende ein.</p></div>
+    <div style="display:grid;gap:8px"><div class="eyebrow">Servicekette anlegen</div><h1>Team und Aufteilung</h1>
+      <p class="lead">Legt fest, wer im Team mitarbeitet, und verteilt die Kontaktpunkte. Jede Person sieht dann ihre eigenen Kontaktpunkte zuerst und bewertet nur diese. Die Hauptansprechperson behält den Überblick und reicht am Ende ein.</p></div>
     <button class="btn" data-a="autoassign">Nach Rollen verteilen</button>
   </section>
-  <section class="load">${TEAM.map(m => { const l = memberLoad(m.id); return `<div><span class="av">${ini(m.name)}</span><b>${m.name}</b><small class="num">${l.n} Kontaktpunkte · ${l.t} Kriterien</small></div>`; }).join("")}</section>
+  ${teamPanel()}
+  <h2>Aufteilung der Kontaktpunkte</h2>
   <section class="panel assign">
     <span class="h">Kontaktpunkt</span><span class="h">Zuständig</span><span class="h cnt">Kriterien</span>
     ${kps.map(k => `<span>${k.name}${flag(k) === "P" ? ' <span class="chip">Pflicht</span>' : ""}</span>
@@ -639,9 +640,9 @@ function vEdit() {
       <div class="kpfoot">
         <div><div class="eyebrow">Ø dieser Kontaktpunkt</div><span class="avg num">${fmt(st.avg)}</span> ${st.avg === null ? "" : st.avg >= 3 ? '<span class="pill st-Freigegeben">≥ 3,0 erreicht</span>' : '<span class="pill" style="background:var(--danger);color:#fff">unter 3,0</span>'}</div>
         <div class="row">${!locked ? `<button class="btn" data-a="nextkp">Speichern &amp; weiter</button>
-          ${isLead ? `<button class="btn primary" data-a="submit" ${allDone && !S.org.kordMissing ? "" : "disabled"}>Servicekette einreichen</button>` : ""}` : ""}</div>
+          ${isLead ? `<button class="btn primary" data-a="submit" ${allDone && !kordMissing() ? "" : "disabled"}>Servicekette einreichen</button>` : ""}` : ""}</div>
       </div>
-      ${!locked && S.org.kordMissing ? `<div class="hint">Einreichen ist erst möglich, wenn eine Person im Betrieb eine KORD3-Lizenz hat. <button class="link" data-a="seminar">Starterseminar buchen</button></div>` : ""}
+      ${!locked && kordMissing() ? `<div class="hint">Einreichen ist erst möglich, wenn eine Person im Betrieb eine KORD3-Lizenz hat. <button class="link" data-a="seminar">Starterseminar buchen</button></div>` : ""}
       ${!locked && !allDone ? `<p style="font-size:.85rem;color:var(--muted)">Einreichen ist möglich, sobald alle ${o.t} Kriterien bewertet sind (aktuell ${o.d}). Eingereicht wird von der Hauptansprechperson (${esc(member(S.lead).name)}).</p>` : ""}
       <p style="font-size:.8rem;color:var(--muted)">Berechnung: Summe aller mit 0–5 bewerteten DTV-Kriterien geteilt durch deren Anzahl. N und eigene Kriterien zählen nicht.</p>
     </section>
@@ -742,9 +743,9 @@ const MOCK = [
 
 function liveModel() {
   const o = overall();
-  const defContacts = DEFAULT_TEAM.slice(0, 3).map((t, i) => ({ vn: t.name.split(" ")[0], nn: t.name.split(" ")[1], fn: t.role, email: `${t.name.split(" ")[0][0].toLowerCase()}.${t.name.split(" ")[1].toLowerCase()}@musterstadt-tourismus.example`, tel: "", main: i === 0, kord: i === 0 }));
-  return { id: "ti", live: true, self: S.org.self, name: S.org.name, ort: S.org.stamm.ort, br: S.branche, status: S.status, sub: S.submitted || "", kord: (S.org.contacts || defContacts).filter(c => c.kord).map(c => `${c.vn} ${c.nn}`).join(", ") || "noch keine KORD3-Lizenz", valid: S.validUntil || "",
-    stamm: { ...S.org.stamm, br: S.branche }, contacts: S.org.contacts || defContacts, q: S.org.q,
+  const contacts = TEAM.map(t => { const [vn, nn] = splitName(t.name); return { vn, nn, fn: t.role, email: t.email || "", tel: t.tel || "", main: t.id === S.lead, kord: !!t.kord }; });
+  return { id: "ti", live: true, self: S.org.self, name: S.org.name, ort: S.org.stamm.ort, br: S.branche, status: S.status, sub: S.submitted || "", kord: contacts.filter(c => c.kord).map(c => `${c.vn} ${c.nn}`).join(", ") || "noch keine KORD3-Lizenz", valid: S.validUntil || "",
+    stamm: { ...S.org.stamm, br: S.branche }, contacts, q: S.org.q,
     avg: o.avg, done: o.d, total: o.t, comment: S.teamComment, history: S.history,
     kps: selKps().filter(k => kpStats(k).done).map(k => { const s = kpStats(k); return { id: k.id, name: k.name, done: s.done, total: s.total, avg: s.avg,
       hf: HF.map(h => S.hfSel.includes(h.k) ? mean(critsOf(k).filter(c => c.hf === h.k).map(c => S.ratings[c.key]).filter(v => typeof v === "number")) : null) }; }),
@@ -1108,7 +1109,7 @@ function tagsFor(fn, main) {
 }
 function finalizeRegistration() {
   const d = S.pending, mainIdx = Math.max(0, d.contacts.findIndex(c => c.main));
-  TEAM = d.contacts.map((c, i) => ({ id: "c" + i, name: `${c.vn} ${c.nn}`.trim(), role: c.fn || "Team", tags: tagsFor(c.fn, c.main) }));
+  TEAM = d.contacts.map((c, i) => ({ id: "c" + i, name: `${c.vn} ${c.nn}`.trim(), role: c.fn || "Team", tags: tagsFor(c.fn, c.main), email: c.email, tel: c.tel, kord: c.kord, invited: i !== mainIdx }));
   const kordMissing = !d.contacts.some(c => c.kord);
   Object.assign(S, {
     team: TEAM, lead: "c" + mainIdx, me: "c" + mainIdx, branche: d.stamm.br, kpSel: null, hfSel: HF.map(h => h.k), mine: false,
@@ -1125,9 +1126,80 @@ function welcomeCard() {
   const steps = [["kps","Kontaktpunkte prüfen","Welche Kontaktpunkte gibt es bei euch? Pflichtpunkte sind schon gesetzt."],["hfs","Handlungsfelder wählen","Mindestens drei, Gast/Kunde ist Pflicht."],["team","Im Team verteilen","Wer bewertet welchen Kontaktpunkt?"],["edit","Bewerten und Maßnahmen planen","Jede Person bewertet ihre Kontaktpunkte und formuliert Maßnahmen."],["edit","Einreichen","Die Hauptansprechperson reicht die Servicekette beim DTV ein."]];
   return `<section class="panel welcome" style="display:grid;gap:12px">
     <div class="row" style="justify-content:space-between"><h2>Willkommen, ${esc(first(S.me))}! So startet ihr mit Q</h2><button class="btn primary" data-a="go" data-v="kps">Jetzt starten</button></div>
-    ${S.org.kordMissing ? `<div class="hint">Für Q braucht mindestens eine Person im Betrieb eine KORD3-Lizenz. Ihr könnt schon anfangen, eingereicht werden kann erst mit Lizenz. <button class="link" data-a="seminar">Starterseminar buchen</button></div>` : ""}
+    ${kordMissing() ? `<div class="hint">Für Q braucht mindestens eine Person im Betrieb eine KORD3-Lizenz. Ihr könnt schon anfangen, eingereicht werden kann erst mit Lizenz. <button class="link" data-a="seminar">Starterseminar buchen</button></div>` : ""}
     <ol class="wsteps">${steps.map(([v, t, d], i) => `<li><span class="n">${i + 1}</span><div><button class="link" data-a="go" data-v="${v}">${t}</button><small>${d}</small></div></li>`).join("")}</ol>
   </section>`;
+}
+
+/* ---------- Teamverwaltung (Betrieb) ---------- */
+const kordMissing = () => !TEAM.some(m => m.kord);
+const canManage = () => S.me === S.lead;
+function setTeam(t) { TEAM = t; S.team = t; }
+function splitName(n) { const p = n.trim().split(" "); return [p.slice(0, -1).join(" ") || p[0], p.length > 1 ? p[p.length - 1] : ""]; }
+function teamPanel() {
+  const cm = canManage();
+  return `<section class="panel" style="display:grid;gap:12px">
+    <div class="row" style="justify-content:space-between"><h2>Team (${TEAM.length})</h2>${cm ? '<button class="btn primary" data-a="madd">+ Teammitglied hinzufügen</button>' : ""}</div>
+    ${cm ? "" : `<p class="hint">Nur die Hauptansprechperson (${esc(member(S.lead).name)}) kann Teammitglieder hinzufügen oder entfernen. Im Dummy oben bei „Angemeldet als“ umstellen.</p>`}
+    ${kordMissing() ? '<p class="hint">Noch niemand im Team hat eine KORD3-Lizenz. Ohne Lizenz kann die Servicekette nicht eingereicht werden.</p>' : ""}
+    <div class="tw"><table class="t"><thead><tr><th>Name</th><th>Funktion</th><th>E-Mail</th><th>Kontaktpunkte</th><th></th></tr></thead><tbody>
+      ${TEAM.map(m => { const l = memberLoad(m.id); return `<tr>
+        <td><span class="row" style="gap:8px;flex-wrap:nowrap"><span class="av">${ini(m.name)}</span><span><b>${esc(m.name)}</b>${m.id === S.lead ? ' <span class="chip ai">Hauptansprechperson</span>' : ""}${m.kord ? ' <span class="chip own">KORD3</span>' : ""}${m.invited ? ' <span class="chip">eingeladen</span>' : ""}</span></span></td>
+        <td>${esc(m.role)}</td><td class="sel-text">${esc(m.email || "–")}</td><td class="num">${l.n} · ${l.t} Kriterien</td>
+        <td style="white-space:nowrap">${cm ? `<button class="btn sm" data-a="medit" data-v="${m.id}">Bearbeiten</button>${m.id !== S.lead ? ` <button class="btn sm danger" data-a="mdel" data-v="${m.id}">Entfernen</button>` : ""}` : ""}</td></tr>`; }).join("")}
+    </tbody></table></div>
+  </section>`;
+}
+function memberDrawer(id) {
+  const m = id ? member(id) : { name: "", role: "", email: "", tel: "", kord: false };
+  const [vn, nn] = id ? splitName(m.name) : ["", ""];
+  drawer(`<header><div><div class="eyebrow">${id ? "Teammitglied bearbeiten" : "Neues Teammitglied"}</div><h2>${id ? esc(m.name) : "Teammitglied hinzufügen"}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+    <form data-f="member" data-v="${id || ""}" style="display:grid;gap:12px" novalidate>
+      <div class="fgrid">
+        <label class="f"><span>Vorname <span class="req">*</span></span><input type="text" id="mf-vn" value="${esc(vn)}" required></label>
+        <label class="f"><span>Nachname <span class="req">*</span></span><input type="text" id="mf-nn" value="${esc(nn)}" required></label>
+        <label class="f"><span>Funktion</span><input type="text" id="mf-fn" value="${esc(m.role)}" placeholder="z. B. Empfang, Haustechnik"></label>
+        <label class="f"><span>Telefon</span><input type="tel" id="mf-tel" value="${esc(m.tel || "")}"></label>
+        <label class="f wide"><span>E-Mail <span class="req">*</span></span><input type="email" id="mf-email" value="${esc(m.email || "")}" placeholder="name@betrieb.de"></label>
+      </div>
+      <div class="checks" style="display:grid;gap:6px">
+        <label><input type="checkbox" id="mf-kord" ${m.kord ? "checked" : ""}>Hat eine KORD3-Lizenz (Starterseminar besucht)</label>
+        ${id ? "" : '<label><input type="checkbox" id="mf-inv" checked>Einladung mit Zugangsdaten per E-Mail senden</label>'}
+      </div>
+      <p style="font-size:.85rem;color:var(--muted)">Die Funktion hilft dem Assistenten bei der Zuordnung, z. B. „Haustechnik“ für Ökologie und Barrierefreiheit.</p>
+      <div id="mf-err" class="ferr"></div>
+      <div class="row"><button class="btn" type="button" data-a="close">Abbrechen</button><button class="btn primary" type="submit">${id ? "Speichern" : "Hinzufügen"}</button></div>
+    </form>`);
+}
+function saveMember(id) {
+  const g = k => document.getElementById("mf-" + k);
+  const vn = g("vn").value.trim(), nn = g("nn").value.trim(), email = g("email").value.trim(), fn = g("fn").value.trim();
+  const dup = TEAM.some(m => m.id !== id && (m.email || "").toLowerCase() === email.toLowerCase());
+  const err = !vn || !nn ? "Bitte Vor- und Nachnamen angeben." : !EMAIL.test(email) ? "Bitte eine gültige E-Mail-Adresse angeben." : dup ? "Diese E-Mail-Adresse gehört schon zu einem Teammitglied." : "";
+  if (err) { document.getElementById("mf-err").textContent = err; return; }
+  const data = { name: `${vn} ${nn}`, role: fn || "Team", email, tel: g("tel").value.trim(), kord: g("kord").checked, tags: tagsFor(fn, false) };
+  if (id) { setTeam(TEAM.map(m => m.id === id ? { ...m, ...data } : m)); close(); render(); toast("Gespeichert"); return; }
+  const inv = g("inv").checked;
+  setTeam([...TEAM, { id: "m" + Date.now().toString(36), ...data, invited: inv }]);
+  close(); render(); toast(inv ? `Einladung an ${email} gesendet` : `${data.name} hinzugefügt`);
+}
+function deleteDrawer(id) {
+  const m = member(id), kps = selKps().filter(k => S.assign[k.id] === id), ms = S.measures.filter(x => x.resp.includes(id));
+  const others = TEAM.filter(t => t.id !== id);
+  drawer(`<header><div><div class="eyebrow">Teammitglied entfernen</div><h2>${esc(m.name)} entfernen?</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+    <p>${esc(splitName(m.name)[0])} ist für <b>${kps.length} ${kps.length === 1 ? "Kontaktpunkt" : "Kontaktpunkte"}</b> zuständig und bei <b>${ms.length} ${ms.length === 1 ? "Maßnahme" : "Maßnahmen"}</b> als verantwortlich eingetragen.</p>
+    ${kps.length || ms.length ? `<label class="f">Zuständigkeiten übertragen an<select id="md-to"><option value="">niemanden (bleibt offen)</option>${others.map(t => `<option value="${t.id}" ${t.id === S.lead ? "selected" : ""}>${esc(t.name)}</option>`).join("")}</select></label>` : ""}
+    <p style="font-size:.9rem;color:var(--muted)">Der Zugang zu Qool wird gesperrt. Bereits abgegebene Bewertungen bleiben erhalten.</p>
+    ${m.kord && TEAM.filter(t => t.kord).length === 1 ? '<p class="hint">Das ist die einzige Person mit KORD3-Lizenz. Ohne sie kann die Servicekette nicht eingereicht werden.</p>' : ""}
+    <div class="row"><button class="btn" data-a="close">Abbrechen</button><button class="btn danger" data-a="mdelok" data-v="${id}">Entfernen</button></div>`);
+}
+function removeMember(id) {
+  const to = document.getElementById("md-to")?.value || "", name = member(id).name;
+  Object.keys(S.assign).forEach(k => { if (S.assign[k] === id) { if (to) S.assign[k] = to; else delete S.assign[k]; } });
+  S.measures.forEach(x => { if (x.resp.includes(id)) x.resp = [...new Set(x.resp.filter(r => r !== id).concat(to ? [to] : []))]; });
+  setTeam(TEAM.filter(t => t.id !== id));
+  if (S.me === id) S.me = S.lead;
+  close(); render(); toast(`${name} entfernt`);
 }
 
 /* ---------- Overlays ---------- */
@@ -1185,14 +1257,6 @@ function detailDrawer(key) {
     <div class="row"><button class="btn" data-a="close">Schließen</button>${ro ? "" : `<button class="btn primary" data-a="savedetail" data-k="${key}">Speichern</button>`}</div>`);
 }
 
-const BOT = {
-  gk: "Bei Gast/Kunde geht es um alles, was Besucher direkt erleben. Bei euch ist dafür Murat (Counter & Beratung) die naheliegende Person.",
-  ma: "Themen zu Mitarbeitenden betreffen Dienstpläne, Arbeitsplätze und Abläufe. Das entscheidet bei euch Sabine (Leitung).",
-  ui: "Partner, Lieferanten und Region laufen bei euch über Sabine (Leitung).",
-  oen: "Energie, Material und Müll fallen bei euch in die Haustechnik, also zu Peter.",
-  dk: "Digitale Themen und Online-Auftritte betreut Jana (Marketing & Online).",
-  bf: "Bauliche Barrierefreiheit gehört zu Peter (Haustechnik), barrierefreie Online-Inhalte zu Jana."
-};
 const THINK = {
   gk: ["Wann war zuletzt ein Gast unzufrieden, und woran lag es?","Was fragen Gäste am Counter am häufigsten, obwohl es eigentlich irgendwo steht?"],
   ma: ["Was hält euer Team im Alltag am meisten auf?","Was würde eine neue Kollegin am ersten Tag am meisten verwirren?"],
@@ -1218,7 +1282,7 @@ function botDrawer(hfk) {
     <p style="font-size:.8rem;color:var(--muted)">Klickdummy: Antworten sind vorbereitet.</p>`);
 }
 function botAnswer(hfk, q) {
-  if (q === "who") return `<div class="msg bot">${TEAM === DEFAULT_TEAM ? BOT[hfk] : `${HF_TOPIC[hfk]} Bei euch passt dafür am besten ${suggestResp(S.kp, hfk).map(id => `${member(id).name} (${member(id).role})`).join(" und ")}.`}</div>`;
+  if (q === "who") return `<div class="msg bot">${HF_TOPIC[hfk]} Bei euch passt dafür am besten ${suggestResp(S.kp, hfk).map(id => `${member(id).name} (${member(id).role})`).join(" und ")}.</div>`;
   if (q === "explain") return `<div class="msg bot">„N“ heißt: Das Kriterium gibt es bei euch nicht und es ist auch nicht relevant. N fließt nicht in den Durchschnitt ein. Wenn etwas fehlt, aber sinnvoll wäre, nehmt 0.</div>`;
   return `<div class="msg bot">Ein paar Fragen zum Nachdenken, bevor ihr Maßnahmen formuliert:<ul>${THINK[hfk].map(t => `<li>${t}</li>`).join("")}</ul></div>`;
 }
@@ -1237,6 +1301,10 @@ document.addEventListener("click", e => {
     case "openb": e.stopPropagation(); S.openB = v; S.btab = ["Eingeladen","Angelegt"].includes(modelById(v).status) ? "stamm" : "pruefung"; S.view = "betrieb"; render(); scrollTo(0, 0); break;
     case "btab": S.btab = v; render(); break;
     case "wopen": openWizard(); break;
+    case "madd": memberDrawer(); break;
+    case "medit": memberDrawer(v); break;
+    case "mdel": deleteDrawer(v); break;
+    case "mdelok": removeMember(v); break;
     case "wedit": openWizard(v); if (el.dataset.s) { wiz.step = 1; renderWizard(); } break;
     case "wclose": if (wiz?.mode === "self") { wiz = null; S.view = "landing"; render(); break; } wiz = null; close(); break;
     case "wnext": if (validate(wiz.step)) wiz.step++; renderWizard(); break;
@@ -1252,7 +1320,7 @@ document.addEventListener("click", e => {
     case "hf": if (HF[hfIdx(v)].lock) { toast("Gast/Kunde ist Pflicht"); break; }
       S.hfSel = S.hfSel.includes(v) ? S.hfSel.filter(x => x !== v) : [...S.hfSel, v]; render(); break;
     case "hfinfo": { const h = HF[hfIdx(v)]; infoDrawer(h.name, h.def); break; }
-    case "autoassign": selKps().forEach(kp => { S.assign[kp.id] = TEAM === DEFAULT_TEAM ? (ROLE_FOR_KP[kp.id] || "my") : pickFor(kp.id); }); render(); toast("Nach Rollen verteilt"); break;
+    case "autoassign": selKps().forEach(kp => { S.assign[kp.id] = ROLE_FOR_KP[kp.id] && TEAM.some(t => t.id === ROLE_FOR_KP[kp.id]) ? ROLE_FOR_KP[kp.id] : pickFor(kp.id); }); render(); toast("Nach Rollen verteilt"); break;
     case "mine": S.mine = v === "1"; render(); break;
     case "selkp": S.kp = +v; render(); scrollTo(0, 0); break;
     case "openkp": if (v) S.kp = +v; S.view = "edit"; render(); scrollTo(0, 0); break;
@@ -1296,6 +1364,7 @@ document.addEventListener("input", e => { if (wiz && (e.target.dataset.w || e.ta
 document.addEventListener("keydown", e => { if (e.key === "Escape") { wiz = null; close(); } });
 document.addEventListener("submit", e => {
   e.preventDefault();
+  if (e.target.dataset.f === "member") { saveMember(e.target.dataset.v || null); return; }
   if (e.target.dataset.f === "botfree") {
     const inp = document.getElementById("botin"), q = inp.value.trim(); if (!q) return;
     const chat = document.getElementById("chat");
