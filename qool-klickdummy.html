@@ -160,6 +160,7 @@ dl.kv dt { color: var(--muted) } dl.kv dd { margin: 0 }
 .msg ul { margin: 6px 0 0; padding-left: 18px }
 
 .fab { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); z-index: 30; width: 60px; height: 60px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-fg); display: grid; place-items: center; box-shadow: 0 6px 18px rgba(0,0,0,.25) }
+.fab[hidden] { display: none }
 .fab:hover { filter: brightness(1.08) }
 .fab svg { width: 30px; height: 30px; fill: currentColor }
 .fab .tip { position: absolute; right: 70px; white-space: nowrap; background: var(--fg); color: var(--bg); font-size: .8rem; font-weight: 600; padding: 4px 10px; border-radius: 99px; opacity: 0; pointer-events: none; transition: opacity .15s }
@@ -168,6 +169,20 @@ dl.kv dt { color: var(--muted) } dl.kv dd { margin: 0 }
 .hfpick button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 3px 10px; font-size: .8rem; font-weight: 600 }
 .hfpick button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent) }
 .msg.bot { border-bottom-left-radius: 2px } .msg.me { border-bottom-right-radius: 2px }
+.st-Abgelaufen { background: var(--rn); color: var(--fg) }
+tr.clk { cursor: pointer } tr.clk:hover td { background: var(--surface-2) }
+table.blist td { vertical-align: middle }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto }
+.tabs button { border: 0; background: none; padding: 8px 14px; border-bottom: 3px solid transparent; font-weight: 600; color: var(--muted); white-space: nowrap }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent) }
+table.grid td, table.grid th { text-align: center } table.grid td:first-child, table.grid th:first-child { text-align: left }
+.sc { display: inline-block; min-width: 38px; padding: 1px 6px; border-radius: 4px; color: #fff; font-weight: 700; font-size: .85rem }
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
+.timeline li { display: grid; grid-template-columns: 100px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line) }
+.timeline li:last-child { border-bottom: 0 }
+.timeline small { display: block; color: var(--muted) }
+.timeline p { margin-top: 4px }
+.tdate { color: var(--muted) }
 .kanban { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start }
 @media (max-width: 860px) { .kanban { grid-template-columns: 1fr } }
 .col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; min-height: 160px; align-content: start }
@@ -310,11 +325,13 @@ function fresh() {
       { id: 2, kp: 14, hf: "ma", crit: 0, text: "Prospektlager vom Keller in den Raum neben dem Counter verlegen.", prio: "mittel", status: "in Bearbeitung", resp: ["pb"], start: "2026-10-15", end: "2026-11-30", progress: 40, origin: "eigen" },
       { id: 3, kp: 1, hf: "bf", crit: 0, text: "Website verbessern.", prio: "niedrig", status: "offen", resp: [], start: "", end: "", progress: 0, origin: "eigen" }
     ],
-    nextId: 4
+    nextId: 4,
+    history: [{ d: "2023-10-12", t: "Q-Prüfung (altes Tool)", e: "Bestanden", by: "DTV-SQD-Team", txt: "Ergebnis aus der Datenmigration, Details im Archiv." }],
+    submitted: "", validUntil: "", openB: null, btab: "pruefung", bfilter: "alle", bstatus: {}, bcomment: {}, bhist: {}, bvalid: {}
   };
 }
 let S;
-try { S = JSON.parse(localStorage.getItem(KEY)) || fresh(); } catch (e) { S = fresh(); }
+try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { S = fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 const brType = () => TYP_B.includes(S.branche) ? "B" : "A";
@@ -399,10 +416,12 @@ function render() {
   document.getElementById("r-t").setAttribute("aria-pressed", S.role === "team");
   document.getElementById("mewrap").hidden = S.role !== "betrieb";
   document.getElementById("me").innerHTML = TEAM.map(t => `<option value="${t.id}" ${t.id === S.me ? "selected" : ""}>${t.name}</option>`).join("");
-  const steps = S.role === "team" ? [["review","Prüfung"], ...STEPS] : STEPS;
-  if (S.role === "betrieb" && S.view === "review") S.view = "dash";
-  document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ""}><small>${i + 1}</small>${l}</button>`).join("");
-  document.getElementById("app").innerHTML = ({ dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, review: vReview })[S.view]();
+  if (S.role === "team" && !["betriebe","betrieb","edit"].includes(S.view)) S.view = "betriebe";
+  if (S.role === "team" && S.view !== "betriebe" && !S.openB) S.view = "betriebe";
+  if (S.role === "betrieb" && ["betriebe","betrieb"].includes(S.view)) S.view = "dash";
+  const steps = S.role === "team" ? [["betriebe","Alle Betriebe"], ...(S.openB ? [["betrieb", modelById(S.openB).name]] : [])] : STEPS;
+  document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k || (k === "betrieb" && S.view === "edit" && S.role === "team") ? 'aria-current="page"' : ""}>${S.role === "team" ? "" : `<small>${i + 1}</small>`}${esc(l)}</button>`).join("");
+  document.getElementById("app").innerHTML = ({ dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb })[S.view]();
   document.getElementById("fab").hidden = S.role !== "betrieb";
   if (S.view === "plan") bindDnD();
   save();
@@ -444,7 +463,7 @@ function vDash() {
     <div class="kpi"><span class="eyebrow">Gesamtfortschritt</span><b class="num">${o.pct} %</b><div class="bar"><i style="width:${o.pct}%"></i></div></div>
     <div class="kpi"><span class="eyebrow">Bearbeitungsfrist</span><b class="num">31.03.2027</b></div>
     <div class="kpi"><span class="eyebrow">Einreichungsfrist</span><b class="num">30.04.2027</b></div>
-    <div class="kpi"><span class="eyebrow">Ablaufdatum Q</span><b class="num">${S.status === "Freigegeben" ? "05.10.2029" : "–"}</b></div>
+    <div class="kpi"><span class="eyebrow">Ablaufdatum Q</span><b class="num">${dDE(S.validUntil)}</b></div>
     <div class="kpi"><span class="eyebrow">Ø Selbstcheck</span><b class="num">${fmt(o.avg)}</b></div>
   </section>
   ${S.status === "Nachbesserung" ? `<div class="hint"><b>Rückmeldung vom DTV-SQD-Team:</b> ${esc(S.teamComment || "Bitte die markierten Stellen überarbeiten.")}</div>` : ""}
@@ -550,6 +569,7 @@ function vEdit() {
       <ul class="kplist">${kps.map(k => { const s = kpStats(k), a = S.assign[k.id]; return `<li><button data-a="selkp" data-v="${k.id}" aria-current="${k.id === S.kp}"><span class="dot d-${s.state}"></span><span>${k.name}</span>${a ? `<span class="av sm" title="${member(a).name}">${ini(member(a).name)}</span>` : "<span></span>"}<small class="num">${s.done}/${s.total}</small></button></li>`; }).join("") || '<li style="padding:10px;color:var(--muted)">Dir sind keine Kontaktpunkte zugeteilt.</li>'}</ul>
     </aside>
     <section class="panel" style="display:grid;gap:14px;min-width:0">
+      ${S.role === "team" ? '<div><button class="link" data-a="go" data-v="betrieb">← Zurück zur Prüfung</button></div>' : ""}
       <div style="display:grid;gap:6px">
         <div class="eyebrow">Kontaktpunkt ${kp.id} · ${PHASEN[brType()][kp.phase]}</div>
         <div class="row" style="justify-content:space-between"><h1>${kp.name}</h1>
@@ -619,44 +639,197 @@ function card(m) {
   </article>`;
 }
 
-function vReview() {
-  const o = overall(), fl = plausibility(), byKp = {};
-  fl.forEach(f => (byKp[f.kp] ||= []).push(f));
-  const rows = selKps().map(k => ({ k, s: kpStats(k) }));
-  const orig = { eigen: 0, ueberarbeitet: 0 }; S.measures.forEach(m => orig[m.origin || "eigen"]++);
-  const nM = S.measures.length || 1;
-  const red = fl.filter(f => f.sev === "flag").length;
+/* ---------- DTV-SQD-Team: Betriebsliste und Detailansicht ---------- */
+const STL = { Entwurf: "In Bearbeitung", Eingereicht: "Zu prüfen", Nachbesserung: "In Nachbesserung", Freigegeben: "Freigegeben", Abgelaufen: "Abgelaufen" };
+const today = () => new Date().toISOString().slice(0, 10);
+const plus3y = d => (+d.slice(0, 4) + 3) + d.slice(4);
+const OFF = [0.3, -0.4, 0.1, -0.2, 0.4, -0.6];
+const clamp = v => Math.max(0, Math.min(5, Math.round(v * 10) / 10));
+// Beispielbetriebe (nur für die Listenansicht im Dummy)
+const MOCK = [
+  { id: "hs", name: "Hotel Seeblick", ort: "Waren (Müritz)", br: 0, status: "Eingereicht", sub: "2026-09-28", kord: "Thomas Wendt", valid: "", avg: 3.6, done: 142, total: 142, hfs: [0,1,3,4],
+    kps: [["Website",3.8],["Buchung/Abwicklung",3.4],["Ankunft/Außenbereich",3.9],["Check-In/Check-Out",3.2],["Gemeinschaftsflächen/-räume",3.7],["Hotelzimmer",3.5],["Speisen & Getränke",5.0],["Bezahlung vor Ort",3.3],["Feedback",2.9]],
+    flags: [["flag","Nur Höchstwerte","Speisen & Getränke","Alle 14 bewerteten Kriterien mit 5, ohne Notiz."],["flag","Schwachstelle ohne Maßnahme","Feedback","„Auf Online-Bewertungen wird zeitnah und persönlich geantwortet.“ mit 1 bewertet, keine Maßnahme."],["info","Viele „N“","Hotelzimmer","9 von 17 Kriterien als nicht relevant markiert."]],
+    measures: [["Check-In/Check-Out","Gast/Kunde","Online-Check-in über die Buchungsbestätigung anbieten, Start zur Saison 2027.","hoch","offen",["T. Wendt"],"2027-03-31",0,"eigen",5],
+      ["Hotelzimmer","Ökologische Nachhaltigkeit","Handtuchwechsel nur auf Wunsch, Hinweiskarte in allen 42 Zimmern.","mittel","in Bearbeitung",["M. Krause"],"2026-12-01",50,"ueberarbeitet",5],
+      ["Feedback","Gast/Kunde","Mehr auf Bewertungen eingehen.","mittel","offen",[],"",0,"eigen",1],
+      ["Bezahlung vor Ort","Digitalisierung und KI","Kartenzahlung auch an der Bar ermöglichen.","niedrig","erledigt",["T. Wendt"],"2026-08-15",100,"eigen",4]],
+    history: [{ d: "2026-09-28", t: "Eingereicht", by: "Thomas Wendt" }, { d: "2023-09-14", t: "Q-Prüfung (altes Tool)", e: "Bestanden", by: "DTV-SQD-Team", txt: "Ergebnis aus der Datenmigration." }] },
+  { id: "sf", name: "Schifffahrt Elbland", ort: "Dresden", br: 11, status: "Eingereicht", sub: "2026-10-02", kord: "Anke Riedel", valid: "", avg: 3.3, done: 96, total: 96, hfs: [0,2,5],
+    kps: [["Website",3.1],["Buchung/Abwicklung",3.6],["Ankunft/Außenbereich",3.0],["Persönliche Begrüßung/Einweisung",3.8],["Speisen & Getränke",3.2],["Bezahlung vor Ort",3.4],["Feedback",3.0]],
+    flags: [["flag","Maßnahme zu unkonkret","Ankunft/Außenbereich","„Barrierefreiheit prüfen.“ erfüllt nur 1 von 5 Punkten."]],
+    measures: [["Ankunft/Außenbereich","Barrierefreiheit","Barrierefreiheit prüfen.","hoch","offen",["A. Riedel"],"",0,"eigen",1],
+      ["Persönliche Begrüßung/Einweisung","Gast/Kunde","Begrüßung an Bord zweisprachig (DE/EN), Textkarte für die Crew bis Saisonstart.","mittel","in Bearbeitung",["J. Pohl"],"2027-04-01",30,"ueberarbeitet",5]],
+    history: [{ d: "2026-10-02", t: "Eingereicht", by: "Anke Riedel" }] },
+  { id: "mh", name: "Museum am Hafen", ort: "Bremerhaven", br: 6, status: "Nachbesserung", sub: "2026-09-10", kord: "Dr. Frank Lüders", valid: "", avg: 2.8, done: 88, total: 88, hfs: [0,1,5],
+    kps: [["Website",2.6],["Ankunft/Außenbereich",3.1],["Persönliche Begrüßung/Einweisung",2.9],["Gemeinschaftsflächen/-räume",3.0],["Ausstellung",2.4],["Tour & Führung",3.2],["Bezahlung vor Ort",2.7]],
+    flags: [["flag","Schwachstelle ohne Maßnahme","Ausstellung","3 Kriterien mit 0–1 Punkten ohne Maßnahme."],["flag","Kontaktpunkt unter 3,0","Ausstellung","Ø 2,4"]],
+    measures: [["Ausstellung","Barrierefreiheit","Texttafeln in großer Schrift und mit Audioguide-Nummer versehen, zuerst Raum 1–3.","hoch","in Bearbeitung",["F. Lüders","S. Brandt"],"2027-02-28",20,"ueberarbeitet",5],
+      ["Website","Gast/Kunde","Website überarbeiten.","mittel","offen",[],"",0,"eigen",1]],
+    history: [{ d: "2026-09-24", t: "Zur Nachbesserung zurückgegeben", e: "Nachbesserung", by: "DTV-SQD-Team", txt: "Bitte für die Ausstellung Maßnahmen ergänzen und die Website-Maßnahme konkretisieren." }, { d: "2026-09-10", t: "Eingereicht", by: "Dr. Frank Lüders" }] },
+  { id: "tb", name: "Therme Bad Sonnenfeld", ort: "Bad Sonnenfeld", br: 5, status: "Freigegeben", sub: "2026-07-30", kord: "Petra Schuster", valid: "2029-08-12", avg: 3.9, done: 154, total: 154, hfs: [0,1,2,3,4,5],
+    kps: [["Website",4.0],["Ankunft/Außenbereich",3.8],["Umkleidebereich",3.6],["Schwimmhalle",4.1],["Wellnessbereich",4.3],["Speisen & Getränke",3.7],["Bezahlung vor Ort",3.9],["Feedback",3.8]],
+    flags: [],
+    measures: [["Umkleidebereich","Barrierefreiheit","Zwei rollstuhlgerechte Einzelkabinen einbauen (Umbau Winter 2026/27).","hoch","in Bearbeitung",["P. Schuster"],"2027-02-15",60,"eigen",5],
+      ["Wellnessbereich","Ökologische Nachhaltigkeit","Saunazeiten an Auslastung koppeln, Abschaltung der Kabine 3 unter der Woche.","mittel","erledigt",["H. Dietz"],"2026-09-30",100,"ueberarbeitet",5],
+      ["Website","Digitalisierung und KI","Live-Auslastungsanzeige auf der Startseite.","niedrig","erledigt",["L. Marx"],"2026-09-01",100,"eigen",4]],
+    history: [{ d: "2026-08-12", t: "Freigegeben", e: "Bestanden", by: "DTV-SQD-Team", txt: "Sehr sorgfältig, Maßnahmen konkret." }, { d: "2026-07-30", t: "Eingereicht", by: "Petra Schuster" }] },
+  { id: "gl", name: "Gasthaus Zur Linde", ort: "Rüdesheim am Rhein", br: 3, status: "Freigegeben", sub: "2025-05-02", kord: "Marco Becker", valid: "2028-05-20", avg: 3.4, done: 71, total: 71, hfs: [0,1,3],
+    kps: [["Website",3.2],["Ankunft/Außenbereich",3.5],["Persönliche Begrüßung/Einweisung",3.7],["Gemeinschaftsflächen/-räume",3.3],["Speisen & Getränke",3.6],["Bezahlung vor Ort",3.1]],
+    flags: [["info","Umsetzung stockt","–","2 von 4 Maßnahmen seit über 6 Monaten ohne Fortschritt."]],
+    measures: [["Speisen & Getränke","Ökologische Nachhaltigkeit","Mindestens drei Gerichte mit Zutaten aus dem Rheingau kennzeichnen.","mittel","erledigt",["M. Becker"],"2025-08-01",100,"eigen",5],
+      ["Website","Gast/Kunde","Speisekarte als Text statt PDF einbinden.","niedrig","offen",["M. Becker"],"2025-10-01",0,"eigen",4],
+      ["Bezahlung vor Ort","Digitalisierung und KI","Kartenzahlung am Tisch.","mittel","offen",["S. Becker"],"2025-09-01",0,"eigen",3],
+      ["Persönliche Begrüßung/Einweisung","Mitarbeitende","Einarbeitungsmappe für Aushilfen.","mittel","erledigt",["S. Becker"],"2025-07-01",100,"eigen",4]],
+    history: [{ d: "2025-05-20", t: "Freigegeben", e: "Bestanden", by: "DTV-SQD-Team" }, { d: "2025-05-02", t: "Eingereicht", by: "Marco Becker" }] },
+  { id: "cw", name: "Camping am Waldsee", ort: "Lychen", br: 7, status: "Entwurf", sub: "", kord: "Kerstin Ahrens", valid: "", avg: 3.5, done: 61, total: 134, hfs: [0,3,4],
+    kps: [["Website",3.4],["Buchung/Abwicklung",3.7],["Ankunft/Außenbereich",3.3],["Campingplatz/Wohnmobil-Stellplatz",3.6]],
+    flags: [], measures: [["Campingplatz/Wohnmobil-Stellplatz","Ökologische Nachhaltigkeit","Mülltrennstation mit Piktogrammen am Sanitärgebäude.","mittel","offen",["K. Ahrens"],"2027-04-15",0,"eigen",5]],
+    history: [] },
+  { id: "jh", name: "Jugendherberge Altenau", ort: "Altenau", br: 8, status: "Abgelaufen", sub: "2023-06-01", kord: "Ole Hansen", valid: "2026-06-30", avg: 3.2, done: 0, total: 0, hfs: [0],
+    kps: [], flags: [["info","Q abgelaufen","–","Kein neues Q gebucht. Menüpunkt im Kundencenter ist ausgeblendet."]], measures: [],
+    history: [{ d: "2026-06-30", t: "Q abgelaufen", by: "System" }, { d: "2023-06-30", t: "Q-Prüfung (altes Tool)", e: "Bestanden", by: "DTV-SQD-Team" }] }
+];
+
+function liveModel() {
+  const o = overall();
+  return { id: "ti", live: true, name: "Tourist-Information Musterstadt", ort: "Musterstadt", br: S.branche, status: S.status, sub: S.submitted || "", kord: "Sabine Hartmann", valid: S.validUntil || "",
+    avg: o.avg, done: o.d, total: o.t, comment: S.teamComment, history: S.history,
+    kps: selKps().filter(k => kpStats(k).done).map(k => { const s = kpStats(k); return { id: k.id, name: k.name, done: s.done, total: s.total, avg: s.avg,
+      hf: HF.map(h => S.hfSel.includes(h.k) ? mean(critsOf(k).filter(c => c.hf === h.k).map(c => S.ratings[c.key]).filter(v => typeof v === "number")) : null) }; }),
+    flags: plausibility().map(f => ({ ...f, kpName: kpById(f.kp).name })),
+    measures: S.measures.map(m => ({ id: m.id, kp: kpById(m.kp).name, hf: HF[hfIdx(m.hf)].name, text: m.text, prio: m.prio, status: m.status, resp: m.resp.map(r => member(r).name),
+      end: m.end, progress: m.progress, origin: m.origin || "eigen", score: measureFeedback(m, critText(m.kp, m.hf, m.crit)).score })) };
+}
+function mockModel(b) {
+  return { ...b, live: false, status: S.bstatus[b.id] || b.status, valid: S.bvalid[b.id] || b.valid, comment: S.bcomment[b.id] || "",
+    history: [...(S.bhist[b.id] || []), ...b.history],
+    kps: b.kps.map(([name, avg]) => ({ name, avg, done: 1, total: 1, hf: HF.map((h, i) => b.hfs.includes(i) ? clamp(avg + OFF[i]) : null) })),
+    flags: b.flags.map(([sev, t, kpName, d]) => ({ sev, t, kpName, d })),
+    measures: b.measures.map(([kp, hf, text, prio, status, resp, end, progress, origin, score], i) => ({ id: i, kp, hf, text, prio, status, resp, end, progress, origin, score })) };
+}
+const models = () => [liveModel(), ...MOCK.map(mockModel)];
+const modelById = id => id === "ti" ? liveModel() : mockModel(MOCK.find(b => b.id === id));
+
+function vBetriebe() {
+  const all = models(), cnt = s => all.filter(m => m.status === s).length;
+  const soon = all.filter(m => m.valid && m.valid > today() && m.valid < "2027-06-30").length;
+  const order = { Eingereicht: 0, Nachbesserung: 1, Entwurf: 2, Freigegeben: 3, Abgelaufen: 4 };
+  const rows = all.filter(m => S.bfilter === "alle" || m.status === S.bfilter).sort((a, b) => order[a.status] - order[b.status] || (b.sub || "").localeCompare(a.sub || ""));
+  const F = [["alle","Alle",all.length],["Eingereicht","Zu prüfen",cnt("Eingereicht")],["Nachbesserung","In Nachbesserung",cnt("Nachbesserung")],["Entwurf","In Bearbeitung",cnt("Entwurf")],["Freigegeben","Freigegeben",cnt("Freigegeben")],["Abgelaufen","Abgelaufen",cnt("Abgelaufen")]];
   return `
-  <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><h1>Prüfung der Servicekette</h1>
-    <p class="lead">Die KI bereitet die Prüfung vor: Sie fasst zusammen und markiert Auffälligkeiten. Die Entscheidung trifft das SQD-Team.</p></section>
-  <section class="grid2">
+  <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><h1>Betriebe</h1>
+    <p class="lead">Alle Betriebe mit Q. Ein Klick öffnet den Betrieb mit Prüfung, Servicekette, Maßnahmen und Verlauf. Nur die Tourist-Information Musterstadt ist im Dummy voll bedienbar, die anderen sind Beispieldaten.</p></section>
+  <section class="kpis">
+    <div class="kpi"><span class="eyebrow">Zu prüfen</span><b class="num">${cnt("Eingereicht")}</b></div>
+    <div class="kpi"><span class="eyebrow">In Nachbesserung</span><b class="num">${cnt("Nachbesserung")}</b></div>
+    <div class="kpi"><span class="eyebrow">In Bearbeitung</span><b class="num">${cnt("Entwurf")}</b></div>
+    <div class="kpi"><span class="eyebrow">Q gültig</span><b class="num">${cnt("Freigegeben")}</b></div>
+    <div class="kpi"><span class="eyebrow">Läuft bald ab</span><b class="num">${soon}</b></div>
+  </section>
+  <section class="row" style="justify-content:space-between">
+    <div class="hfpick" role="group" aria-label="Status filtern">${F.map(([k, l, n]) => `<button data-a="bfilter" data-v="${k}" aria-pressed="${S.bfilter === k}">${l} <span class="num">${n}</span></button>`).join("")}</div>
+    <input type="text" id="bq" placeholder="Betrieb oder Ort suchen…" aria-label="Suchen" style="max-width:260px">
+  </section>
+  <section class="panel" style="padding:0"><div class="tw"><table class="t blist"><thead><tr><th>Betrieb</th><th>Branche</th><th>Status</th><th>Eingereicht</th><th>Ø</th><th>Hinweise</th><th>Maßnahmen</th><th>Q gültig bis</th><th></th></tr></thead><tbody>
+    ${rows.map(m => { const red = m.flags.filter(f => f.sev === "flag").length, md = m.measures.filter(x => x.status === "erledigt").length; return `<tr data-search="${esc((m.name + " " + m.ort).toLowerCase())}" data-a="openb" data-v="${m.id}" class="clk">
+      <td><b>${esc(m.name)}</b><small style="display:block;color:var(--muted)">${esc(m.ort)}</small></td><td>${BRANCHEN[m.br]}</td>
+      <td><span class="pill st-${m.status}">${STL[m.status]}</span></td><td class="num">${dDE(m.sub)}</td>
+      <td class="num">${m.avg === null ? "–" : m.avg >= 3 ? fmt(m.avg) : `<b style="color:var(--danger)">${fmt(m.avg)}</b>`}</td>
+      <td>${red ? `<span class="chip flag">${red}</span>` : '<span style="color:var(--muted)">–</span>'}</td>
+      <td class="num">${m.measures.length} <small style="color:var(--muted)">· ${md} erl.</small></td><td class="num">${dDE(m.valid)}</td>
+      <td><button class="btn sm" data-a="openb" data-v="${m.id}">Öffnen</button></td></tr>`; }).join("") || '<tr><td colspan="9" style="color:var(--muted)">Keine Betriebe mit diesem Status.</td></tr>'}
+  </tbody></table></div></section>`;
+}
+
+function vBetrieb() {
+  const m = modelById(S.openB);
+  const red = m.flags.filter(f => f.sev === "flag").length, md = m.measures.filter(x => x.status === "erledigt").length;
+  const tabs = [["pruefung","Prüfung"],["massnahmen",`Maßnahmen (${m.measures.length})`],["kette","Servicekette"],["verlauf","Verlauf"]];
+  return `
+  <section style="display:grid;gap:8px">
+    <div><button class="link" data-a="go" data-v="betriebe">← Alle Betriebe</button></div>
+    <div class="row" style="justify-content:space-between"><h1>${esc(m.name)}</h1><span class="pill st-${m.status}">${STL[m.status]}</span></div>
+    <p class="lead">${BRANCHEN[m.br]} · ${esc(m.ort)} · Koordinator/in (KORD3): ${esc(m.kord)}${m.live ? "" : ' · <span class="chip">Beispieldaten</span>'}</p>
+  </section>
+  <section class="kpis">
+    <div class="kpi"><span class="eyebrow">Ø Selbstcheck</span><b class="num">${fmt(m.avg)}</b></div>
+    <div class="kpi"><span class="eyebrow">Bewertet</span><b class="num">${m.done}/${m.total}</b></div>
+    <div class="kpi"><span class="eyebrow">Auffälligkeiten</span><b class="num">${red}</b></div>
+    <div class="kpi"><span class="eyebrow">Maßnahmen</span><b class="num">${m.measures.length} · ${md} erledigt</b></div>
+    <div class="kpi"><span class="eyebrow">Eingereicht</span><b class="num">${dDE(m.sub)}</b></div>
+    <div class="kpi"><span class="eyebrow">Q gültig bis</span><b class="num">${dDE(m.valid)}</b></div>
+  </section>
+  <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-a="btab" data-v="${k}" aria-selected="${S.btab === k}">${l}</button>`).join("")}</nav>
+  ${({ pruefung: tPruefung, massnahmen: tMassnahmen, kette: tKette, verlauf: tVerlauf })[S.btab](m)}`;
+}
+
+function originBar(ms) {
+  const orig = { eigen: 0, ueberarbeitet: 0 }; ms.forEach(x => orig[x.origin]++); const n = ms.length || 1;
+  return `<div style="display:grid;gap:6px"><span class="eyebrow">Herkunft der Maßnahmen</span>
+    <div class="origin">${Object.entries(orig).map(([k, c]) => `<i style="width:${c / n * 100}%;background:${ORIGIN[k][1]}"></i>`).join("")}</div>
+    <div class="legend">${Object.entries(orig).map(([k, c]) => `<span><i style="background:${ORIGIN[k][1]}"></i>${ORIGIN[k][0]}: ${c}</span>`).join("")}</div></div>`;
+}
+function tPruefung(m) {
+  const red = m.flags.filter(f => f.sev === "flag").length, low = m.kps.filter(k => k.avg !== null && k.avg < 3).length, weak = m.measures.filter(x => x.score <= 2).length;
+  const can = m.status === "Eingereicht";
+  return `<section class="grid2">
     <div class="panel" style="display:grid;gap:12px;align-content:start">
-      <div class="row" style="justify-content:space-between"><h2>Tourist-Information Musterstadt</h2><span class="pill st-${S.status}">${S.status}</span></div>
-      <div class="hint" style="background:var(--surface-2);color:var(--fg)"><span class="chip ai">KI-Zusammenfassung</span><p style="margin-top:6px">${o.d} von ${o.t} Kriterien bewertet, Durchschnitt ${fmt(o.avg)}. ${rows.filter(r => r.s.avg !== null && r.s.avg < 3).length} Kontaktpunkte liegen unter 3,0. Es gibt ${red} Auffälligkeiten, die eine Rückfrage wert sind. ${S.measures.length} Maßnahmen, alle selbst formuliert.</p></div>
-      <div style="display:grid;gap:6px"><span class="eyebrow">Herkunft der Maßnahmen</span>
-        <div class="origin">${Object.entries(orig).map(([k, n]) => `<i style="width:${n / nM * 100}%;background:${ORIGIN[k][1]}" title="${ORIGIN[k][0]}: ${n}"></i>`).join("")}</div>
-        <div class="legend">${Object.entries(orig).map(([k, n]) => `<span><i style="background:${ORIGIN[k][1]}"></i>${ORIGIN[k][0]}: ${n}</span>`).join("")}</div></div>
-      <div class="tw"><table class="t"><thead><tr><th>Kontaktpunkt</th><th>Bewertet</th><th>Ø</th><th>Hinweise</th></tr></thead><tbody>
-        ${rows.filter(r => r.s.done).map(({ k, s }) => `<tr><td><button class="link" data-a="openkp" data-v="${k.id}">${k.name}</button></td><td class="num">${s.done}/${s.total}</td><td class="num">${s.avg === null ? "–" : s.avg >= 3 ? fmt(s.avg) : `<b style="color:var(--danger)">${fmt(s.avg)}</b>`}</td><td>${(byKp[k.id] || []).length ? `<span class="chip flag">${byKp[k.id].length}</span>` : ""}</td></tr>`).join("")}
-        <tr><th>Gesamt</th><th class="num">${o.d}/${o.t}</th><th class="num">${fmt(o.avg)}</th><th></th></tr></tbody></table></div>
-      <p style="font-size:.8rem;color:var(--muted)">Kontaktpunkte ohne Bewertungen sind ausgeblendet.</p>
+      <div class="hint" style="background:var(--surface-2);color:var(--fg)"><span class="chip ai">KI-Zusammenfassung</span><p style="margin-top:6px">${m.done} von ${m.total} Kriterien bewertet, Durchschnitt ${fmt(m.avg)}. ${low} Kontaktpunkte liegen unter 3,0. ${red} Auffälligkeiten sind eine Rückfrage wert. ${m.measures.length} Maßnahmen, davon ${weak} zu unkonkret.</p></div>
+      ${originBar(m.measures)}
+      <div class="tw"><table class="t"><thead><tr><th>Kontaktpunkt</th><th>Ø</th><th>Hinweise</th></tr></thead><tbody>
+        ${m.kps.map(k => { const n = m.flags.filter(f => f.kpName === k.name && f.sev === "flag").length; return `<tr><td>${m.live ? `<button class="link" data-a="openkp" data-v="${k.id}">${k.name}</button>` : k.name}</td><td class="num">${k.avg === null ? "–" : k.avg >= 3 ? fmt(k.avg) : `<b style="color:var(--danger)">${fmt(k.avg)}</b>`}</td><td>${n ? `<span class="chip flag">${n}</span>` : ""}</td></tr>`; }).join("") || '<tr><td colspan="3" style="color:var(--muted)">Noch keine Bewertungen.</td></tr>'}
+      </tbody></table></div>
     </div>
     <div style="display:grid;gap:12px;align-content:start">
       <div class="panel" style="display:grid;gap:10px">
         <div class="row" style="justify-content:space-between"><h3>Plausibilitätsprüfung</h3><span class="chip ai">KI</span></div>
-        <ul class="flags">${fl.map(f => `<li class="${f.sev === "info" ? "info" : ""}"><span>${f.sev === "info" ? "ℹ" : "⚠"}</span><span><b>${f.t}</b> · ${kpById(f.kp).name}<small>${esc(f.d)}</small></span><button class="link" data-a="cite" data-v="${esc(f.t + ": " + f.d)}">Zitieren</button></li>`).join("") || "<li class='info'><span>✓</span><span>Keine Auffälligkeiten</span><span></span></li>"}</ul>
+        <ul class="flags">${m.flags.map(f => `<li class="${f.sev === "info" ? "info" : ""}"><span>${f.sev === "info" ? "ℹ" : "⚠"}</span><span><b>${f.t}</b> · ${esc(f.kpName)}<small>${esc(f.d)}</small></span>${can ? `<button class="link" data-a="cite" data-v="${esc(f.t + ": " + f.d)}">Zitieren</button>` : "<span></span>"}</li>`).join("") || "<li class='info'><span>✓</span><span>Keine Auffälligkeiten</span><span></span></li>"}</ul>
       </div>
       <div class="panel" style="display:grid;gap:10px">
-        <label class="f">Kommentar an den Betrieb<textarea id="tc">${esc(S.teamComment)}</textarea></label>
+        <label class="f">Kommentar an den Betrieb<textarea id="tc" ${can ? "" : "readonly"}>${esc(m.comment)}</textarea></label>
         <div class="row">
-          <button class="btn ok" data-a="approve" ${S.status === "Eingereicht" ? "" : "disabled"}>Freigeben</button>
-          <button class="btn danger" data-a="reject" ${S.status === "Eingereicht" ? "" : "disabled"}>Zur Nachbesserung zurückgeben</button>
+          <button class="btn ok" data-a="approve" ${can ? "" : "disabled"}>Freigeben</button>
+          <button class="btn danger" data-a="reject" ${can ? "" : "disabled"}>Zur Nachbesserung zurückgeben</button>
         </div>
-        ${S.status !== "Eingereicht" ? `<p style="color:var(--muted);font-size:.85rem">Entscheiden ist möglich, sobald der Betrieb eingereicht hat. Mitlesen geht schon während der Bearbeitung.</p>` : ""}
-        <div class="hint">Offen beim DTV: Was passiert, wenn auch nach der Nachbesserung die Mindestpunktzahl nicht erreicht wird?</div>
+        ${can ? "" : `<p style="color:var(--muted);font-size:.85rem">Status „${STL[m.status]}“: Entscheiden ist erst nach dem Einreichen möglich. Mitlesen geht jederzeit.</p>`}
       </div>
     </div>
   </section>`;
+}
+function tMassnahmen(m) {
+  const avgP = m.measures.length ? Math.round(m.measures.reduce((a, x) => a + x.progress, 0) / m.measures.length) : 0;
+  return `<section class="panel" style="display:grid;gap:12px">
+    <div class="row" style="justify-content:space-between"><p>${m.measures.length} Maßnahmen · ${m.measures.filter(x => x.status === "erledigt").length} erledigt · Ø Fortschritt ${avgP} % · ${m.measures.filter(x => x.score <= 2).length} zu unkonkret</p>${originBar(m.measures).replace('display:grid;gap:6px', 'display:grid;gap:4px;min-width:260px')}</div>
+    <div class="tw"><table class="t"><thead><tr><th>Kontaktpunkt · Handlungsfeld</th><th>Maßnahme</th><th>Verantwortlich</th><th>Prio</th><th>Termin</th><th>Status</th><th>Fortschritt</th><th>Qualität</th><th>Herkunft</th></tr></thead><tbody>
+      ${m.measures.map(x => `<tr${m.live ? ` class="clk" data-a="editm" data-v="${x.id}"` : ""}><td>${esc(x.kp)}<small style="display:block;color:var(--muted)">${esc(x.hf)}</small></td><td style="min-width:240px">${esc(x.text)}</td>
+        <td>${x.resp.length ? x.resp.map(esc).join(", ") : '<span class="chip flag">niemand</span>'}</td><td><span class="pill prio-${x.prio}">${x.prio}</span></td><td class="num">${dDE(x.end)}</td><td>${x.status}</td>
+        <td style="min-width:90px"><span class="num">${x.progress} %</span><div class="bar" style="background:var(--surface-2)"><i style="width:${x.progress}%"></i></div></td>
+        <td><span class="chip ${x.score >= 4 ? "own" : x.score <= 2 ? "flag" : ""}">${x.score}/5</span></td><td style="font-size:.85rem">${ORIGIN[x.origin][0]}</td></tr>`).join("") || '<tr><td colspan="9" style="color:var(--muted)">Keine Maßnahmen.</td></tr>'}
+    </tbody></table></div>
+    ${m.live ? '<p style="font-size:.8rem;color:var(--muted)">Zeile anklicken, um die Maßnahme im Detail zu sehen.</p>' : ""}
+  </section>`;
+}
+function tKette(m) {
+  const cell = v => v === null ? '<td style="color:var(--muted)">–</td>' : `<td class="num"><span class="sc" style="background:${SCORE[Math.min(5, Math.max(0, Math.round(v)))][1]}">${fmt(v)}</span></td>`;
+  return `<section class="panel" style="display:grid;gap:12px">
+    <div class="row" style="justify-content:space-between"><p>Durchschnitt je Kontaktpunkt und Handlungsfeld. Grau = Handlungsfeld nicht gewählt oder keine Kriterien.</p>
+      ${m.live ? '<button class="btn" data-a="openkp" data-v="">Bewertungen im Detail ansehen</button>' : ""}</div>
+    <div class="tw"><table class="t grid"><thead><tr><th>Kontaktpunkt</th>${HF.map(h => `<th title="${h.name}">${h.short}</th>`).join("")}<th>Ø</th></tr></thead><tbody>
+      ${m.kps.map(k => `<tr><td>${k.name}</td>${k.hf.map(cell).join("")}<td class="num"><b>${fmt(k.avg)}</b></td></tr>`).join("") || '<tr><td colspan="8" style="color:var(--muted)">Noch keine Bewertungen.</td></tr>'}
+    </tbody></table></div>
+    <div class="legend">${HF.map(h => `<span><b>${h.short}</b> ${h.name}</span>`).join("")}</div>
+  </section>`;
+}
+function tVerlauf(m) {
+  return `<section class="panel"><ol class="timeline">${m.history.map(h => `<li><span class="num tdate">${dDE(h.d)}</span><div><b>${esc(h.t)}</b>${h.e ? ` <span class="pill st-${h.e === "Bestanden" ? "Freigegeben" : "Nachbesserung"}">${h.e}</span>` : ""}<small>${esc(h.by || "")}</small>${h.txt ? `<p>${esc(h.txt)}</p>` : ""}</div></li>`).join("") || '<li><span></span><div style="color:var(--muted)">Noch keine Einträge.</div></li>'}</ol></section>`;
+}
+function decide(ok) {
+  const id = S.openB, txt = document.getElementById("tc").value.trim(), d = today();
+  const entry = { d, t: ok ? "Freigegeben" : "Zur Nachbesserung zurückgegeben", e: ok ? "Bestanden" : "Nachbesserung", by: "DTV-SQD-Team", txt };
+  if (id === "ti") { S.status = ok ? "Freigegeben" : "Nachbesserung"; S.teamComment = txt; S.history.unshift(entry); if (ok) S.validUntil = plus3y(d); }
+  else { S.bstatus[id] = ok ? "Freigegeben" : "Nachbesserung"; S.bcomment[id] = txt; (S.bhist[id] ||= []).unshift(entry); if (ok) S.bvalid[id] = plus3y(d); }
+  render(); toast(ok ? "Freigegeben. Q-Lizenz würde jetzt im CRM angelegt." : "Zur Nachbesserung zurückgegeben");
 }
 
 /* ---------- Overlays ---------- */
@@ -759,7 +932,10 @@ document.addEventListener("click", e => {
   if (a === "kpinfo" || a === "hfinfo") e.stopPropagation();
   switch (a) {
     case "go": S.view = v; close(); render(); scrollTo(0, 0); break;
-    case "role": S.role = v; S.view = v === "team" ? "review" : "dash"; render(); break;
+    case "role": S.role = v; S.view = v === "team" ? "betriebe" : "dash"; close(); render(); break;
+    case "bfilter": S.bfilter = v; render(); break;
+    case "openb": e.stopPropagation(); S.openB = v; S.btab = "pruefung"; S.view = "betrieb"; render(); scrollTo(0, 0); break;
+    case "btab": S.btab = v; render(); break;
     case "reset": try { localStorage.removeItem(KEY); } catch (er) {} S = fresh(); ensureSel(); render(); toast("Dummy zurückgesetzt"); break;
     case "kp": { const kp = kpById(v); if (flag(kp) === "P") { toast("Pflicht-Kontaktpunkt, kann nicht abgewählt werden"); break; }
       S.kpSel = S.kpSel.includes(kp.id) ? S.kpSel.filter(x => x !== kp.id) : [...S.kpSel, kp.id]; render(); break; }
@@ -770,11 +946,11 @@ document.addEventListener("click", e => {
     case "autoassign": selKps().forEach(kp => { S.assign[kp.id] = ROLE_FOR_KP[kp.id] || "my"; }); render(); toast("Nach Rollen verteilt"); break;
     case "mine": S.mine = v === "1"; render(); break;
     case "selkp": S.kp = +v; render(); scrollTo(0, 0); break;
-    case "openkp": S.kp = +v; S.view = "edit"; render(); scrollTo(0, 0); break;
+    case "openkp": if (v) S.kp = +v; S.view = "edit"; render(); scrollTo(0, 0); break;
     case "rate": { const val = v === "N" ? "N" : +v; if (S.ratings[k] === val) delete S.ratings[k]; else S.ratings[k] = val; render(); break; }
     case "nextkp": { const ks = selKps().filter(x => !S.mine || S.assign[x.id] === S.me); const i = ks.findIndex(x => x.id === S.kp); if (ks.length) S.kp = ks[(i + 1) % ks.length].id; render(); scrollTo(0, 0); toast("Zwischengespeichert"); break; }
     case "addcustom": { const key = `${S.kp}|${v}`; (S.custom[key] ||= []).push("Eigenes Kriterium des Betriebs"); render(); break; }
-    case "submit": S.status = "Eingereicht"; render(); toast("Servicekette eingereicht. Das DTV-SQD-Team wird benachrichtigt."); break;
+    case "submit": S.status = "Eingereicht"; S.submitted = today(); S.history.unshift({ d: today(), t: S.history.some(h => h.t === "Eingereicht" && h.d > "2026") ? "Erneut eingereicht" : "Eingereicht", by: member(S.me).name }); render(); toast("Servicekette eingereicht. Das DTV-SQD-Team wird benachrichtigt."); break;
     case "detail": detailDrawer(k); break;
     case "feedback": renderFeedback(el.dataset.c); break;
     case "savedetail": {
@@ -792,9 +968,9 @@ document.addEventListener("click", e => {
         ${measureForm(m, ct, S.role === "team")}<div class="row">${S.role === "team" ? "" : `<button class="btn danger" data-a="delm" data-v="${m.id}">Löschen</button>`}<button class="btn" data-a="close">Schließen</button>${S.role === "team" ? "" : `<button class="btn primary" data-a="savem" data-v="${m.id}">Speichern</button>`}</div>`); break; }
     case "savem": { const m = S.measures.find(x => x.id === +v); Object.assign(m, readForm(), { origin: draftOrigin }); close(); render(); toast("Gespeichert"); break; }
     case "delm": S.measures = S.measures.filter(x => x.id !== +v); close(); render(); break;
-    case "cite": { const tc = document.getElementById("tc"); tc.value = (tc.value ? tc.value + "\n" : "") + "• " + v; S.teamComment = tc.value; save(); toast("In den Kommentar übernommen"); break; }
-    case "approve": S.teamComment = document.getElementById("tc").value; S.status = "Freigegeben"; render(); toast("Freigegeben. Q-Lizenz würde jetzt im CRM angelegt."); break;
-    case "reject": S.teamComment = document.getElementById("tc").value; S.status = "Nachbesserung"; render(); toast("Zur Nachbesserung zurückgegeben"); break;
+    case "cite": { const tc = document.getElementById("tc"); tc.value = (tc.value ? tc.value + "\n" : "") + "• " + v; if (S.openB === "ti") S.teamComment = tc.value; else S.bcomment[S.openB] = tc.value; save(); toast("In den Kommentar übernommen"); break; }
+    case "approve": decide(true); break;
+    case "reject": decide(false); break;
     case "close": close(); break;
   }
 });
@@ -802,7 +978,10 @@ document.addEventListener("change", e => {
   if (e.target.id === "me") { S.me = e.target.value; render(); }
   if (e.target.id === "branche") { S.branche = +e.target.value; S.kpSel = null; ensureSel(); render(); }
   if (e.target.dataset.assign) { const id = e.target.dataset.assign; if (e.target.value) S.assign[id] = e.target.value; else delete S.assign[id]; render(); }
-  if (e.target.id === "tc") { S.teamComment = e.target.value; save(); }
+  if (e.target.id === "tc") { if (S.openB === "ti") S.teamComment = e.target.value; else S.bcomment[S.openB] = e.target.value; save(); }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "bq") { const q = e.target.value.trim().toLowerCase(); document.querySelectorAll("tr[data-search]").forEach(r => { r.hidden = !!q && !r.dataset.search.includes(q); }); }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 document.addEventListener("submit", e => {
