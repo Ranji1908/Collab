@@ -183,6 +183,26 @@ table.grid td, table.grid th { text-align: center } table.grid td:first-child, t
 .timeline small { display: block; color: var(--muted) }
 .timeline p { margin-top: 4px }
 .tdate { color: var(--muted) }
+.modal { position: fixed; z-index: 41; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(760px, calc(100% - 24px)); max-height: calc(100% - 32px); overflow: auto; background: var(--surface); border-radius: 10px; padding: 20px; display: grid; gap: 16px; box-shadow: 0 16px 48px rgba(0,0,0,.3) }
+.stepper { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px }
+.stepper button { width: 100%; border: 0; background: none; padding: 6px 0 8px; border-bottom: 3px solid var(--line); display: flex; gap: 8px; align-items: center; font-weight: 600; font-size: .85rem; color: var(--muted); text-align: left }
+.stepper .n { width: 22px; height: 22px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; font-size: .75rem; flex: none }
+.stepper li.cur button { color: var(--fg); border-bottom-color: var(--accent) } .stepper li.cur .n { background: var(--accent); color: var(--accent-fg) }
+.stepper li.done button { color: var(--fg); border-bottom-color: var(--ok) } .stepper li.done .n { background: var(--ok); color: #142008 }
+@media (max-width: 600px) { .stepper button { font-size: 0; gap: 0; justify-content: center } .stepper .n { font-size: .75rem } }
+.mbody { display: grid; gap: 14px }
+.fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
+.fgrid .wide { grid-column: 1 / -1 }
+@media (max-width: 560px) { .fgrid { grid-template-columns: 1fr } }
+input[type=email], input[type=tel] { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0 }
+.req { color: var(--danger) }
+.ferr { color: var(--danger); font-weight: 400; font-size: .8rem }
+.ferr.box { background: var(--flag-bg); color: var(--flag-fg); padding: 8px 12px; border-radius: var(--radius); font-size: .9rem }
+fieldset.contact { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin: 0; display: grid; gap: 10px }
+fieldset.contact legend { font-weight: 700; padding: 0 6px; font-family: var(--font-display) }
+.sum { background: var(--surface-2); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 2px }
+.sel-text { user-select: all }
+.st-Eingeladen { background: var(--accent-soft) } .st-Angelegt { background: var(--surface-2) }
 .kanban { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start }
 @media (max-width: 860px) { .kanban { grid-template-columns: 1fr } }
 .col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; min-height: 160px; align-content: start }
@@ -327,7 +347,7 @@ function fresh() {
     ],
     nextId: 4,
     history: [{ d: "2023-10-12", t: "Q-Prüfung (altes Tool)", e: "Bestanden", by: "DTV-SQD-Team", txt: "Ergebnis aus der Datenmigration, Details im Archiv." }],
-    submitted: "", validUntil: "", openB: null, btab: "pruefung", bfilter: "alle", bstatus: {}, bcomment: {}, bhist: {}, bvalid: {}
+    submitted: "", validUntil: "", openB: null, btab: "pruefung", bfilter: "alle", bstatus: {}, bcomment: {}, bhist: {}, bvalid: {}, newB: [], bedit: {}
   };
 }
 let S;
@@ -640,7 +660,7 @@ function card(m) {
 }
 
 /* ---------- DTV-SQD-Team: Betriebsliste und Detailansicht ---------- */
-const STL = { Entwurf: "In Bearbeitung", Eingereicht: "Zu prüfen", Nachbesserung: "In Nachbesserung", Freigegeben: "Freigegeben", Abgelaufen: "Abgelaufen" };
+const STL = { Entwurf: "In Bearbeitung", Eingereicht: "Zu prüfen", Nachbesserung: "In Nachbesserung", Freigegeben: "Freigegeben", Abgelaufen: "Abgelaufen", Eingeladen: "Eingeladen", Angelegt: "Angelegt" };
 const today = () => new Date().toISOString().slice(0, 10);
 const plus3y = d => (+d.slice(0, 4) + 3) + d.slice(4);
 const OFF = [0.3, -0.4, 0.1, -0.2, 0.4, -0.6];
@@ -694,6 +714,9 @@ const MOCK = [
 function liveModel() {
   const o = overall();
   return { id: "ti", live: true, name: "Tourist-Information Musterstadt", ort: "Musterstadt", br: S.branche, status: S.status, sub: S.submitted || "", kord: "Sabine Hartmann", valid: S.validUntil || "",
+    stamm: { name: "Tourist-Information Musterstadt", br: S.branche, strasse: "Marktplatz 1", plz: "12345", ort: "Musterstadt", land: "Hessen", tel: "01234 56780", web: "www.musterstadt-tourismus.example", kdnr: "D-104233" },
+    contacts: TEAM.slice(0, 3).map((t, i) => ({ vn: t.name.split(" ")[0], nn: t.name.split(" ")[1], fn: t.role, email: `${t.name.split(" ")[0][0].toLowerCase()}.${t.name.split(" ")[1].toLowerCase()}@musterstadt-tourismus.example`, tel: "", main: i === 0, kord: i === 0 })),
+    q: { start: "2026-10-01", frist: "2027-03-31", einreichung: "2027-04-30" },
     avg: o.avg, done: o.d, total: o.t, comment: S.teamComment, history: S.history,
     kps: selKps().filter(k => kpStats(k).done).map(k => { const s = kpStats(k); return { id: k.id, name: k.name, done: s.done, total: s.total, avg: s.avg,
       hf: HF.map(h => S.hfSel.includes(h.k) ? mean(critsOf(k).filter(c => c.hf === h.k).map(c => S.ratings[c.key]).filter(v => typeof v === "number")) : null) }; }),
@@ -701,24 +724,29 @@ function liveModel() {
     measures: S.measures.map(m => ({ id: m.id, kp: kpById(m.kp).name, hf: HF[hfIdx(m.hf)].name, text: m.text, prio: m.prio, status: m.status, resp: m.resp.map(r => member(r).name),
       end: m.end, progress: m.progress, origin: m.origin || "eigen", score: measureFeedback(m, critText(m.kp, m.hf, m.crit)).score })) };
 }
+function withEdit(m) { const e = S.bedit[m.id]; if (!e) return m; return { ...m, ...e, name: e.stamm.name, ort: e.stamm.ort, br: e.stamm.br, kord: (e.contacts.find(c => c.kord) || {}).vn ? `${e.contacts.find(c => c.kord).vn} ${e.contacts.find(c => c.kord).nn}` : m.kord }; }
 function mockModel(b) {
-  return { ...b, live: false, status: S.bstatus[b.id] || b.status, valid: S.bvalid[b.id] || b.valid, comment: S.bcomment[b.id] || "",
+  const [vn, ...rest] = b.kord.replace("Dr. ", "").split(" ");
+  const stamm = b.stamm || { name: b.name, br: b.br, strasse: "Hafenstraße 12", plz: "", ort: b.ort, land: "", tel: "", web: "", kdnr: "" };
+  const contacts = b.contacts || [{ vn, nn: rest.join(" "), fn: "Koordinator/in", email: `${vn[0].toLowerCase()}.${rest.join("").toLowerCase().replace(/[^a-zäöüß]/g, "")}@betrieb.example`, tel: "", main: true, kord: true }];
+  return withEdit({ ...b, stamm, contacts, live: false, status: S.bstatus[b.id] || b.status, valid: S.bvalid[b.id] || b.valid, comment: S.bcomment[b.id] || "",
     history: [...(S.bhist[b.id] || []), ...b.history],
     kps: b.kps.map(([name, avg]) => ({ name, avg, done: 1, total: 1, hf: HF.map((h, i) => b.hfs.includes(i) ? clamp(avg + OFF[i]) : null) })),
     flags: b.flags.map(([sev, t, kpName, d]) => ({ sev, t, kpName, d })),
-    measures: b.measures.map(([kp, hf, text, prio, status, resp, end, progress, origin, score], i) => ({ id: i, kp, hf, text, prio, status, resp, end, progress, origin, score })) };
+    measures: b.measures.map(([kp, hf, text, prio, status, resp, end, progress, origin, score], i) => ({ id: i, kp, hf, text, prio, status, resp, end, progress, origin, score })) });
 }
-const models = () => [liveModel(), ...MOCK.map(mockModel)];
-const modelById = id => id === "ti" ? liveModel() : mockModel(MOCK.find(b => b.id === id));
+const allMock = () => [...S.newB, ...MOCK];
+const models = () => [withEdit(liveModel()), ...allMock().map(mockModel)];
+const modelById = id => id === "ti" ? withEdit(liveModel()) : mockModel(allMock().find(b => b.id === id));
 
 function vBetriebe() {
   const all = models(), cnt = s => all.filter(m => m.status === s).length;
   const soon = all.filter(m => m.valid && m.valid > today() && m.valid < "2027-06-30").length;
-  const order = { Eingereicht: 0, Nachbesserung: 1, Entwurf: 2, Freigegeben: 3, Abgelaufen: 4 };
-  const rows = all.filter(m => S.bfilter === "alle" || m.status === S.bfilter).sort((a, b) => order[a.status] - order[b.status] || (b.sub || "").localeCompare(a.sub || ""));
-  const F = [["alle","Alle",all.length],["Eingereicht","Zu prüfen",cnt("Eingereicht")],["Nachbesserung","In Nachbesserung",cnt("Nachbesserung")],["Entwurf","In Bearbeitung",cnt("Entwurf")],["Freigegeben","Freigegeben",cnt("Freigegeben")],["Abgelaufen","Abgelaufen",cnt("Abgelaufen")]];
+  const order = { Eingereicht: 0, Nachbesserung: 1, Eingeladen: 2, Angelegt: 2, Entwurf: 3, Freigegeben: 4, Abgelaufen: 5 };
+  const rows = all.filter(m => S.bfilter === "alle" || m.status === S.bfilter || (S.bfilter === "neu" && ["Eingeladen","Angelegt"].includes(m.status))).sort((a, b) => order[a.status] - order[b.status] || (b.sub || "").localeCompare(a.sub || ""));
+  const F = [["alle","Alle",all.length],["Eingereicht","Zu prüfen",cnt("Eingereicht")],["Nachbesserung","In Nachbesserung",cnt("Nachbesserung")],["Entwurf","In Bearbeitung",cnt("Entwurf")],...(cnt("Eingeladen") + cnt("Angelegt") ? [["neu","Neu angelegt",cnt("Eingeladen") + cnt("Angelegt")]] : []),["Freigegeben","Freigegeben",cnt("Freigegeben")],["Abgelaufen","Abgelaufen",cnt("Abgelaufen")]];
   return `
-  <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><h1>Betriebe</h1>
+  <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><div class="row" style="justify-content:space-between"><h1>Betriebe</h1><button class="btn primary" data-a="wopen">+ Neuen Betrieb anlegen</button></div>
     <p class="lead">Alle Betriebe mit Q. Ein Klick öffnet den Betrieb mit Prüfung, Servicekette, Maßnahmen und Verlauf. Nur die Tourist-Information Musterstadt ist im Dummy voll bedienbar, die anderen sind Beispieldaten.</p></section>
   <section class="kpis">
     <div class="kpi"><span class="eyebrow">Zu prüfen</span><b class="num">${cnt("Eingereicht")}</b></div>
@@ -735,7 +763,7 @@ function vBetriebe() {
     ${rows.map(m => { const red = m.flags.filter(f => f.sev === "flag").length, md = m.measures.filter(x => x.status === "erledigt").length; return `<tr data-search="${esc((m.name + " " + m.ort).toLowerCase())}" data-a="openb" data-v="${m.id}" class="clk">
       <td><b>${esc(m.name)}</b><small style="display:block;color:var(--muted)">${esc(m.ort)}</small></td><td>${BRANCHEN[m.br]}</td>
       <td><span class="pill st-${m.status}">${STL[m.status]}</span></td><td class="num">${dDE(m.sub)}</td>
-      <td class="num">${m.avg === null ? "–" : m.avg >= 3 ? fmt(m.avg) : `<b style="color:var(--danger)">${fmt(m.avg)}</b>`}</td>
+      <td class="num">${m.avg === null || m.avg === undefined ? "–" : m.avg >= 3 ? fmt(m.avg) : `<b style="color:var(--danger)">${fmt(m.avg)}</b>`}</td>
       <td>${red ? `<span class="chip flag">${red}</span>` : '<span style="color:var(--muted)">–</span>'}</td>
       <td class="num">${m.measures.length} <small style="color:var(--muted)">· ${md} erl.</small></td><td class="num">${dDE(m.valid)}</td>
       <td><button class="btn sm" data-a="openb" data-v="${m.id}">Öffnen</button></td></tr>`; }).join("") || '<tr><td colspan="9" style="color:var(--muted)">Keine Betriebe mit diesem Status.</td></tr>'}
@@ -745,12 +773,12 @@ function vBetriebe() {
 function vBetrieb() {
   const m = modelById(S.openB);
   const red = m.flags.filter(f => f.sev === "flag").length, md = m.measures.filter(x => x.status === "erledigt").length;
-  const tabs = [["pruefung","Prüfung"],["massnahmen",`Maßnahmen (${m.measures.length})`],["kette","Servicekette"],["verlauf","Verlauf"]];
+  const tabs = [["pruefung","Prüfung"],["massnahmen",`Maßnahmen (${m.measures.length})`],["kette","Servicekette"],["verlauf","Verlauf"],["stamm",`Stammdaten & Kontakte (${m.contacts.length})`]];
   return `
   <section style="display:grid;gap:8px">
     <div><button class="link" data-a="go" data-v="betriebe">← Alle Betriebe</button></div>
     <div class="row" style="justify-content:space-between"><h1>${esc(m.name)}</h1><span class="pill st-${m.status}">${STL[m.status]}</span></div>
-    <p class="lead">${BRANCHEN[m.br]} · ${esc(m.ort)} · Koordinator/in (KORD3): ${esc(m.kord)}${m.live ? "" : ' · <span class="chip">Beispieldaten</span>'}</p>
+    <p class="lead">${BRANCHEN[m.br]} · ${esc(m.ort)} · Koordinator/in (KORD3): ${esc(m.kord)}${m.live || m.id.startsWith("n") ? "" : ' · <span class="chip">Beispieldaten</span>'}</p>
   </section>
   <section class="kpis">
     <div class="kpi"><span class="eyebrow">Ø Selbstcheck</span><b class="num">${fmt(m.avg)}</b></div>
@@ -761,7 +789,7 @@ function vBetrieb() {
     <div class="kpi"><span class="eyebrow">Q gültig bis</span><b class="num">${dDE(m.valid)}</b></div>
   </section>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-a="btab" data-v="${k}" aria-selected="${S.btab === k}">${l}</button>`).join("")}</nav>
-  ${({ pruefung: tPruefung, massnahmen: tMassnahmen, kette: tKette, verlauf: tVerlauf })[S.btab](m)}`;
+  ${({ pruefung: tPruefung, massnahmen: tMassnahmen, kette: tKette, verlauf: tVerlauf, stamm: tStamm })[S.btab](m)}`;
 }
 
 function originBar(ms) {
@@ -830,6 +858,156 @@ function decide(ok) {
   if (id === "ti") { S.status = ok ? "Freigegeben" : "Nachbesserung"; S.teamComment = txt; S.history.unshift(entry); if (ok) S.validUntil = plus3y(d); }
   else { S.bstatus[id] = ok ? "Freigegeben" : "Nachbesserung"; S.bcomment[id] = txt; (S.bhist[id] ||= []).unshift(entry); if (ok) S.bvalid[id] = plus3y(d); }
   render(); toast(ok ? "Freigegeben. Q-Lizenz würde jetzt im CRM angelegt." : "Zur Nachbesserung zurückgegeben");
+}
+
+/* ---------- Onboarding: neuer Betrieb ---------- */
+const LAENDER = ["Baden-Württemberg","Bayern","Berlin","Brandenburg","Bremen","Hamburg","Hessen","Mecklenburg-Vorpommern","Niedersachsen","Nordrhein-Westfalen","Rheinland-Pfalz","Saarland","Sachsen","Sachsen-Anhalt","Schleswig-Holstein","Thüringen"];
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const addMonths = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
+const emptyContact = () => ({ vn: "", nn: "", fn: "", email: "", tel: "", main: false, kord: false });
+let wiz = null;
+function openWizard(id) {
+  if (id) { const m = modelById(id); wiz = { id, step: 0, err: {}, stamm: { ...m.stamm }, contacts: m.contacts.map(c => ({ ...c })), q: { ...(m.q || {}) }, edit: true }; }
+  else wiz = { step: 0, err: {}, stamm: { name: "", br: "", strasse: "", plz: "", ort: "", land: "", tel: "", web: "", kdnr: "" }, contacts: [{ ...emptyContact(), main: true, kord: true }],
+    q: { paket: "Q", start: today(), frist: addMonths(today(), 6), einreichung: addMonths(today(), 7), invite: "alle" } };
+  renderWizard();
+}
+const W_STEPS = ["Stammdaten", "Kontaktpersonen", "Q-Start", "Prüfen & anlegen"];
+function fld(label, path, opts = {}) {
+  const [grp, key] = path.split("."), v = wiz[grp][key] ?? "", err = wiz.err[path];
+  const inp = opts.options ? `<select data-w="${path}" id="w-${key}">${opts.options.map(([val, l]) => `<option value="${val}" ${String(v) === String(val) ? "selected" : ""}>${l}</option>`).join("")}</select>`
+    : `<input type="${opts.type || "text"}" data-w="${path}" id="w-${key}" value="${esc(v)}" ${opts.ph ? `placeholder="${opts.ph}"` : ""}>`;
+  return `<label class="f ${opts.wide ? "wide" : ""}"><span>${label}${opts.req ? ' <span class="req">*</span>' : ""}</span>${inp}${err ? `<span class="ferr">${err}</span>` : ""}</label>`;
+}
+function wStep0() {
+  return `<div class="fgrid">
+    ${fld("Name des Betriebs", "stamm.name", { req: 1, wide: 1 })}
+    ${fld("Branche", "stamm.br", { req: 1, options: [["", "Bitte wählen"], ...BRANCHEN.map((b, i) => [i, b])] })}
+    ${fld("DTV-Kundennummer (CRM)", "stamm.kdnr", { ph: "falls vorhanden" })}
+    ${fld("Straße und Hausnummer", "stamm.strasse", { req: 1, wide: 1 })}
+    ${fld("PLZ", "stamm.plz", { req: 1 })}
+    ${fld("Ort", "stamm.ort", { req: 1 })}
+    ${fld("Bundesland", "stamm.land", { options: [["", "Bitte wählen"], ...LAENDER.map(l => [l, l])] })}
+    ${fld("Telefon", "stamm.tel", { type: "tel" })}
+    ${fld("Website", "stamm.web", { ph: "www.…", wide: 1 })}
+  </div>`;
+}
+function wStep1() {
+  return `<p class="lead" style="font-size:.9rem">Mindestens eine Person mit KORD3-Lizenz ist Voraussetzung für Q. Alle Kontaktpersonen erhalten auf Wunsch einen eigenen Zugang zu Qool.</p>
+  ${wiz.err.contacts ? `<div class="ferr box">${wiz.err.contacts}</div>` : ""}
+  <div style="display:grid;gap:12px">${wiz.contacts.map((c, i) => `<fieldset class="contact">
+    <legend>Kontaktperson ${i + 1}</legend>
+    <div class="fgrid">
+      ${cf(i, "vn", "Vorname", 1)}${cf(i, "nn", "Nachname", 1)}
+      ${cf(i, "fn", "Funktion", 0, "z. B. Leitung, Empfang")}${cf(i, "tel", "Telefon", 0, "", "tel")}
+      ${cf(i, "email", "E-Mail", 1, "name@betrieb.de", "email", true)}
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="checks">
+        <label><input type="radio" name="w-main" data-c="${i}.main" ${c.main ? "checked" : ""}>Hauptansprechpartner/in</label>
+        <label><input type="checkbox" data-c="${i}.kord" ${c.kord ? "checked" : ""}>Koordinator/in mit KORD3-Lizenz</label>
+      </div>
+      ${wiz.contacts.length > 1 ? `<button class="link" style="color:var(--danger)" data-a="wdel" data-v="${i}">Entfernen</button>` : ""}
+    </div></fieldset>`).join("")}</div>
+  <div><button class="btn" data-a="wadd">+ Weitere Kontaktperson</button></div>`;
+}
+function cf(i, key, label, req, ph = "", type = "text", wide) {
+  const err = wiz.err[`c${i}.${key}`];
+  return `<label class="f ${wide ? "wide" : ""}"><span>${label}${req ? ' <span class="req">*</span>' : ""}</span><input type="${type}" data-c="${i}.${key}" value="${esc(wiz.contacts[i][key])}" ${ph ? `placeholder="${ph}"` : ""}>${err ? `<span class="ferr">${err}</span>` : ""}</label>`;
+}
+function wStep2() {
+  return `<div class="fgrid">
+    ${fld("Produkt", "q.paket", { options: [["Q", "Q (ServiceQualität Deutschland)"], ["Kombi", "Kombipaket i-Marke + Q"], ["Auffrischung", "Q-Auffrischung (Folgeprüfung)"]], wide: 1 })}
+    ${fld("Start", "q.start", { type: "date", req: 1 })}
+    ${fld("Bearbeitungsfrist", "q.frist", { type: "date", req: 1 })}
+    ${fld("Einreichungsfrist", "q.einreichung", { type: "date", req: 1 })}
+    ${fld("Zugangsdaten senden an", "q.invite", { options: [["alle", "alle Kontaktpersonen"], ["kord", "nur Koordinator/innen"], ["keine", "noch niemanden (später senden)"]] })}
+  </div>
+  <div class="hint">Im echten System wird der Betrieb zusätzlich im DTV-CRM angelegt bzw. verknüpft und der Menüpunkt „ServiceQualität Deutschland“ im Kundencenter freigeschaltet.</div>`;
+}
+function wStep3() {
+  const s = wiz.stamm, q = wiz.q;
+  const inv = q.invite === "alle" ? wiz.contacts : q.invite === "kord" ? wiz.contacts.filter(c => c.kord) : [];
+  return `<div class="grid2" style="gap:12px">
+    <div class="sum"><span class="eyebrow">Stammdaten</span><b>${esc(s.name)}</b><span>${BRANCHEN[s.br] ?? ""}</span><span>${esc(s.strasse)}, ${esc(s.plz)} ${esc(s.ort)}${s.land ? ` (${s.land})` : ""}</span>${s.tel ? `<span>${esc(s.tel)}</span>` : ""}${s.web ? `<span>${esc(s.web)}</span>` : ""}${s.kdnr ? `<span>Kd.-Nr. ${esc(s.kdnr)}</span>` : ""}</div>
+    <div class="sum"><span class="eyebrow">Q</span><span>${{ Q: "Q", Kombi: "Kombipaket i-Marke + Q", Auffrischung: "Q-Auffrischung" }[q.paket]}</span><span>Start ${dDE(q.start)}</span><span>Bearbeitung bis ${dDE(q.frist)}</span><span>Einreichung bis ${dDE(q.einreichung)}</span></div>
+  </div>
+  <div class="sum"><span class="eyebrow">Kontaktpersonen</span>
+    <table class="t"><tbody>${wiz.contacts.map(c => `<tr><td><b>${esc(c.vn)} ${esc(c.nn)}</b><small style="display:block;color:var(--muted)">${esc(c.fn)}</small></td><td>${esc(c.email)}</td><td>${c.main ? '<span class="chip ai">Hauptkontakt</span> ' : ""}${c.kord ? '<span class="chip own">KORD3</span>' : ""}</td></tr>`).join("")}</tbody></table></div>
+  ${wiz.edit ? "" : `<p>${inv.length ? `Zugangsdaten gehen an: ${inv.map(c => esc(c.email)).join(", ")}` : "Es werden noch keine Zugangsdaten verschickt."}</p>`}`;
+}
+function renderWizard() {
+  const body = [wStep0, wStep1, wStep2, wStep3][wiz.step]();
+  const last = wiz.step === 3;
+  layer.innerHTML = `<div class="scrim" data-a="wclose"></div><div class="modal" role="dialog" aria-modal="true" aria-labelledby="w-title">
+    <header class="row" style="justify-content:space-between;align-items:start"><div><div class="eyebrow">${wiz.edit ? "Stammdaten bearbeiten" : "Onboarding"}</div><h2 id="w-title">${wiz.edit ? esc(wiz.stamm.name) : "Neuen Betrieb anlegen"}</h2></div><button class="x" data-a="wclose" aria-label="Schließen">×</button></header>
+    <ol class="stepper">${W_STEPS.map((l, i) => `<li class="${i < wiz.step ? "done" : i === wiz.step ? "cur" : ""}"><button data-a="wgo" data-v="${i}" ${i > wiz.step ? "disabled" : ""}><span class="n">${i < wiz.step ? "✓" : i + 1}</span>${l}</button></li>`).join("")}</ol>
+    <div class="mbody">${body}</div>
+    <footer class="row" style="justify-content:space-between">
+      <button class="btn" data-a="${wiz.step ? "wback" : "wclose"}">${wiz.step ? "Zurück" : "Abbrechen"}</button>
+      <button class="btn primary" data-a="${last ? "wsave" : "wnext"}">${last ? (wiz.edit ? "Änderungen speichern" : "Betrieb anlegen") : "Weiter"}</button>
+    </footer></div>`;
+  layer.querySelector(".mbody input, .mbody select")?.focus();
+}
+function validate(step) {
+  const e = {}, s = wiz.stamm, q = wiz.q;
+  if (step === 0) {
+    if (!s.name.trim()) e["stamm.name"] = "Bitte den Namen angeben.";
+    if (s.br === "" || s.br === undefined) e["stamm.br"] = "Bitte eine Branche wählen.";
+    if (!s.strasse.trim()) e["stamm.strasse"] = "Bitte die Adresse angeben.";
+    if (!/^\d{5}$/.test(s.plz.trim())) e["stamm.plz"] = "Fünfstellige PLZ angeben.";
+    if (!s.ort.trim()) e["stamm.ort"] = "Bitte den Ort angeben.";
+  }
+  if (step === 1) {
+    const seen = new Set();
+    wiz.contacts.forEach((c, i) => {
+      if (!c.vn.trim()) e[`c${i}.vn`] = "Pflichtfeld";
+      if (!c.nn.trim()) e[`c${i}.nn`] = "Pflichtfeld";
+      const m = c.email.trim().toLowerCase();
+      if (!EMAIL.test(m)) e[`c${i}.email`] = "Bitte eine gültige E-Mail-Adresse angeben.";
+      else if (seen.has(m)) e[`c${i}.email`] = "Diese E-Mail-Adresse ist schon vergeben."; else seen.add(m);
+    });
+    if (!wiz.contacts.some(c => c.kord)) e.contacts = "Mindestens eine Kontaktperson muss Koordinator/in mit KORD3-Lizenz sein. Ohne KORD3 kann Q nicht gebucht werden.";
+    else if (!wiz.contacts.some(c => c.main)) e.contacts = "Bitte eine Hauptansprechperson festlegen.";
+  }
+  if (step === 2) {
+    ["start","frist","einreichung"].forEach(k => { if (!q[k]) e[`q.${k}`] = "Pflichtfeld"; });
+    if (q.frist && q.start && q.frist <= q.start) e["q.frist"] = "Muss nach dem Start liegen.";
+    if (q.einreichung && q.frist && q.einreichung < q.frist) e["q.einreichung"] = "Darf nicht vor der Bearbeitungsfrist liegen.";
+  }
+  wiz.err = e; return !Object.keys(e).length;
+}
+function saveWizard() {
+  const kord = wiz.contacts.find(c => c.kord), kname = `${kord.vn} ${kord.nn}`.trim();
+  const data = { stamm: { ...wiz.stamm, br: +wiz.stamm.br }, contacts: wiz.contacts.map(c => ({ ...c, email: c.email.trim() })), q: { ...wiz.q } };
+  if (wiz.edit) { S.bedit[wiz.id] = data; close(); render(); toast("Stammdaten gespeichert"); return; }
+  const id = "n" + Date.now().toString(36);
+  const inv = wiz.q.invite === "alle" ? data.contacts : wiz.q.invite === "kord" ? data.contacts.filter(c => c.kord) : [];
+  S.newB.unshift({ id, name: data.stamm.name.trim(), ort: data.stamm.ort.trim(), br: data.stamm.br, status: inv.length ? "Eingeladen" : "Angelegt", sub: "", kord: kname, valid: "",
+    avg: null, done: 0, total: 0, hfs: [], kps: [], flags: [], measures: [], ...data,
+    history: [{ d: today(), t: "Betrieb angelegt", by: "DTV-SQD-Team", txt: inv.length ? `Zugangsdaten an ${inv.map(c => c.email).join(", ")} gesendet.` : "Noch keine Zugangsdaten versendet." }] });
+  S.bfilter = "alle"; close(); render(); toast(`${data.stamm.name} angelegt`);
+}
+function wizInput(t) {
+  if (t.dataset.w) { const [g, k] = t.dataset.w.split("."); wiz[g][k] = t.value; }
+  if (t.dataset.c) { const [i, k] = t.dataset.c.split("."); const c = wiz.contacts[+i];
+    if (k === "main") wiz.contacts.forEach((x, j) => x.main = j === +i); else if (t.type === "checkbox") c[k] = t.checked; else c[k] = t.value; }
+}
+function tStamm(m) {
+  const s = m.stamm || {};
+  return `<section class="grid2">
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <div class="row" style="justify-content:space-between"><h3>Stammdaten</h3><button class="btn sm" data-a="wedit" data-v="${m.id}">Bearbeiten</button></div>
+      <dl class="kv"><dt>Name</dt><dd>${esc(m.name)}</dd><dt>Branche</dt><dd>${BRANCHEN[m.br]}</dd><dt>Adresse</dt><dd>${esc(s.strasse || "–")}<br>${esc(s.plz || "")} ${esc(s.ort || m.ort)}</dd>
+        <dt>Bundesland</dt><dd>${esc(s.land || "–")}</dd><dt>Telefon</dt><dd>${esc(s.tel || "–")}</dd><dt>Website</dt><dd>${esc(s.web || "–")}</dd><dt>Kd.-Nr. CRM</dt><dd>${esc(s.kdnr || "–")}</dd></dl>
+      ${m.q ? `<div class="eyebrow" style="margin-top:8px">Q</div><dl class="kv"><dt>Start</dt><dd>${dDE(m.q.start)}</dd><dt>Bearbeitung bis</dt><dd>${dDE(m.q.frist)}</dd><dt>Einreichung bis</dt><dd>${dDE(m.q.einreichung)}</dd></dl>` : ""}
+    </div>
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <div class="row" style="justify-content:space-between"><h3>Kontaktpersonen (${m.contacts.length})</h3><button class="btn sm" data-a="wedit" data-v="${m.id}" data-s="1">Kontakte bearbeiten</button></div>
+      <ul class="team">${m.contacts.map(c => `<li style="grid-template-columns:28px 1fr"><span class="av">${esc((c.vn[0] || "") + (c.nn[0] || ""))}</span><span style="min-width:0"><b>${esc(c.vn)} ${esc(c.nn)}</b> ${c.main ? '<span class="chip ai">Hauptkontakt</span>' : ""} ${c.kord ? '<span class="chip own">KORD3</span>' : ""}
+        <small style="display:block;color:var(--muted)">${esc(c.fn || "")}${c.fn ? " · " : ""}<span class="sel-text">${esc(c.email)}</span>${c.tel ? " · " + esc(c.tel) : ""}</small></span></li>`).join("")}</ul>
+    </div>
+  </section>`;
 }
 
 /* ---------- Overlays ---------- */
@@ -934,8 +1112,17 @@ document.addEventListener("click", e => {
     case "go": S.view = v; close(); render(); scrollTo(0, 0); break;
     case "role": S.role = v; S.view = v === "team" ? "betriebe" : "dash"; close(); render(); break;
     case "bfilter": S.bfilter = v; render(); break;
-    case "openb": e.stopPropagation(); S.openB = v; S.btab = "pruefung"; S.view = "betrieb"; render(); scrollTo(0, 0); break;
+    case "openb": e.stopPropagation(); S.openB = v; S.btab = ["Eingeladen","Angelegt"].includes(modelById(v).status) ? "stamm" : "pruefung"; S.view = "betrieb"; render(); scrollTo(0, 0); break;
     case "btab": S.btab = v; render(); break;
+    case "wopen": openWizard(); break;
+    case "wedit": openWizard(v); if (el.dataset.s) { wiz.step = 1; renderWizard(); } break;
+    case "wclose": wiz = null; close(); break;
+    case "wnext": if (validate(wiz.step)) wiz.step++; renderWizard(); break;
+    case "wback": wiz.step--; wiz.err = {}; renderWizard(); break;
+    case "wgo": if (+v <= wiz.step) { wiz.step = +v; wiz.err = {}; renderWizard(); } break;
+    case "wadd": wiz.contacts.push(emptyContact()); renderWizard(); layer.querySelectorAll("fieldset.contact")[wiz.contacts.length - 1]?.querySelector("input")?.focus(); break;
+    case "wdel": { const wasMain = wiz.contacts[+v].main; wiz.contacts.splice(+v, 1); if (wasMain) wiz.contacts[0].main = true; renderWizard(); break; }
+    case "wsave": for (let i = 0; i < 3; i++) if (!validate(i)) { wiz.step = i; renderWizard(); toast("Bitte die markierten Felder prüfen"); return; } saveWizard(); break;
     case "reset": try { localStorage.removeItem(KEY); } catch (er) {} S = fresh(); ensureSel(); render(); toast("Dummy zurückgesetzt"); break;
     case "kp": { const kp = kpById(v); if (flag(kp) === "P") { toast("Pflicht-Kontaktpunkt, kann nicht abgewählt werden"); break; }
       S.kpSel = S.kpSel.includes(kp.id) ? S.kpSel.filter(x => x !== kp.id) : [...S.kpSel, kp.id]; render(); break; }
@@ -975,15 +1162,16 @@ document.addEventListener("click", e => {
   }
 });
 document.addEventListener("change", e => {
+  if (wiz && (e.target.dataset.w || e.target.dataset.c)) { wizInput(e.target); return; }
   if (e.target.id === "me") { S.me = e.target.value; render(); }
   if (e.target.id === "branche") { S.branche = +e.target.value; S.kpSel = null; ensureSel(); render(); }
   if (e.target.dataset.assign) { const id = e.target.dataset.assign; if (e.target.value) S.assign[id] = e.target.value; else delete S.assign[id]; render(); }
   if (e.target.id === "tc") { if (S.openB === "ti") S.teamComment = e.target.value; else S.bcomment[S.openB] = e.target.value; save(); }
 });
-document.addEventListener("input", e => {
+document.addEventListener("input", e => { if (wiz && (e.target.dataset.w || e.target.dataset.c)) wizInput(e.target);
   if (e.target.id === "bq") { const q = e.target.value.trim().toLowerCase(); document.querySelectorAll("tr[data-search]").forEach(r => { r.hidden = !!q && !r.dataset.search.includes(q); }); }
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { wiz = null; close(); } });
 document.addEventListener("submit", e => {
   e.preventDefault();
   if (e.target.dataset.f === "botfree") {
