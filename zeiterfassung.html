@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprach-Zeiterfassung</title>
+    <style>
+        :root {
+            --bg: #f4f5f7;
+            --card: #ffffff;
+            --text: #1f2933;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --accent: #10b981;
+            --accent-dark: #059669;
+            --danger: #ef4444;
+            --listening: #f59e0b;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111827;
+                --card: #1f2937;
+                --text: #f3f4f6;
+                --muted: #9ca3af;
+                --border: #374151;
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.5;
+            color: var(--text);
+            background: var(--bg);
+            padding: 16px;
+        }
+
+        .container { max-width: 720px; margin: 0 auto; }
+
+        h1 { font-size: 1.6em; margin-bottom: 4px; }
+        h2 { font-size: 1.1em; margin-bottom: 12px; }
+        .sub { color: var(--muted); margin-bottom: 20px; }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        /* Mikrofon */
+        .mic-area { text-align: center; }
+        .mic-btn {
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 44px;
+            cursor: pointer;
+            transition: transform .15s, background .15s;
+        }
+        .mic-btn:hover { background: var(--accent-dark); }
+        .mic-btn.listening {
+            background: var(--listening);
+            animation: pulse 1.2s infinite;
+        }
+        .mic-btn:disabled { background: var(--muted); cursor: not-allowed; }
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, .6); }
+            100% { box-shadow: 0 0 0 24px rgba(245, 158, 11, 0); }
+        }
+        .mic-hint { color: var(--muted); font-size: .9em; margin-top: 10px; }
+        .heard { margin-top: 14px; min-height: 1.5em; font-style: italic; }
+        .feedback { margin-top: 4px; min-height: 1.5em; font-weight: 600; }
+        .feedback.ok { color: var(--accent-dark); }
+        .feedback.err { color: var(--danger); }
+
+        .text-input { display: flex; gap: 8px; margin-top: 16px; }
+        .text-input input {
+            flex: 1; min-width: 0;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1em;
+        }
+
+        button.small {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text);
+            cursor: pointer;
+            font-size: .95em;
+        }
+        button.small:hover { border-color: var(--accent); }
+        button.danger { color: var(--danger); }
+
+        /* Laufender Timer */
+        .running { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .running .project { font-size: 1.3em; font-weight: 700; }
+        .running .clock { font-size: 2em; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent-dark); }
+        .running .note { color: var(--muted); font-size: .9em; }
+        .idle { color: var(--muted); }
+
+        /* Listen */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { color: var(--muted); font-weight: 600; font-size: .85em; }
+        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        td .note { color: var(--muted); font-size: .85em; }
+        .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1em; }
+        .del:hover { color: var(--danger); }
+        .empty { color: var(--muted); }
+
+        .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .toolbar label { color: var(--muted); font-size: .9em; display: flex; align-items: center; gap: 6px; }
+
+        .help ul { padding-left: 20px; }
+        .help li { margin-bottom: 4px; }
+        .help code { background: var(--bg); padding: 1px 6px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎙️ Zeiterfassung</h1>
+    <p class="sub">Einfach sagen, woran du arbeitest – die Zeit läuft mit.</p>
+
+    <div class="card mic-area">
+        <button id="micBtn" class="mic-btn" title="Sprechen (Leertaste)">🎤</button>
+        <div class="mic-hint" id="micHint">Antippen und sprechen – oder Leertaste drücken</div>
+        <div class="heard" id="heard"></div>
+        <div class="feedback" id="feedback"></div>
+        <form class="text-input" id="textForm">
+            <input id="textCmd" type="text" placeholder="…oder Befehl tippen, z. B. „Starte Website“" autocomplete="off">
+            <button class="small" type="submit">OK</button>
+        </form>
+    </div>
+
+    <div class="card" id="runningCard"></div>
+
+    <div class="card">
+        <h2>Heute</h2>
+        <div id="todayList"></div>
+    </div>
+
+    <div class="card">
+        <h2>Projekte</h2>
+        <div id="projectTotals"></div>
+    </div>
+
+    <div class="card">
+        <div class="toolbar">
+            <button class="small" id="exportBtn">📄 CSV exportieren</button>
+            <button class="small danger" id="clearBtn">Alles löschen</button>
+            <label><input type="checkbox" id="speakToggle" checked> Sprachausgabe</label>
+        </div>
+    </div>
+
+    <div class="card help">
+        <h2>Was du sagen kannst</h2>
+        <ul>
+            <li><code>Starte Website</code> / <code>Ich arbeite an Kunde Müller</code> – Timer starten (laufender Timer wird beendet)</li>
+            <li><code>Stopp</code> / <code>Pause</code> / <code>Feierabend</code> – Timer anhalten</li>
+            <li><code>Weiter</code> – letztes Projekt fortsetzen</li>
+            <li><code>Notiz Logo überarbeitet</code> – Notiz zum laufenden Eintrag</li>
+            <li><code>Trage 2 Stunden für Website ein</code> / <code>Website 45 Minuten</code> / <code>Gestern anderthalb Stunden Buchhaltung</code> – Zeit nachtragen</li>
+            <li><code>Wie viel heute?</code> – Zusammenfassung vorlesen</li>
+            <li><code>Lösche letzten Eintrag</code> – letzten Eintrag entfernen</li>
+        </ul>
+        <p class="mic-hint" style="text-align:left">Spracherkennung funktioniert in Chrome, Edge und Safari. In anderen Browsern kannst du die Diktierfunktion der Tastatur im Textfeld nutzen.</p>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    const STORAGE_KEY = 'zeiterfassung.v1';
+
+    // ---------- Daten ----------
+
+    let state = load();
+
+    function load() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) { /* Speicher nicht verfügbar */ }
+        return { entries: [], speak: true };
+    }
+
+    function save() {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignorieren */ }
+    }
+
+    function running() {
+        return state.entries.find(e => e.end === null) || null;
+    }
+
+    // Zuletzt angelegter Eintrag (nicht zwingend der mit dem spätesten Start)
+    function lastCreated() {
+        return state.entries.reduce((a, e) => (!a || (e.created || e.start) > (a.created || a.start) ? e : a), null);
+    }
+
+    function uid() {
+        return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function projects() {
+        const seen = new Map();
+        state.entries.forEach(e => seen.set(norm(e.project), e.project));
+        return [...seen.values()];
+    }
+
+    // ---------- Hilfsfunktionen ----------
+
+    function norm(s) {
+        return s.toLowerCase().replace(/[^a-z0-9äöüß ]/g, '').replace(/\s+/g, ' ').trim();
+    }
+
+    function capitalize(s) {
+        return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+
+    function levenshtein(a, b) {
+        const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+        for (let j = 1; j <= b.length; j++) d[0][j] = j;
+        for (let i = 1; i <= a.length; i++) {
+            for (let j = 1; j <= b.length; j++) {
+                d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1,
+                    d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+            }
+        }
+        return d[a.length][b.length];
+    }
+
+    // Gesprochenen Namen einem bestehenden Projekt zuordnen (tolerant gegenüber Erkennungsfehlern)
+    function matchProject(spoken) {
+        const n = norm(spoken);
+        if (!n) return null;
+        const list = projects();
+        let best = null, bestScore = Infinity;
+        for (const p of list) {
+            const pn = norm(p);
+            if (pn === n) return p;
+            const dist = levenshtein(pn, n);
+            const tolerance = Math.max(1, Math.floor(pn.length / 5));
+            if (dist <= tolerance && dist < bestScore) { best = p; bestScore = dist; }
+        }
+        return best || capitalize(n);
+    }
+
+    function fmtDuration(ms) {
+        const totalMin = Math.round(ms / 60000);
+        const h = Math.floor(totalMin / 60), m = totalMin % 60;
+        return h + ':' + String(m).padStart(2, '0') + ' h';
+    }
+
+    function fmtClock(ms) {
+        const s = Math.floor(ms / 1000);
+        const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
+        return h + ':' + String(m).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+    }
+
+    function spokenDuration(ms) {
+        const totalMin = Math.round(ms / 60000);
+        const h = Math.floor(totalMin / 60), m = totalMin % 60;
+        const parts = [];
+        if (h) parts.push(h === 1 ? 'eine Stunde' : h + ' Stunden');
+        if (m || !h) parts.push(m === 1 ? 'eine Minute' : m + ' Minuten');
+        return parts.join(' und ');
+    }
+
+    function fmtTime(ts) {
+        return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function startOfDay(d) {
+        const x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime();
+    }
+
+    function startOfWeek(d) {
+        const x = new Date(startOfDay(d));
+        const day = (x.getDay() + 6) % 7; // Montag = 0
+        x.setDate(x.getDate() - day);
+        return x.getTime();
+    }
+
+    function duration(e) {
+        return (e.end ?? Date.now()) - e.start;
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // ---------- Zahlwörter & Dauer ----------
+
+    const UNITS = { ein: 1, eine: 1, einen: 1, einer: 1, eins: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6,
+        sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, zwölf: 12, dreizehn: 13, vierzehn: 14, fünfzehn: 15,
+        sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19 };
+    const TENS = { zwanzig: 20, dreißig: 30, vierzig: 40, fünfzig: 50 };
+
+    function wordToNumber(w) {
+        if (w in UNITS) return UNITS[w];
+        if (w in TENS) return TENS[w];
+        const m = w.match(/^([a-zäöüß]+?)und(zwanzig|dreißig|vierzig|fünfzig)$/);
+        if (m && m[1] in UNITS) return UNITS[m[1]] + TENS[m[2]];
+        const half = w.match(/^([a-zäöüß]+?)einhalb$/);
+        if (half && half[1] in UNITS) return UNITS[half[1]] + 0.5;
+        return null;
+    }
+
+    // Liefert { minutes, rest } – rest ist der Text ohne die Zeitangabe
+    function parseDuration(text) {
+        let t = ' ' + text + ' ';
+        let minutes = 0;
+
+        t = t.replace(/\b(anderthalb|eineinhalb)\b/g, '1,5');
+        t = t.replace(/\b(eine\s+)?dreiviertel\s*stunde\b/g, () => { minutes += 45; return ' '; });
+        t = t.replace(/\b(eine\s+)?viertel\s*stunde\b/g, () => { minutes += 15; return ' '; });
+        t = t.replace(/\b(eine\s+)?halbe\s+stunde\b/g, () => { minutes += 30; return ' '; });
+
+        // Zahlwörter direkt vor einer Einheit in Ziffern umwandeln
+        t = t.replace(/\b([a-zäöüß]+)(?=\s+(stunden?|std|minuten?|min)\b)/g, w => {
+            const n = wordToNumber(w);
+            return n === null ? w : String(n).replace('.', ',');
+        });
+
+        t = t.replace(/(\d+(?:[.,]\d+)?)\s*(stunden?|std\.?|h)\b/g, (_, n) => {
+            minutes += parseFloat(n.replace(',', '.')) * 60; return ' ';
+        });
+        t = t.replace(/(\bund\s+)?(\d+)\s*(minuten?|min\.?)\b/g, (_, __, n) => {
+            minutes += parseInt(n, 10); return ' ';
+        });
+
+        return { minutes: Math.round(minutes), rest: t.replace(/\s+/g, ' ').trim() };
+    }
+
+    const FILLER = new Set(['trage', 'trag', 'eintragen', 'buche', 'buch', 'buchen', 'füge', 'hinzufügen', 'hinzu',
+        'ein', 'für', 'auf', 'projekt', 'gestern', 'heute', 'ich', 'habe', 'hab', 'gearbeitet', 'an', 'am',
+        'bitte', 'zum', 'zu', 'das', 'die', 'der', 'dem', 'den', 'noch', 'nachtragen', 'trage']);
+
+    function stripFiller(text) {
+        return text.split(' ').filter(w => !FILLER.has(w)).join(' ').trim();
+    }
+
+    // ---------- Aktionen ----------
+
+    function startProject(name) {
+        const project = matchProject(name);
+        if (!project) return fail('Welches Projekt? Sag z. B. „Starte Website“.');
+        const cur = running();
+        if (cur && norm(cur.project) === norm(project)) return ok(project + ' läuft bereits.');
+        if (cur) cur.end = Date.now();
+        state.entries.push({ id: uid(), project, start: Date.now(), end: null, note: '', created: Date.now() });
+        save();
+        ok(cur ? `${cur.project} beendet, ${project} gestartet.` : `${project} gestartet.`);
+    }
+
+    function stopProject() {
+        const cur = running();
+        if (!cur) return fail('Es läuft gerade kein Timer.');
+        cur.end = Date.now();
+        save();
+        ok(`${cur.project} gestoppt nach ${spokenDuration(duration(cur))}.`);
+    }
+
+    function resumeLast() {
+        if (running()) return fail(running().project + ' läuft bereits.');
+        const last = lastCreated();
+        if (!last) return fail('Noch kein Projekt vorhanden.');
+        startProject(last.project);
+    }
+
+    function addNote(note) {
+        const cur = running() || lastCreated();
+        if (!cur) return fail('Kein Eintrag für die Notiz vorhanden.');
+        cur.note = cur.note ? cur.note + '; ' + note : note;
+        save();
+        ok(`Notiz zu ${cur.project} gespeichert.`);
+    }
+
+    function addManual(minutes, name, yesterday) {
+        const project = matchProject(name);
+        if (!project) return fail('Für welches Projekt? Sag z. B. „2 Stunden für Website“.');
+        let end;
+        if (yesterday) {
+            const d = new Date(); d.setDate(d.getDate() - 1); d.setHours(9, 0, 0, 0);
+            end = d.getTime() + minutes * 60000;
+        } else {
+            end = Date.now();
+        }
+        state.entries.push({ id: uid(), project, start: end - minutes * 60000, end, note: 'nachgetragen', created: Date.now() });
+        state.entries.sort((a, b) => a.start - b.start);
+        save();
+        ok(`${spokenDuration(minutes * 60000)} für ${project} ${yesterday ? 'gestern ' : ''}eingetragen.`);
+    }
+
+    function deleteLast() {
+        const last = lastCreated();
+        if (!last) return fail('Keine Einträge vorhanden.');
+        state.entries = state.entries.filter(e => e !== last);
+        save();
+        ok(`Eintrag ${last.project} gelöscht.`);
+    }
+
+    function summary() {
+        const totals = totalsSince(startOfDay(Date.now()));
+        if (!totals.length) return ok('Heute noch keine Zeit erfasst.');
+        const sum = totals.reduce((a, t) => a + t.ms, 0);
+        const parts = totals.map(t => `${t.project} ${spokenDuration(t.ms)}`);
+        ok(`Heute insgesamt ${spokenDuration(sum)}: ${parts.join(', ')}.`);
+    }
+
+    // ---------- Befehle verstehen ----------
+
+    function handleCommand(raw) {
+        const text = raw.toLowerCase().replace(/[.!?:;]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!text) return;
+        document.getElementById('heard').textContent = '„' + raw.trim() + '“';
+        let m;
+
+        if (/^(lösch|entfern)\w*\b.*\bletzt/.test(text)) return deleteLast();
+
+        if (/(zusammenfassung|übersicht|wie ?viel|bericht|wie lange)/.test(text)) return summary();
+
+        if (/^(weiter|fortsetzen|mach weiter|weitermachen)$/.test(text)) return resumeLast();
+
+        if ((m = text.match(/^(notiz|bemerkung|kommentar|notiere)\s+(.+)$/))) return addNote(m[2]);
+
+        if (/^(stopp?|stoppe|beende\w*|ende|fertig|feierabend|pause|halt|anhalten|timer aus)\b/.test(text)) {
+            return stopProject();
+        }
+
+        const dur = parseDuration(text);
+        if (dur.minutes > 0) {
+            const yesterday = /\bgestern\b/.test(text);
+            return addManual(dur.minutes, stripFiller(dur.rest), yesterday);
+        }
+
+        if ((m = text.match(/^(?:starte?|start|beginne?|los mit|wechsel[en]* zu|ich arbeite (?:jetzt )?an|arbeite an|jetzt)\s+(.+)$/))) {
+            return startProject(stripFiller(m[1]));
+        }
+
+        // Nur ein Projektname gesagt, der schon existiert -> starten
+        const known = projects().find(p => norm(p) === norm(text));
+        if (known) return startProject(known);
+
+        fail('Nicht verstanden. Versuch z. B. „Starte Website“ oder „Stopp“.');
+    }
+
+    // ---------- Rückmeldung ----------
+
+    function ok(msg) { feedback(msg, 'ok'); }
+    function fail(msg) { feedback(msg, 'err'); }
+
+    function feedback(msg, cls) {
+        const el = document.getElementById('feedback');
+        el.textContent = msg;
+        el.className = 'feedback ' + cls;
+        render();
+        if (state.speak !== false && 'speechSynthesis' in window) {
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(msg);
+            u.lang = 'de-DE';
+            speechSynthesis.speak(u);
+        }
+    }
+
+    // ---------- Anzeige ----------
+
+    function totalsSince(from) {
+        const map = new Map();
+        state.entries.forEach(e => {
+            const start = Math.max(e.start, from);
+            const end = e.end ?? Date.now();
+            if (end <= start) return;
+            map.set(e.project, (map.get(e.project) || 0) + (end - start));
+        });
+        return [...map.entries()].map(([project, ms]) => ({ project, ms })).sort((a, b) => b.ms - a.ms);
+    }
+
+    function renderRunning() {
+        const el = document.getElementById('runningCard');
+        const cur = running();
+        if (!cur) {
+            el.innerHTML = '<div class="idle">⏸️ Kein Timer aktiv. Sag „Starte …“, um loszulegen.</div>';
+            return;
+        }
+        el.innerHTML = `
+            <div class="running">
+                <div>
+                    <div class="project">▶️ ${escapeHtml(cur.project)}</div>
+                    <div class="note">seit ${fmtTime(cur.start)}${cur.note ? ' · ' + escapeHtml(cur.note) : ''}</div>
+                </div>
+                <div class="clock" id="clock">${fmtClock(duration(cur))}</div>
+                <button class="small" id="stopBtn">⏹ Stopp</button>
+            </div>`;
+        document.getElementById('stopBtn').onclick = stopProject;
+    }
+
+    function renderToday() {
+        const el = document.getElementById('todayList');
+        const from = startOfDay(Date.now());
+        const list = state.entries.filter(e => (e.end ?? Date.now()) > from);
+        if (!list.length) { el.innerHTML = '<p class="empty">Noch keine Einträge heute.</p>'; return; }
+        el.innerHTML = `<table>
+            <tr><th>Projekt</th><th>Zeit</th><th class="num">Dauer</th><th></th></tr>
+            ${list.map(e => `<tr>
+                <td>${escapeHtml(e.project)}${e.note ? `<div class="note">${escapeHtml(e.note)}</div>` : ''}</td>
+                <td>${fmtTime(e.start)}–${e.end ? fmtTime(e.end) : 'läuft'}</td>
+                <td class="num">${fmtDuration(duration(e))}</td>
+                <td class="num"><button class="del" data-id="${e.id}" title="Löschen">✕</button></td>
+            </tr>`).join('')}
+        </table>`;
+        el.querySelectorAll('.del').forEach(b => b.onclick = () => {
+            state.entries = state.entries.filter(e => e.id !== b.dataset.id);
+            save(); render();
+        });
+    }
+
+    function renderTotals() {
+        const el = document.getElementById('projectTotals');
+        const today = new Map(totalsSince(startOfDay(Date.now())).map(t => [t.project, t.ms]));
+        const week = new Map(totalsSince(startOfWeek(Date.now())).map(t => [t.project, t.ms]));
+        const all = totalsSince(0);
+        if (!all.length) { el.innerHTML = '<p class="empty">Noch keine Projekte.</p>'; return; }
+        el.innerHTML = `<table>
+            <tr><th>Projekt</th><th class="num">Heute</th><th class="num">Woche</th><th class="num">Gesamt</th></tr>
+            ${all.map(t => `<tr>
+                <td>${escapeHtml(t.project)}</td>
+                <td class="num">${today.has(t.project) ? fmtDuration(today.get(t.project)) : '–'}</td>
+                <td class="num">${week.has(t.project) ? fmtDuration(week.get(t.project)) : '–'}</td>
+                <td class="num">${fmtDuration(t.ms)}</td>
+            </tr>`).join('')}
+        </table>`;
+    }
+
+    function render() {
+        renderRunning();
+        renderToday();
+        renderTotals();
+    }
+
+    setInterval(() => {
+        const cur = running();
+        const clock = document.getElementById('clock');
+        if (cur && clock) clock.textContent = fmtClock(duration(cur));
+    }, 1000);
+    setInterval(render, 60000);
+
+    // ---------- Spracherkennung ----------
+
+    const micBtn = document.getElementById('micBtn');
+    const micHint = document.getElementById('micHint');
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null, listening = false;
+
+    if (SR) {
+        recognition = new SR();
+        recognition.lang = 'de-DE';
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            listening = true;
+            micBtn.classList.add('listening');
+            micHint.textContent = 'Ich höre zu …';
+        };
+        recognition.onresult = (ev) => {
+            const res = ev.results[ev.results.length - 1];
+            const transcript = res[0].transcript;
+            if (res.isFinal) handleCommand(transcript);
+            else document.getElementById('heard').textContent = '„' + transcript + ' …“';
+        };
+        recognition.onerror = (ev) => {
+            if (ev.error === 'not-allowed' || ev.error === 'service-not-allowed') {
+                fail('Kein Zugriff aufs Mikrofon. Bitte im Browser erlauben.');
+            } else if (ev.error === 'no-speech') {
+                fail('Nichts gehört – nochmal versuchen.');
+            } else if (ev.error !== 'aborted') {
+                fail('Spracherkennung-Fehler: ' + ev.error);
+            }
+        };
+        recognition.onend = () => {
+            listening = false;
+            micBtn.classList.remove('listening');
+            micHint.textContent = 'Antippen und sprechen – oder Leertaste drücken';
+        };
+
+        micBtn.onclick = toggleListening;
+    } else {
+        micBtn.disabled = true;
+        micHint.textContent = 'Dein Browser unterstützt keine Spracherkennung. Nutze die Diktierfunktion deiner Tastatur im Textfeld.';
+    }
+
+    function toggleListening() {
+        if (!recognition) return;
+        if (listening) { recognition.stop(); return; }
+        if ('speechSynthesis' in window) speechSynthesis.cancel();
+        try { recognition.start(); } catch (e) { /* läuft schon */ }
+    }
+
+    document.addEventListener('keydown', (ev) => {
+        if (ev.code === 'Space' && !['INPUT', 'TEXTAREA', 'BUTTON'].includes(document.activeElement.tagName)) {
+            ev.preventDefault();
+            toggleListening();
+        }
+    });
+
+    document.getElementById('textForm').onsubmit = (ev) => {
+        ev.preventDefault();
+        const input = document.getElementById('textCmd');
+        handleCommand(input.value);
+        input.value = '';
+    };
+
+    // ---------- Export & Einstellungen ----------
+
+    document.getElementById('exportBtn').onclick = () => {
+        const rows = [['Projekt', 'Datum', 'Start', 'Ende', 'Dauer (h)', 'Notiz']];
+        state.entries.forEach(e => {
+            rows.push([
+                e.project,
+                new Date(e.start).toLocaleDateString('de-DE'),
+                fmtTime(e.start),
+                e.end ? fmtTime(e.end) : '',
+                (duration(e) / 3600000).toFixed(2).replace('.', ','),
+                e.note || ''
+            ]);
+        });
+        const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'zeiterfassung-' + new Date().toISOString().slice(0, 10) + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+    };
+
+    document.getElementById('clearBtn').onclick = () => {
+        if (confirm('Wirklich alle Einträge löschen?')) {
+            state.entries = [];
+            save(); render();
+        }
+    };
+
+    const speakToggle = document.getElementById('speakToggle');
+    speakToggle.checked = state.speak !== false;
+    speakToggle.onchange = () => { state.speak = speakToggle.checked; save(); };
+
+    render();
+})();
+</script>
+</body>
+</html>
