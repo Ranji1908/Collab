@@ -22,6 +22,7 @@
   --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620; --hint-bg: #3a2c12; --hint-fg: #f5cf8f; --flag-bg: #3d1517; --flag-fg: #ffb3b3; --rn: #6d6964; color-scheme: dark }
 
 * { box-sizing: border-box }
+[hidden] { display: none !important }
 body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5 }
 h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 600; margin: 0; text-wrap: balance; line-height: 1.2 }
 h1 { font-size: 1.75rem } h2 { font-size: 1.35rem } h3 { font-size: 1.1rem }
@@ -194,7 +195,7 @@ table.grid td, table.grid th { text-align: center } table.grid td:first-child, t
 .fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px }
 .fgrid .wide { grid-column: 1 / -1 }
 @media (max-width: 560px) { .fgrid { grid-template-columns: 1fr } }
-input[type=email], input[type=tel] { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0 }
+input[type=email], input[type=tel], input[type=password] { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 10px; width: 100%; min-width: 0 }
 .req { color: var(--danger) }
 .ferr { color: var(--danger); font-weight: 400; font-size: .8rem }
 .ferr.box { background: var(--flag-bg); color: var(--flag-fg); padding: 8px 12px; border-radius: var(--radius); font-size: .9rem }
@@ -203,6 +204,21 @@ fieldset.contact legend { font-weight: 700; padding: 0 6px; font-family: var(--f
 .sum { background: var(--surface-2); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 2px }
 .sel-text { user-select: all }
 .st-Eingeladen { background: var(--accent-soft) } .st-Angelegt { background: var(--surface-2) }
+.hero { padding-block: 24px 8px }
+h1.big { font-size: clamp(1.8rem, 4vw, 2.6rem) }
+ul.plain, ol.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px }
+.regpage { display: grid; gap: 16px; max-width: 820px; width: 100%; justify-self: center }
+.mail { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; background: var(--surface-2) }
+.mail-h { display: grid; gap: 2px; font-size: .85rem; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 8px }
+.mail-h b { color: var(--fg); font-size: 1rem }
+.welcome { border-color: var(--accent) }
+.wsteps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px }
+.wsteps li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start }
+.wsteps .n { width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); display: grid; place-items: center; font-weight: 700; font-size: .8rem }
+.wsteps small { display: block; color: var(--muted) }
+.wsteps .link { text-align: left }
+.consent { display: grid; gap: 8px; font-size: .9rem }
+.consent label { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: start }
 .kanban { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start }
 @media (max-width: 860px) { .kanban { grid-template-columns: 1fr } }
 .col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 8px; min-height: 160px; align-content: start }
@@ -239,6 +255,7 @@ table.t th, table.t td { text-align: left; padding: 6px 8px; border-bottom: 1px 
       <div class="role" role="group" aria-label="Ansicht">
         <button data-a="role" data-v="betrieb" id="r-b">Betrieb</button>
         <button data-a="role" data-v="team" id="r-t">DTV-SQD-Team</button>
+        <button data-a="role" data-v="public" id="r-p">Registrierung</button>
       </div>
       <button class="link" data-a="reset">Zurücksetzen</button>
     </div>
@@ -307,22 +324,27 @@ const EXAMPLE_TEXT = (kp, hfk) => !!CRIT[kp]?.[hfk] && kp !== 14;
 const SCORE = { N: ["Nicht vorhanden und nicht relevant","var(--rn)"], 0: ["Nicht erfüllt","var(--r0)"], 1: ["Schwach","var(--r1)"], 2: ["Ausbaufähig","var(--r2)"], 3: ["Gut","var(--r3)"], 4: ["Sehr gut","var(--r4)"], 5: ["Exzellent","var(--r5)"] };
 const SCALE = ["N",0,1,2,3,4,5];
 
-const TEAM = [
+const DEFAULT_TEAM = [
   { id: "sh", name: "Sabine Hartmann", role: "Leitung", tags: ["ma","ui"] },
   { id: "my", name: "Murat Yilmaz", role: "Counter & Beratung", tags: ["gk"] },
   { id: "jk", name: "Jana Koch", role: "Marketing & Online", tags: ["dk","web"] },
   { id: "pb", name: "Peter Brandt", role: "Haustechnik", tags: ["oen","bf"] },
   { id: "lv", name: "Lisa Vogel", role: "Auszubildende", tags: [] }
 ];
-const member = id => TEAM.find(t => t.id === id);
+let TEAM = DEFAULT_TEAM;
+const member = id => TEAM.find(t => t.id === id) || { name: "Unbekannt", role: "" };
 const ini = n => n.split(" ").map(s => s[0]).join("");
 const first = id => member(id).name.split(" ")[0];
 // Zuordnung Kontaktpunkt → Rolle (für „Nach Rollen verteilen“)
 const ROLE_FOR_KP = { 1: "jk", 2: "jk", 3: "jk", 27: "jk", 28: "jk", 4: "pb", 7: "pb", 11: "pb", 12: "pb", 13: "pb", 16: "pb", 25: "sh", 24: "sh", 20: "lv", 19: "lv", 15: "lv", 18: "lv" };
+function pickFor(kp) {
+  const tag = [1, 2, 3, 27, 28].includes(kp) ? "web" : [4, 7, 8, 9, 10, 11, 12, 13, 16].includes(kp) ? "oen" : "gk";
+  return (TEAM.find(m => m.tags.includes(tag)) || member(S.lead)).id || S.lead;
+}
 function suggestResp(kp, hfk) {
   if ([1, 2, 3, 27].includes(kp) && hfk !== "ma") return ["jk"];
   const t = TEAM.filter(m => m.tags.includes(hfk)).map(m => m.id);
-  return t.length ? t : ["sh"];
+  return t.length ? t : [S.lead];
 }
 const ORIGIN = { eigen: ["eigene Formulierung", "var(--r5)"], ueberarbeitet: ["eigene, nach KI-Rückmeldung überarbeitet", "var(--accent)"] };
 
@@ -330,7 +352,8 @@ const ORIGIN = { eigen: ["eigene Formulierung", "var(--r5)"], ueberarbeitet: ["e
 const KEY = "qool-dummy-v2";
 function fresh() {
   return {
-    view: "dash", role: "betrieb", me: "my", branche: 1, kpSel: null, hfSel: ["gk","ma","ui","oen","dk","bf"], kp: 14, mine: false,
+    view: "dash", role: "betrieb", me: "my", lead: "sh", team: null, pending: null,
+    org: { name: "Tourist-Information Musterstadt", stamm: { name: "Tourist-Information Musterstadt", br: 1, strasse: "Marktplatz 1", plz: "12345", ort: "Musterstadt", land: "Hessen", tel: "01234 56780", web: "www.musterstadt-tourismus.example", kdnr: "D-104233" }, contacts: null, q: { start: "2026-10-01", frist: "2027-03-31", einreichung: "2027-04-30" }, kordMissing: false, self: false }, branche: 1, kpSel: null, hfSel: ["gk","ma","ui","oen","dk","bf"], kp: 14, mine: false,
     assign: { 1: "jk", 2: "jk", 3: "jk", 27: "jk", 28: "jk", 4: "pb", 7: "pb", 5: "my", 14: "my", 17: "my", 21: "my", 23: "my", 26: "my", 19: "lv", 20: "lv", 25: "sh" },
     ratings: {
       "14|gk|0": 4, "14|gk|1": 1, "14|gk|2": 3, "14|ma|0": 2, "14|ma|1": 3, "14|ma|2": 4, "14|ui|0": 3, "14|ui|1": "N", "14|ui|2": 2,
@@ -352,6 +375,7 @@ function fresh() {
 }
 let S;
 try { S = Object.assign(fresh(), JSON.parse(localStorage.getItem(KEY)) || {}); } catch (e) { S = fresh(); }
+TEAM = S.team || DEFAULT_TEAM;
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
 const brType = () => TYP_B.includes(S.branche) ? "B" : "A";
@@ -434,14 +458,17 @@ const STEPS = [["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlun
 function render() {
   document.getElementById("r-b").setAttribute("aria-pressed", S.role === "betrieb");
   document.getElementById("r-t").setAttribute("aria-pressed", S.role === "team");
+  document.getElementById("r-p").setAttribute("aria-pressed", S.role === "public");
+  if (S.role === "public" && !["landing","reg","regdone"].includes(S.view)) S.view = "landing";
+  if (S.role !== "public" && ["landing","reg","regdone"].includes(S.view)) S.view = S.role === "team" ? "betriebe" : "dash";
   document.getElementById("mewrap").hidden = S.role !== "betrieb";
   document.getElementById("me").innerHTML = TEAM.map(t => `<option value="${t.id}" ${t.id === S.me ? "selected" : ""}>${t.name}</option>`).join("");
   if (S.role === "team" && !["betriebe","betrieb","edit"].includes(S.view)) S.view = "betriebe";
   if (S.role === "team" && S.view !== "betriebe" && !S.openB) S.view = "betriebe";
   if (S.role === "betrieb" && ["betriebe","betrieb"].includes(S.view)) S.view = "dash";
-  const steps = S.role === "team" ? [["betriebe","Alle Betriebe"], ...(S.openB ? [["betrieb", modelById(S.openB).name]] : [])] : STEPS;
+  const steps = S.role === "public" ? [] : S.role === "team" ? [["betriebe","Alle Betriebe"], ...(S.openB ? [["betrieb", modelById(S.openB).name]] : [])] : STEPS;
   document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k || (k === "betrieb" && S.view === "edit" && S.role === "team") ? 'aria-current="page"' : ""}>${S.role === "team" ? "" : `<small>${i + 1}</small>`}${esc(l)}</button>`).join("");
-  document.getElementById("app").innerHTML = ({ dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb })[S.view]();
+  document.getElementById("app").innerHTML = ({ dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb, landing: vLanding, reg: vReg, regdone: vRegDone })[S.view]();
   document.getElementById("fab").hidden = S.role !== "betrieb";
   if (S.view === "plan") bindDnD();
   save();
@@ -476,16 +503,17 @@ function vDash() {
   const mDone = S.measures.filter(m => m.status === "erledigt").length;
   const mine = memberLoad(S.me);
   return `
-  <section style="display:grid;gap:6px"><div class="eyebrow">Schaltzentrale</div><h1>Tourist-Information Musterstadt</h1>
+  <section style="display:grid;gap:6px"><div class="eyebrow">Schaltzentrale</div><h1>${esc(S.org.name)}</h1>
     <p class="lead">Hallo ${first(S.me)}, dir sind ${mine.n} Kontaktpunkte mit ${mine.t} Kriterien zugeteilt. ${mine.d} davon hast du bewertet.</p></section>
   <section class="kpis">
     <div class="kpi"><span class="eyebrow">Status</span><b><span class="pill st-${S.status}">${S.status}</span></b></div>
     <div class="kpi"><span class="eyebrow">Gesamtfortschritt</span><b class="num">${o.pct} %</b><div class="bar"><i style="width:${o.pct}%"></i></div></div>
-    <div class="kpi"><span class="eyebrow">Bearbeitungsfrist</span><b class="num">31.03.2027</b></div>
-    <div class="kpi"><span class="eyebrow">Einreichungsfrist</span><b class="num">30.04.2027</b></div>
+    <div class="kpi"><span class="eyebrow">Bearbeitungsfrist</span><b class="num">${dDE(S.org.q.frist)}</b></div>
+    <div class="kpi"><span class="eyebrow">Einreichungsfrist</span><b class="num">${dDE(S.org.q.einreichung)}</b></div>
     <div class="kpi"><span class="eyebrow">Ablaufdatum Q</span><b class="num">${dDE(S.validUntil)}</b></div>
     <div class="kpi"><span class="eyebrow">Ø Selbstcheck</span><b class="num">${fmt(o.avg)}</b></div>
   </section>
+  ${welcomeCard()}
   ${S.status === "Nachbesserung" ? `<div class="hint"><b>Rückmeldung vom DTV-SQD-Team:</b> ${esc(S.teamComment || "Bitte die markierten Stellen überarbeiten.")}</div>` : ""}
   <section class="grid2">
     <div class="panel" style="display:grid;gap:8px;justify-items:center">
@@ -581,7 +609,7 @@ function vEdit() {
   const allDone = o.t > 0 && o.d === o.t;
   const locked = S.status === "Eingereicht" || S.status === "Freigegeben" || S.role === "team";
   const owner = S.assign[kp.id];
-  const isLead = S.me === "sh";
+  const isLead = S.me === S.lead;
   return `
   <div class="work">
     <aside class="panel kpside" style="padding:0">
@@ -611,9 +639,10 @@ function vEdit() {
       <div class="kpfoot">
         <div><div class="eyebrow">Ø dieser Kontaktpunkt</div><span class="avg num">${fmt(st.avg)}</span> ${st.avg === null ? "" : st.avg >= 3 ? '<span class="pill st-Freigegeben">≥ 3,0 erreicht</span>' : '<span class="pill" style="background:var(--danger);color:#fff">unter 3,0</span>'}</div>
         <div class="row">${!locked ? `<button class="btn" data-a="nextkp">Speichern &amp; weiter</button>
-          ${isLead ? `<button class="btn primary" data-a="submit" ${allDone ? "" : "disabled"}>Servicekette einreichen</button>` : ""}` : ""}</div>
+          ${isLead ? `<button class="btn primary" data-a="submit" ${allDone && !S.org.kordMissing ? "" : "disabled"}>Servicekette einreichen</button>` : ""}` : ""}</div>
       </div>
-      ${!locked && !allDone ? `<p style="font-size:.85rem;color:var(--muted)">Einreichen ist möglich, sobald alle ${o.t} Kriterien bewertet sind (aktuell ${o.d}). Eingereicht wird von der Leitung (Sabine Hartmann).</p>` : ""}
+      ${!locked && S.org.kordMissing ? `<div class="hint">Einreichen ist erst möglich, wenn eine Person im Betrieb eine KORD3-Lizenz hat. <button class="link" data-a="seminar">Starterseminar buchen</button></div>` : ""}
+      ${!locked && !allDone ? `<p style="font-size:.85rem;color:var(--muted)">Einreichen ist möglich, sobald alle ${o.t} Kriterien bewertet sind (aktuell ${o.d}). Eingereicht wird von der Hauptansprechperson (${esc(member(S.lead).name)}).</p>` : ""}
       <p style="font-size:.8rem;color:var(--muted)">Berechnung: Summe aller mit 0–5 bewerteten DTV-Kriterien geteilt durch deren Anzahl. N und eigene Kriterien zählen nicht.</p>
     </section>
   </div>`;
@@ -713,10 +742,9 @@ const MOCK = [
 
 function liveModel() {
   const o = overall();
-  return { id: "ti", live: true, name: "Tourist-Information Musterstadt", ort: "Musterstadt", br: S.branche, status: S.status, sub: S.submitted || "", kord: "Sabine Hartmann", valid: S.validUntil || "",
-    stamm: { name: "Tourist-Information Musterstadt", br: S.branche, strasse: "Marktplatz 1", plz: "12345", ort: "Musterstadt", land: "Hessen", tel: "01234 56780", web: "www.musterstadt-tourismus.example", kdnr: "D-104233" },
-    contacts: TEAM.slice(0, 3).map((t, i) => ({ vn: t.name.split(" ")[0], nn: t.name.split(" ")[1], fn: t.role, email: `${t.name.split(" ")[0][0].toLowerCase()}.${t.name.split(" ")[1].toLowerCase()}@musterstadt-tourismus.example`, tel: "", main: i === 0, kord: i === 0 })),
-    q: { start: "2026-10-01", frist: "2027-03-31", einreichung: "2027-04-30" },
+  const defContacts = DEFAULT_TEAM.slice(0, 3).map((t, i) => ({ vn: t.name.split(" ")[0], nn: t.name.split(" ")[1], fn: t.role, email: `${t.name.split(" ")[0][0].toLowerCase()}.${t.name.split(" ")[1].toLowerCase()}@musterstadt-tourismus.example`, tel: "", main: i === 0, kord: i === 0 }));
+  return { id: "ti", live: true, self: S.org.self, name: S.org.name, ort: S.org.stamm.ort, br: S.branche, status: S.status, sub: S.submitted || "", kord: (S.org.contacts || defContacts).filter(c => c.kord).map(c => `${c.vn} ${c.nn}`).join(", ") || "noch keine KORD3-Lizenz", valid: S.validUntil || "",
+    stamm: { ...S.org.stamm, br: S.branche }, contacts: S.org.contacts || defContacts, q: S.org.q,
     avg: o.avg, done: o.d, total: o.t, comment: S.teamComment, history: S.history,
     kps: selKps().filter(k => kpStats(k).done).map(k => { const s = kpStats(k); return { id: k.id, name: k.name, done: s.done, total: s.total, avg: s.avg,
       hf: HF.map(h => S.hfSel.includes(h.k) ? mean(critsOf(k).filter(c => c.hf === h.k).map(c => S.ratings[c.key]).filter(v => typeof v === "number")) : null) }; }),
@@ -747,7 +775,7 @@ function vBetriebe() {
   const F = [["alle","Alle",all.length],["Eingereicht","Zu prüfen",cnt("Eingereicht")],["Nachbesserung","In Nachbesserung",cnt("Nachbesserung")],["Entwurf","In Bearbeitung",cnt("Entwurf")],...(cnt("Eingeladen") + cnt("Angelegt") ? [["neu","Neu angelegt",cnt("Eingeladen") + cnt("Angelegt")]] : []),["Freigegeben","Freigegeben",cnt("Freigegeben")],["Abgelaufen","Abgelaufen",cnt("Abgelaufen")]];
   return `
   <section style="display:grid;gap:6px"><div class="eyebrow">Ansicht DTV-SQD-Team</div><div class="row" style="justify-content:space-between"><h1>Betriebe</h1><button class="btn primary" data-a="wopen">+ Neuen Betrieb anlegen</button></div>
-    <p class="lead">Alle Betriebe mit Q. Ein Klick öffnet den Betrieb mit Prüfung, Servicekette, Maßnahmen und Verlauf. Nur die Tourist-Information Musterstadt ist im Dummy voll bedienbar, die anderen sind Beispieldaten.</p></section>
+    <p class="lead">Alle Betriebe mit Q. Ein Klick öffnet den Betrieb mit Prüfung, Servicekette, Maßnahmen und Verlauf. Nur ${esc(S.org.name)} ist im Dummy voll bedienbar, die anderen sind Beispieldaten.</p></section>
   <section class="kpis">
     <div class="kpi"><span class="eyebrow">Zu prüfen</span><b class="num">${cnt("Eingereicht")}</b></div>
     <div class="kpi"><span class="eyebrow">In Nachbesserung</span><b class="num">${cnt("Nachbesserung")}</b></div>
@@ -761,7 +789,7 @@ function vBetriebe() {
   </section>
   <section class="panel" style="padding:0"><div class="tw"><table class="t blist"><thead><tr><th>Betrieb</th><th>Branche</th><th>Status</th><th>Eingereicht</th><th>Ø</th><th>Hinweise</th><th>Maßnahmen</th><th>Q gültig bis</th><th></th></tr></thead><tbody>
     ${rows.map(m => { const red = m.flags.filter(f => f.sev === "flag").length, md = m.measures.filter(x => x.status === "erledigt").length; return `<tr data-search="${esc((m.name + " " + m.ort).toLowerCase())}" data-a="openb" data-v="${m.id}" class="clk">
-      <td><b>${esc(m.name)}</b><small style="display:block;color:var(--muted)">${esc(m.ort)}</small></td><td>${BRANCHEN[m.br]}</td>
+      <td><b>${esc(m.name)}</b>${m.self ? ' <span class="chip ai">selbst registriert</span>' : ""}<small style="display:block;color:var(--muted)">${esc(m.ort)}</small></td><td>${BRANCHEN[m.br]}</td>
       <td><span class="pill st-${m.status}">${STL[m.status]}</span></td><td class="num">${dDE(m.sub)}</td>
       <td class="num">${m.avg === null || m.avg === undefined ? "–" : m.avg >= 3 ? fmt(m.avg) : `<b style="color:var(--danger)">${fmt(m.avg)}</b>`}</td>
       <td>${red ? `<span class="chip flag">${red}</span>` : '<span style="color:var(--muted)">–</span>'}</td>
@@ -866,13 +894,13 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const addMonths = (d, n) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0, 10); };
 const emptyContact = () => ({ vn: "", nn: "", fn: "", email: "", tel: "", main: false, kord: false });
 let wiz = null;
-function openWizard(id) {
+function openWizard(id, mode) {
   if (id) { const m = modelById(id); wiz = { id, step: 0, err: {}, stamm: { ...m.stamm }, contacts: m.contacts.map(c => ({ ...c })), q: { ...(m.q || {}) }, edit: true }; }
-  else wiz = { step: 0, err: {}, stamm: { name: "", br: "", strasse: "", plz: "", ort: "", land: "", tel: "", web: "", kdnr: "" }, contacts: [{ ...emptyContact(), main: true, kord: true }],
-    q: { paket: "Q", start: today(), frist: addMonths(today(), 6), einreichung: addMonths(today(), 7), invite: "alle" } };
-  renderWizard();
+  else wiz = { mode: mode || "admin", step: 0, err: {}, stamm: { name: "", br: "", strasse: "", plz: "", ort: "", land: "", tel: "", web: "", kdnr: "" }, contacts: [{ ...emptyContact(), main: true, kord: true }],
+    q: { paket: "Q", start: today(), frist: addMonths(today(), 6), einreichung: addMonths(today(), 7), invite: "alle", pw: "", pw2: "", dsgvo: false, agb: false } };
+  if (wiz.mode === "self") wiz.contacts[0].kord = false; else renderWizard();
 }
-const W_STEPS = ["Stammdaten", "Kontaktpersonen", "Q-Start", "Prüfen & anlegen"];
+const wSteps = () => wiz.mode === "self" ? ["Ihr Betrieb", "Ansprechpersonen", "Zugang", "Prüfen & absenden"] : ["Stammdaten", "Kontaktpersonen", "Q-Start", "Prüfen & anlegen"];
 function fld(label, path, opts = {}) {
   const [grp, key] = path.split("."), v = wiz[grp][key] ?? "", err = wiz.err[path];
   const inp = opts.options ? `<select data-w="${path}" id="w-${key}">${opts.options.map(([val, l]) => `<option value="${val}" ${String(v) === String(val) ? "selected" : ""}>${l}</option>`).join("")}</select>`
@@ -893,10 +921,10 @@ function wStep0() {
   </div>`;
 }
 function wStep1() {
-  return `<p class="lead" style="font-size:.9rem">Mindestens eine Person mit KORD3-Lizenz ist Voraussetzung für Q. Alle Kontaktpersonen erhalten auf Wunsch einen eigenen Zugang zu Qool.</p>
+  return `<p class="lead" style="font-size:.9rem">${wiz.mode === "self" ? "Tragen Sie zuerst sich selbst ein. Weitere Personen aus Ihrem Team erhalten eine eigene Einladung. Wer bereits eine KORD3-Lizenz hat, markieren Sie bitte." : "Mindestens eine Person mit KORD3-Lizenz ist Voraussetzung für Q. Alle Kontaktpersonen erhalten auf Wunsch einen eigenen Zugang zu Qool."}</p>
   ${wiz.err.contacts ? `<div class="ferr box">${wiz.err.contacts}</div>` : ""}
   <div style="display:grid;gap:12px">${wiz.contacts.map((c, i) => `<fieldset class="contact">
-    <legend>Kontaktperson ${i + 1}</legend>
+    <legend>${wiz.mode === "self" && i === 0 ? "Ihre Daten" : `Kontaktperson ${i + 1}`}</legend>
     <div class="fgrid">
       ${cf(i, "vn", "Vorname", 1)}${cf(i, "nn", "Nachname", 1)}
       ${cf(i, "fn", "Funktion", 0, "z. B. Leitung, Empfang")}${cf(i, "tel", "Telefon", 0, "", "tel")}
@@ -930,23 +958,41 @@ function wStep3() {
   const inv = q.invite === "alle" ? wiz.contacts : q.invite === "kord" ? wiz.contacts.filter(c => c.kord) : [];
   return `<div class="grid2" style="gap:12px">
     <div class="sum"><span class="eyebrow">Stammdaten</span><b>${esc(s.name)}</b><span>${BRANCHEN[s.br] ?? ""}</span><span>${esc(s.strasse)}, ${esc(s.plz)} ${esc(s.ort)}${s.land ? ` (${s.land})` : ""}</span>${s.tel ? `<span>${esc(s.tel)}</span>` : ""}${s.web ? `<span>${esc(s.web)}</span>` : ""}${s.kdnr ? `<span>Kd.-Nr. ${esc(s.kdnr)}</span>` : ""}</div>
-    <div class="sum"><span class="eyebrow">Q</span><span>${{ Q: "Q", Kombi: "Kombipaket i-Marke + Q", Auffrischung: "Q-Auffrischung" }[q.paket]}</span><span>Start ${dDE(q.start)}</span><span>Bearbeitung bis ${dDE(q.frist)}</span><span>Einreichung bis ${dDE(q.einreichung)}</span></div>
+    ${wiz.mode === "self" ? `<div class="sum"><span class="eyebrow">Zugang</span><span>Anmeldung mit ${esc(wiz.contacts.find(c => c.main)?.email || "")}</span><span>${wiz.contacts.some(c => c.kord) ? "KORD3-Lizenz vorhanden" : "Noch keine KORD3-Lizenz"}</span></div>` : `<div class="sum"><span class="eyebrow">Q</span><span>${{ Q: "Q", Kombi: "Kombipaket i-Marke + Q", Auffrischung: "Q-Auffrischung" }[q.paket]}</span><span>Start ${dDE(q.start)}</span><span>Bearbeitung bis ${dDE(q.frist)}</span><span>Einreichung bis ${dDE(q.einreichung)}</span></div>`}
   </div>
   <div class="sum"><span class="eyebrow">Kontaktpersonen</span>
     <table class="t"><tbody>${wiz.contacts.map(c => `<tr><td><b>${esc(c.vn)} ${esc(c.nn)}</b><small style="display:block;color:var(--muted)">${esc(c.fn)}</small></td><td>${esc(c.email)}</td><td>${c.main ? '<span class="chip ai">Hauptkontakt</span> ' : ""}${c.kord ? '<span class="chip own">KORD3</span>' : ""}</td></tr>`).join("")}</tbody></table></div>
-  ${wiz.edit ? "" : `<p>${inv.length ? `Zugangsdaten gehen an: ${inv.map(c => esc(c.email)).join(", ")}` : "Es werden noch keine Zugangsdaten verschickt."}</p>`}`;
+  ${wiz.edit ? "" : wiz.mode === "self" ? `<p>Nach dem Absenden erhalten Sie eine E-Mail zur Bestätigung.${wiz.contacts.length > 1 ? " Ihre weiteren Ansprechpersonen bekommen eine eigene Einladung." : ""}</p>` : `<p>${inv.length ? `Zugangsdaten gehen an: ${inv.map(c => esc(c.email)).join(", ")}` : "Es werden noch keine Zugangsdaten verschickt."}</p>`}`;
 }
-function renderWizard() {
-  const body = [wStep0, wStep1, wStep2, wStep3][wiz.step]();
+function wStepKonto() {
+  const q = wiz.q, e = wiz.err;
+  return `<div class="fgrid">
+    <label class="f"><span>Passwort <span class="req">*</span></span><input type="password" data-w="q.pw" id="w-pw" value="${esc(q.pw)}" autocomplete="new-password">${e["q.pw"] ? `<span class="ferr">${e["q.pw"]}</span>` : '<small style="font-weight:400;color:var(--muted)">Mindestens 10 Zeichen</small>'}</label>
+    <label class="f"><span>Passwort wiederholen <span class="req">*</span></span><input type="password" data-w="q.pw2" id="w-pw2" value="${esc(q.pw2)}" autocomplete="new-password">${e["q.pw2"] ? `<span class="ferr">${e["q.pw2"]}</span>` : ""}</label>
+  </div>
+  ${wiz.contacts.some(c => c.kord) ? "" : `<div class="hint">Sie haben noch niemanden mit KORD3-Lizenz angegeben. Sie können sich trotzdem registrieren und anfangen. Einreichen geht erst, wenn eine Person aus Ihrem Betrieb das Starterseminar besucht hat.</div>`}
+  <div class="consent">
+    <label><input type="checkbox" data-w="q.dsgvo" ${q.dsgvo ? "checked" : ""}><span>Ich habe die Datenschutzhinweise gelesen. <span class="req">*</span></span></label>
+    <label><input type="checkbox" data-w="q.agb" ${q.agb ? "checked" : ""}><span>Ich akzeptiere die Teilnahmebedingungen von ServiceQualität Deutschland. <span class="req">*</span></span></label>
+    ${e["q.consent"] ? `<span class="ferr">${e["q.consent"]}</span>` : ""}
+  </div>`;
+}
+function wizardInner() {
+  const self = wiz.mode === "self";
+  const body = [wStep0, wStep1, self ? wStepKonto : wStep2, wStep3][wiz.step]();
   const last = wiz.step === 3;
-  layer.innerHTML = `<div class="scrim" data-a="wclose"></div><div class="modal" role="dialog" aria-modal="true" aria-labelledby="w-title">
-    <header class="row" style="justify-content:space-between;align-items:start"><div><div class="eyebrow">${wiz.edit ? "Stammdaten bearbeiten" : "Onboarding"}</div><h2 id="w-title">${wiz.edit ? esc(wiz.stamm.name) : "Neuen Betrieb anlegen"}</h2></div><button class="x" data-a="wclose" aria-label="Schließen">×</button></header>
-    <ol class="stepper">${W_STEPS.map((l, i) => `<li class="${i < wiz.step ? "done" : i === wiz.step ? "cur" : ""}"><button data-a="wgo" data-v="${i}" ${i > wiz.step ? "disabled" : ""}><span class="n">${i < wiz.step ? "✓" : i + 1}</span>${l}</button></li>`).join("")}</ol>
+  return `<ol class="stepper">${wSteps().map((l, i) => `<li class="${i < wiz.step ? "done" : i === wiz.step ? "cur" : ""}"><button data-a="wgo" data-v="${i}" ${i > wiz.step ? "disabled" : ""}><span class="n">${i < wiz.step ? "✓" : i + 1}</span>${l}</button></li>`).join("")}</ol>
     <div class="mbody">${body}</div>
     <footer class="row" style="justify-content:space-between">
       <button class="btn" data-a="${wiz.step ? "wback" : "wclose"}">${wiz.step ? "Zurück" : "Abbrechen"}</button>
-      <button class="btn primary" data-a="${last ? "wsave" : "wnext"}">${last ? (wiz.edit ? "Änderungen speichern" : "Betrieb anlegen") : "Weiter"}</button>
-    </footer></div>`;
+      <button class="btn primary" data-a="${last ? "wsave" : "wnext"}">${last ? (wiz.edit ? "Änderungen speichern" : self ? "Registrierung absenden" : "Betrieb anlegen") : "Weiter"}</button>
+    </footer>`;
+}
+function renderWizard() {
+  if (wiz.mode === "self") { render(); document.querySelector(".regpage .mbody input, .regpage .mbody select")?.focus(); return; }
+  layer.innerHTML = `<div class="scrim" data-a="wclose"></div><div class="modal" role="dialog" aria-modal="true" aria-labelledby="w-title">
+    <header class="row" style="justify-content:space-between;align-items:start"><div><div class="eyebrow">${wiz.edit ? "Stammdaten bearbeiten" : "Onboarding"}</div><h2 id="w-title">${wiz.edit ? esc(wiz.stamm.name) : "Neuen Betrieb anlegen"}</h2></div><button class="x" data-a="wclose" aria-label="Schließen">×</button></header>
+    ${wizardInner()}</div>`;
   layer.querySelector(".mbody input, .mbody select")?.focus();
 }
 function validate(step) {
@@ -967,10 +1013,14 @@ function validate(step) {
       if (!EMAIL.test(m)) e[`c${i}.email`] = "Bitte eine gültige E-Mail-Adresse angeben.";
       else if (seen.has(m)) e[`c${i}.email`] = "Diese E-Mail-Adresse ist schon vergeben."; else seen.add(m);
     });
-    if (!wiz.contacts.some(c => c.kord)) e.contacts = "Mindestens eine Kontaktperson muss Koordinator/in mit KORD3-Lizenz sein. Ohne KORD3 kann Q nicht gebucht werden.";
+    if (wiz.mode !== "self" && !wiz.contacts.some(c => c.kord)) e.contacts = "Mindestens eine Kontaktperson muss Koordinator/in mit KORD3-Lizenz sein. Ohne KORD3 kann Q nicht gebucht werden.";
     else if (!wiz.contacts.some(c => c.main)) e.contacts = "Bitte eine Hauptansprechperson festlegen.";
   }
-  if (step === 2) {
+  if (step === 2 && wiz.mode === "self") {
+    if ((q.pw || "").length < 10) e["q.pw"] = "Mindestens 10 Zeichen.";
+    else if (q.pw !== q.pw2) e["q.pw2"] = "Die Passwörter stimmen nicht überein.";
+    if (!q.dsgvo || !q.agb) e["q.consent"] = "Bitte beide Punkte bestätigen.";
+  } else if (step === 2) {
     ["start","frist","einreichung"].forEach(k => { if (!q[k]) e[`q.${k}`] = "Pflichtfeld"; });
     if (q.frist && q.start && q.frist <= q.start) e["q.frist"] = "Muss nach dem Start liegen.";
     if (q.einreichung && q.frist && q.einreichung < q.frist) e["q.einreichung"] = "Darf nicht vor der Bearbeitungsfrist liegen.";
@@ -978,8 +1028,9 @@ function validate(step) {
   wiz.err = e; return !Object.keys(e).length;
 }
 function saveWizard() {
-  const kord = wiz.contacts.find(c => c.kord), kname = `${kord.vn} ${kord.nn}`.trim();
+  const kord = wiz.contacts.find(c => c.kord) || { vn: "", nn: "" }, kname = `${kord.vn} ${kord.nn}`.trim();
   const data = { stamm: { ...wiz.stamm, br: +wiz.stamm.br }, contacts: wiz.contacts.map(c => ({ ...c, email: c.email.trim() })), q: { ...wiz.q } };
+  if (wiz.mode === "self") { S.pending = data; S.view = "regdone"; wiz = null; render(); scrollTo(0, 0); return; }
   if (wiz.edit) { S.bedit[wiz.id] = data; close(); render(); toast("Stammdaten gespeichert"); return; }
   const id = "n" + Date.now().toString(36);
   const inv = wiz.q.invite === "alle" ? data.contacts : wiz.q.invite === "kord" ? data.contacts.filter(c => c.kord) : [];
@@ -989,7 +1040,7 @@ function saveWizard() {
   S.bfilter = "alle"; close(); render(); toast(`${data.stamm.name} angelegt`);
 }
 function wizInput(t) {
-  if (t.dataset.w) { const [g, k] = t.dataset.w.split("."); wiz[g][k] = t.value; }
+  if (t.dataset.w) { const [g, k] = t.dataset.w.split("."); wiz[g][k] = t.type === "checkbox" ? t.checked : t.value; }
   if (t.dataset.c) { const [i, k] = t.dataset.c.split("."); const c = wiz.contacts[+i];
     if (k === "main") wiz.contacts.forEach((x, j) => x.main = j === +i); else if (t.type === "checkbox") c[k] = t.checked; else c[k] = t.value; }
 }
@@ -1007,6 +1058,75 @@ function tStamm(m) {
       <ul class="team">${m.contacts.map(c => `<li style="grid-template-columns:28px 1fr"><span class="av">${esc((c.vn[0] || "") + (c.nn[0] || ""))}</span><span style="min-width:0"><b>${esc(c.vn)} ${esc(c.nn)}</b> ${c.main ? '<span class="chip ai">Hauptkontakt</span>' : ""} ${c.kord ? '<span class="chip own">KORD3</span>' : ""}
         <small style="display:block;color:var(--muted)">${esc(c.fn || "")}${c.fn ? " · " : ""}<span class="sel-text">${esc(c.email)}</span>${c.tel ? " · " + esc(c.tel) : ""}</small></span></li>`).join("")}</ul>
     </div>
+  </section>`;
+}
+
+/* ---------- Selbstregistrierung (öffentliche Seite) ---------- */
+function vLanding() {
+  return `
+  <section class="hero">
+    <div style="display:grid;gap:12px;max-width:62ch">
+      <div class="eyebrow">ServiceQualität Deutschland</div>
+      <h1 class="big">Q jetzt digital: Servicequalität mit dem ganzen Team verbessern</h1>
+      <p class="lead">Registrieren Sie Ihren Betrieb in Qool. Danach bewerten Sie Ihre Servicekette Schritt für Schritt, planen eigene Maßnahmen und reichen alles zur Prüfung beim DTV ein.</p>
+      <div class="row"><button class="btn primary" data-a="go" data-v="reg">Jetzt registrieren</button><button class="link" data-a="role" data-v="betrieb">Ich habe schon einen Zugang</button></div>
+    </div>
+  </section>
+  <section class="grid2" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+    <div class="panel" style="display:grid;gap:6px"><h3>Was Sie brauchen</h3><ul class="plain"><li>Mindestens eine Person mit KORD3-Lizenz (Starterseminar)</li><li>Ein kleines Team, das mitbewertet</li><li>Rund sechs Monate Zeit für Bewertung und Maßnahmen</li></ul></div>
+    <div class="panel" style="display:grid;gap:6px"><h3>So läuft es ab</h3><ol class="plain"><li>Betrieb und Ansprechpersonen registrieren</li><li>E-Mail-Adresse bestätigen</li><li>Servicekette bewerten, Maßnahmen planen</li><li>Prüfung durch das DTV-SQD-Team, danach Q für drei Jahre</li></ol></div>
+    <div class="panel" style="display:grid;gap:6px"><h3>Fragen?</h3><p>Das DTV-SQD-Team hilft weiter.</p><p class="num sel-text">sqd@deutschertourismusverband.example<br>030 000000-0</p></div>
+  </section>`;
+}
+function vReg() {
+  if (!wiz || wiz.mode !== "self") openWizard(null, "self");
+  return `<section style="display:grid;gap:6px"><div><button class="link" data-a="go" data-v="landing">← Zurück</button></div><div class="eyebrow">Registrierung</div><h1>Betrieb registrieren</h1>
+    <p class="lead">Dauert etwa fünf Minuten. Pflichtfelder sind mit * markiert.</p></section>
+    <section class="panel regpage">${wizardInner()}</section>`;
+}
+function vRegDone() {
+  const d = S.pending; if (!d) { S.view = "landing"; return vLanding(); }
+  const main = d.contacts.find(c => c.main);
+  return `<section class="panel" style="display:grid;gap:14px;max-width:680px;justify-self:center;width:100%">
+    <div class="eyebrow">Registrierung · Schritt 2 von 2</div>
+    <h1>Bitte bestätigen Sie Ihre E-Mail-Adresse</h1>
+    <p>Wir haben eine E-Mail an <b class="sel-text">${esc(main.email)}</b> geschickt. Klicken Sie auf den Link darin, um Ihren Zugang zu aktivieren.</p>
+    <div class="mail"><div class="mail-h"><span>Von: Qool · ServiceQualität Deutschland</span><span>An: ${esc(main.email)}</span><b>Ihre Registrierung für ${esc(d.stamm.name)}</b></div>
+      <p>Guten Tag ${esc(main.vn)} ${esc(main.nn)},</p><p>vielen Dank für Ihre Registrierung. Bitte bestätigen Sie Ihre E-Mail-Adresse, um mit Q zu starten.${d.contacts.length > 1 ? ` Ihre ${d.contacts.length - 1} weiteren Ansprechpersonen erhalten eine eigene Einladung.` : ""}</p>
+      <button class="btn primary" data-a="regconfirm">Registrierung bestätigen</button><small style="color:var(--muted)">Im Klickdummy simuliert dieser Button den Link in der E-Mail.</small></div>
+  </section>`;
+}
+const HF_TOPIC = { gk: "Bei Gast/Kunde geht es um alles, was Besucher direkt erleben.", ma: "Themen zu Mitarbeitenden betreffen Dienstpläne, Arbeitsplätze und Abläufe.", ui: "Hier geht es um Partner, Lieferanten und die Region.", oen: "Energie, Material und Müll sind die großen Themen.", dk: "Es geht um digitale Angebote und Werkzeuge.", bf: "Es geht um Zugänglichkeit vor Ort und online." };
+function tagsFor(fn, main) {
+  const f = (fn || "").toLowerCase(), t = [];
+  if (/leit|geschäft|direkt|inhab|chef|vorstand/.test(f)) t.push("ma", "ui");
+  if (/market|online|social|digital|web|presse|kommunik/.test(f)) t.push("dk", "web");
+  if (/techn|haus|facility|gebäude/.test(f)) t.push("oen", "bf");
+  if (/empfang|rezeption|counter|service|berat|front|gäste/.test(f)) t.push("gk");
+  if (!t.length && main) t.push("ma", "ui");
+  return t;
+}
+function finalizeRegistration() {
+  const d = S.pending, mainIdx = Math.max(0, d.contacts.findIndex(c => c.main));
+  TEAM = d.contacts.map((c, i) => ({ id: "c" + i, name: `${c.vn} ${c.nn}`.trim(), role: c.fn || "Team", tags: tagsFor(c.fn, c.main) }));
+  const kordMissing = !d.contacts.some(c => c.kord);
+  Object.assign(S, {
+    team: TEAM, lead: "c" + mainIdx, me: "c" + mainIdx, branche: d.stamm.br, kpSel: null, hfSel: HF.map(h => h.k), mine: false,
+    org: { name: d.stamm.name, stamm: d.stamm, contacts: d.contacts, q: { start: today(), frist: addMonths(today(), 6), einreichung: addMonths(today(), 7) }, kordMissing, self: true },
+    ratings: {}, notes: {}, custom: {}, measures: [], nextId: 1, assign: {}, status: "Entwurf", submitted: "", validUntil: "", teamComment: "",
+    history: [{ d: today(), t: "Selbst registriert", by: TEAM[mainIdx].name, txt: kordMissing ? "Noch keine KORD3-Lizenz angegeben." : "" }],
+    pending: null, role: "betrieb", view: "dash"
+  });
+  ensureSel(); S.kp = selKps()[0]?.id; wiz = null;
+  render(); scrollTo(0, 0); toast("Zugang aktiviert. Willkommen bei Qool!");
+}
+function welcomeCard() {
+  if (overall().d > 0 || S.status !== "Entwurf") return "";
+  const steps = [["kps","Kontaktpunkte prüfen","Welche Kontaktpunkte gibt es bei euch? Pflichtpunkte sind schon gesetzt."],["hfs","Handlungsfelder wählen","Mindestens drei, Gast/Kunde ist Pflicht."],["team","Im Team verteilen","Wer bewertet welchen Kontaktpunkt?"],["edit","Bewerten und Maßnahmen planen","Jede Person bewertet ihre Kontaktpunkte und formuliert Maßnahmen."],["edit","Einreichen","Die Hauptansprechperson reicht die Servicekette beim DTV ein."]];
+  return `<section class="panel welcome" style="display:grid;gap:12px">
+    <div class="row" style="justify-content:space-between"><h2>Willkommen, ${esc(first(S.me))}! So startet ihr mit Q</h2><button class="btn primary" data-a="go" data-v="kps">Jetzt starten</button></div>
+    ${S.org.kordMissing ? `<div class="hint">Für Q braucht mindestens eine Person im Betrieb eine KORD3-Lizenz. Ihr könnt schon anfangen, eingereicht werden kann erst mit Lizenz. <button class="link" data-a="seminar">Starterseminar buchen</button></div>` : ""}
+    <ol class="wsteps">${steps.map(([v, t, d], i) => `<li><span class="n">${i + 1}</span><div><button class="link" data-a="go" data-v="${v}">${t}</button><small>${d}</small></div></li>`).join("")}</ol>
   </section>`;
 }
 
@@ -1098,7 +1218,7 @@ function botDrawer(hfk) {
     <p style="font-size:.8rem;color:var(--muted)">Klickdummy: Antworten sind vorbereitet.</p>`);
 }
 function botAnswer(hfk, q) {
-  if (q === "who") return `<div class="msg bot">${BOT[hfk]}</div>`;
+  if (q === "who") return `<div class="msg bot">${TEAM === DEFAULT_TEAM ? BOT[hfk] : `${HF_TOPIC[hfk]} Bei euch passt dafür am besten ${suggestResp(S.kp, hfk).map(id => `${member(id).name} (${member(id).role})`).join(" und ")}.`}</div>`;
   if (q === "explain") return `<div class="msg bot">„N“ heißt: Das Kriterium gibt es bei euch nicht und es ist auch nicht relevant. N fließt nicht in den Durchschnitt ein. Wenn etwas fehlt, aber sinnvoll wäre, nehmt 0.</div>`;
   return `<div class="msg bot">Ein paar Fragen zum Nachdenken, bevor ihr Maßnahmen formuliert:<ul>${THINK[hfk].map(t => `<li>${t}</li>`).join("")}</ul></div>`;
 }
@@ -1110,27 +1230,29 @@ document.addEventListener("click", e => {
   if (a === "kpinfo" || a === "hfinfo") e.stopPropagation();
   switch (a) {
     case "go": S.view = v; close(); render(); scrollTo(0, 0); break;
-    case "role": S.role = v; S.view = v === "team" ? "betriebe" : "dash"; close(); render(); break;
+    case "role": S.role = v; S.view = v === "team" ? "betriebe" : v === "public" ? "landing" : "dash"; close(); render(); scrollTo(0, 0); break;
+    case "regconfirm": finalizeRegistration(); break;
+    case "seminar": toast("Im echten System geht es hier zur Seminarbuchung im DTV-Shop."); break;
     case "bfilter": S.bfilter = v; render(); break;
     case "openb": e.stopPropagation(); S.openB = v; S.btab = ["Eingeladen","Angelegt"].includes(modelById(v).status) ? "stamm" : "pruefung"; S.view = "betrieb"; render(); scrollTo(0, 0); break;
     case "btab": S.btab = v; render(); break;
     case "wopen": openWizard(); break;
     case "wedit": openWizard(v); if (el.dataset.s) { wiz.step = 1; renderWizard(); } break;
-    case "wclose": wiz = null; close(); break;
+    case "wclose": if (wiz?.mode === "self") { wiz = null; S.view = "landing"; render(); break; } wiz = null; close(); break;
     case "wnext": if (validate(wiz.step)) wiz.step++; renderWizard(); break;
     case "wback": wiz.step--; wiz.err = {}; renderWizard(); break;
     case "wgo": if (+v <= wiz.step) { wiz.step = +v; wiz.err = {}; renderWizard(); } break;
     case "wadd": wiz.contacts.push(emptyContact()); renderWizard(); layer.querySelectorAll("fieldset.contact")[wiz.contacts.length - 1]?.querySelector("input")?.focus(); break;
     case "wdel": { const wasMain = wiz.contacts[+v].main; wiz.contacts.splice(+v, 1); if (wasMain) wiz.contacts[0].main = true; renderWizard(); break; }
     case "wsave": for (let i = 0; i < 3; i++) if (!validate(i)) { wiz.step = i; renderWizard(); toast("Bitte die markierten Felder prüfen"); return; } saveWizard(); break;
-    case "reset": try { localStorage.removeItem(KEY); } catch (er) {} S = fresh(); ensureSel(); render(); toast("Dummy zurückgesetzt"); break;
+    case "reset": try { localStorage.removeItem(KEY); } catch (er) {} S = fresh(); TEAM = DEFAULT_TEAM; wiz = null; ensureSel(); render(); toast("Dummy zurückgesetzt"); break;
     case "kp": { const kp = kpById(v); if (flag(kp) === "P") { toast("Pflicht-Kontaktpunkt, kann nicht abgewählt werden"); break; }
       S.kpSel = S.kpSel.includes(kp.id) ? S.kpSel.filter(x => x !== kp.id) : [...S.kpSel, kp.id]; render(); break; }
     case "kpinfo": { const kp = kpById(v); infoDrawer(kp.name, KPDEF[kp.id] || "Die Definition dieses Kontaktpunkts liefert der DTV."); break; }
     case "hf": if (HF[hfIdx(v)].lock) { toast("Gast/Kunde ist Pflicht"); break; }
       S.hfSel = S.hfSel.includes(v) ? S.hfSel.filter(x => x !== v) : [...S.hfSel, v]; render(); break;
     case "hfinfo": { const h = HF[hfIdx(v)]; infoDrawer(h.name, h.def); break; }
-    case "autoassign": selKps().forEach(kp => { S.assign[kp.id] = ROLE_FOR_KP[kp.id] || "my"; }); render(); toast("Nach Rollen verteilt"); break;
+    case "autoassign": selKps().forEach(kp => { S.assign[kp.id] = TEAM === DEFAULT_TEAM ? (ROLE_FOR_KP[kp.id] || "my") : pickFor(kp.id); }); render(); toast("Nach Rollen verteilt"); break;
     case "mine": S.mine = v === "1"; render(); break;
     case "selkp": S.kp = +v; render(); scrollTo(0, 0); break;
     case "openkp": if (v) S.kp = +v; S.view = "edit"; render(); scrollTo(0, 0); break;
