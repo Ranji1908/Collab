@@ -1413,5 +1413,15 @@ function bindDnD() {
   });
 }
 
+/* Direktlinks: #registrierung, #betrieb, #sqd */
+function applyHash() {
+  const h = (location.hash || "").slice(1);
+  if (h === "registrierung") { S.role = "public"; S.view = "landing"; }
+  else if (h === "registrieren") { S.role = "public"; S.view = "reg"; }
+  else if (h === "betrieb") { S.role = "betrieb"; S.view = "dash"; }
+  else if (h === "sqd") { S.role = "team"; S.view = "betriebe"; }
+}
+applyHash();
+window.addEventListener("hashchange", () => { applyHash(); close(); render(); scrollTo(0, 0); });
 render();
 </script>
