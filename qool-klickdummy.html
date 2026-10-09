@@ -55,6 +55,19 @@ nav.steps small { font-weight: 400; margin-right: 4px }
 main { max-width: 1200px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 64px; display: grid; gap: 20px }
 .lead { color: var(--muted); max-width: 72ch }
 .defs { display: grid; gap: 6px } .defs p { margin: 0 }
+.bignum { font-family: var(--font-display); font-size: 2.4rem; font-weight: 700; color: var(--accent); line-height: 1 }
+.chip.res-ok, .res-ok { background: var(--ok); color: #142008 } .chip.res-fix, .res-fix { background: var(--warn); color: #2b1a00 } .chip.res-fail, .res-fail { background: var(--danger); color: #fff }
+.ast-zugewiesen { background: var(--surface-2) } .ast-in-Prüfung { background: var(--accent-soft) } .ast-abgeschlossen { background: var(--accent-soft) } .ast-eingereicht { background: var(--warn); color: #2b1a00 } .ast-freigegeben { background: var(--ok); color: #142008 }
+.anote { margin-top: 6px; font-size: .85rem; padding: 4px 8px; width: 100% }
+.kpbars { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px }
+.kpbars li { display: grid; grid-template-columns: minmax(120px, 220px) 1fr 40px; gap: 10px; align-items: center; font-size: .9rem }
+.kpbars .bar { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; display: block } .kpbars .bar i { display: block; height: 100% }
+.recs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px }
+.recs li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: start; padding: 8px 0; border-bottom: 1px dashed var(--line) }
+.recs li > .chip { grid-column: 1 / -1; justify-self: start } .recs li p { margin: 0 }
+.t.cmp tr.bigdev td { background: color-mix(in srgb, var(--warn) 14%, transparent) }
+.scale.sm button { min-width: 26px; height: 26px; font-size: .8rem; padding: 0 }
+ol.talk { margin: 0; padding-left: 20px; display: grid; gap: 12px } ol.talk li { display: grid; gap: 2px } ol.talk p { margin: 0; color: var(--muted) }
 .sel .warn-t { color: var(--muted); font-size: .78rem; line-height: 1.3 } .sel .warn-t::before { content: "⚠ " } .sel .ok-t { font-weight: 600 }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
@@ -333,11 +346,13 @@ table.t th, table.t td { text-align: left; padding: 6px 8px; border-bottom: 1px 
     <div class="top-meta">
       <span class="dummy">Klickdummy · Beispieldaten</span>
       <label id="orgwrap" class="row" style="gap:6px" hidden>Betrieb <select id="org" aria-label="Betrieb wechseln"></select></label>
+      <label id="prwrap" class="row" style="gap:6px" hidden>Angemeldet als <select id="prme" aria-label="Prüfer/in"></select></label>
       <label id="mewrap" class="row" style="gap:6px">Angemeldet als <select id="me" aria-label="Angemeldet als"></select></label>
       <div class="role" role="group" aria-label="Ansicht">
         <button data-a="role" data-v="betrieb" id="r-b">Betrieb</button>
         <button data-a="role" data-v="team" id="r-t">DTV-SQD-Team</button>
         <button data-a="role" data-v="public" id="r-p">Einstieg aus KC</button>
+        <button data-a="role" data-v="pruefer" id="r-x">Prüfer/in</button>
       </div>
       <button class="link" data-a="reset">Zurücksetzen</button>
     </div>
@@ -441,7 +456,7 @@ function suggestResp(kp, hfk) {
   const t = TEAM.filter(m => m.tags.includes(hfk)).map(m => m.id);
   return t.length ? t : [S.lead];
 }
-const ORIGIN = { eigen: ["eigene Formulierung", "var(--r5)"], ueberarbeitet: ["eigene, nach KI-Rückmeldung überarbeitet", "var(--accent)"] };
+const ORIGIN = { eigen: ["eigene Formulierung", "var(--r5)"], ueberarbeitet: ["eigene, nach KI-Rückmeldung überarbeitet", "var(--accent)"], pruefer: ["Empfehlung Prüfer/in", "var(--warn)"] };
 
 /* ---------- Zustand ---------- */
 const KEY = "qool-dummy-v4";
@@ -471,6 +486,7 @@ function fresh() {
     ],
     nextId: 4,
     history: [{ d: "2023-10-12", t: "Q-Prüfung (altes Tool)", e: "Bestanden", by: "DTV-SQD-Team", txt: "Ergebnis aus der Datenmigration, Details im Archiv." }],
+    audit: null, audits: {}, prMe: "rw", zRules: { pass: 3, fix: 2.7, dev: 2 }, openA: null, atab: "pruefung", akp: null,
     submitted: "", openB: null, btab: "fb", bfilter: "alle", bstatus: {}, bcomment: {}, bhist: {}, bvalid: {}, newB: [], bedit: {}
   };
 }
@@ -531,7 +547,7 @@ function licensePanel() {
   const exp = licExpired();
   return `<div class="panel lic"><div class="row" style="justify-content:space-between"><h3>Eure Lizenz</h3><span class="chip ${exp ? "flag" : "own"}">${exp ? "abgelaufen" : "aktiv"}</span></div>
     <div class="licbig">${paket() === "Q" ? "Q" : "Q + Z"}</div>
-    <dl class="kv"><dt>Paket</dt><dd>${PAKET_NAME[paket()]}</dd><dt>Gültig seit</dt><dd class="num">${dDE(S.lic.start)}</dd><dt>Gültig bis</dt><dd class="num">${dDE(S.lic.end)}</dd><dt>Hauptansprechperson</dt><dd>${esc(member(S.lead).name)}</dd></dl>
+    <dl class="kv"><dt>Paket</dt><dd>${PAKET_NAME[paket()]}</dd><dt>Gültig seit</dt><dd class="num">${dDE(S.lic.start)}</dd><dt>Gültig bis</dt><dd class="num">${dDE(S.lic.end)}</dd><dt>Hauptansprechperson</dt><dd>${esc(member(S.lead).name)}</dd>${S.audit?.status === "freigegeben" && S.audit.res === "bestanden" ? `<dt>Zertifikat</dt><dd>ausgestellt am ${dDE(S.audit.released)}<small style="display:block;color:var(--muted)">Gültigkeit noch offen</small></dd>` : ""}</dl>
     <small style="color:var(--muted)">${paket() === "Q" ? "Selbstcheck mit Teilnahmebestätigung. Eine Zertifizierung (Z) könnt ihr im DTV-Kundencenter dazubuchen." : "Selbstcheck plus verdeckte Vor-Ort-Prüfung, danach Zertifikat und Schild."}</small></div>`;
 }
 function reportData() {
@@ -550,6 +566,7 @@ function vSubmit() {
       <p style="color:var(--muted)">Ob die Maßnahmen schon erledigt sind, spielt keine Rolle. ${z ? "Nach dem Einreichen folgt die verdeckte Vor-Ort-Prüfung, den Bericht gibt es nach Eingang der Prüfergebnisse." : "Nach dem Einreichen wird eure Teilnahmebestätigung sofort erstellt und an die Hauptansprechperson geschickt."}</p>
       <div class="row"><button class="btn primary" data-a="submit" ${ok ? "" : "disabled"}>Jetzt einreichen</button>${ok ? "" : '<span style="color:var(--muted)">Erst möglich, wenn beide Punkte erfüllt sind.</span>'}${!ch[0][0] ? '<button class="link" data-a="go" data-v="edit">Zur Servicekette</button>' : ""}${!ch[1][0] ? '<button class="link" data-a="go" data-v="plan">Zum Maßnahmenplan</button>' : ""}</div>
     </div>`;
+  else if (S.audit && S.audit.status === "freigegeben") main = betriebEnd();
   else if (z && S.status === "Eingereicht") main = `<div class="panel thanks" style="display:grid;gap:12px">
       <h2>Vielen Dank, eure Servicekette ist eingereicht!</h2>
       <p>Eingereicht am ${dDE(S.submitted)}. Jetzt warten wir auf den Eingang der Prüfergebnisse aus der verdeckten Vor-Ort-Prüfung. Sobald sie vorliegen, bekommt ihr euren Bericht und das Zertifikat.</p>
@@ -569,7 +586,7 @@ function vSubmit() {
         <p>Vielen Dank für eure Teilnahme und viel Erfolg bei der Umsetzung!<br>Euer Team von ServiceQualität Deutschland</p>
         <span class="attach">📎 Teilnahmebestaetigung_${esc(fileSafe(S.org.name))}.pdf</span></div>
       <small style="color:var(--muted)">Der Versand läuft später über SMTP, die Zugangsdaten folgen. Im Klickdummy wird die Mail nur angezeigt.</small></div>` : ""}`;
-  return `<section style="display:grid;gap:6px"><div class="eyebrow">Einreichen</div><h1>${S.status === "Entwurf" ? "Einreichen" : "Eingereicht"}</h1></section>
+  return `<section style="display:grid;gap:6px"><div class="eyebrow">Einreichen</div><h1>${S.audit?.status === "freigegeben" ? "Ergebnis der Zertifizierung" : S.status === "Entwurf" ? "Einreichen" : "Eingereicht"}</h1></section>
   <section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)"><div style="display:grid;gap:14px;align-content:start">${main}</div><div style="display:grid;gap:14px;align-content:start">${licensePanel()}${docsPanel(S.docs)}</div></section>`;
 }
 const fileSafe = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
@@ -603,7 +620,7 @@ async function downloadReport(doc) {
   catch (e) { if (e?.code !== "declined") toast("Download nicht möglich: " + (e?.message || e?.code || "unbekannter Fehler")); }
 }
 function docsPanel(docs, sqd) {
-  const types = ["Teilnahmebestätigung", "Feedbackbericht", "Servicekette", "Maßnahmenplan", "Teamversprechen"];
+  const types = ["Zertifikat", "Endbericht", "Teilnahmebestätigung", "Feedbackbericht", "Servicekette", "Maßnahmenplan", "Teamversprechen"];
   const has = types.filter(t => docs.some(d => d.t === t));
   return `<div class="panel" style="display:grid;gap:8px"><div class="row" style="justify-content:space-between"><h3>Dokumente</h3><span class="chip">alle Versionen im DTV-Kundencenter</span></div>
     ${has.length ? `<ul class="docs">${has.map(t => { const vs = docs.filter(d => d.t === t); const l = vs[0]; return `<li><span class="dico">PDF</span><span style="min-width:0"><b>${t}</b><small>Version ${l.v} · ${dDE(l.d)}${vs.length > 1 ? ` · ${vs.length - 1} ältere Version${vs.length > 2 ? "en" : ""}` : ""}</small></span>${l.data && !sqd ? `<button class="btn sm" data-a="pdf" data-v="${l.v}">Herunterladen</button>` : `<button class="btn sm" data-a="dl" data-v="${t} (Version ${l.v}, ${dDE(l.d)})">Herunterladen</button>`}</li>`; }).join("")}</ul>`
@@ -658,6 +675,12 @@ function render() {
   document.getElementById("r-b").setAttribute("aria-pressed", S.role === "betrieb" && !S.peek);
   document.getElementById("r-t").setAttribute("aria-pressed", S.role === "team" || S.peek);
   document.getElementById("r-p").setAttribute("aria-pressed", pub);
+  document.getElementById("r-x").setAttribute("aria-pressed", S.role === "pruefer");
+  const PRV = ["cockpit", "audit"];
+  if (S.role === "pruefer" && (!PRV.includes(S.view) || (S.view === "audit" && !S.openA))) S.view = "cockpit";
+  if (S.role !== "pruefer" && PRV.includes(S.view)) S.view = S.role === "team" ? "betriebe" : S.role === "public" ? "kc" : "dash";
+  const pw = document.getElementById("prwrap"); pw.hidden = S.role !== "pruefer";
+  document.getElementById("prme").innerHTML = PRUEFER.map(p => `<option value="${p.id}" ${p.id === S.prMe ? "selected" : ""}>${p.name}</option>`).join("");
   const PUBV = ["kc", "kcmask", "kcmail", "login"];
   if (pub && !PUBV.includes(S.view)) S.view = "kc";
   if (!pub && PUBV.includes(S.view)) S.view = S.role === "team" ? "betriebe" : "dash";
@@ -671,9 +694,9 @@ function render() {
   if (S.view !== "submit") UI.justSubmitted = false;
   const expired = S.role === "betrieb" && licExpired();
   if (expired) S.view = "expired"; else if (S.view === "expired") S.view = "dash";
-  const steps = pub || expired ? [] : S.role === "team" ? [["betriebe","Alle Betriebe"], ...(S.openB ? [["betrieb", modelById(S.openB).name]] : []), ["sqd","SQD-Team & Regeln"]] : STEPS;
+  const steps = pub || expired ? [] : S.role === "pruefer" ? [["cockpit", "Meine Betriebe"], ...(S.openA && S.view === "audit" ? [["audit", modelById(S.openA).name]] : [])] : S.role === "team" ? [["betriebe","Alle Betriebe"], ...(S.openB ? [["betrieb", modelById(S.openB).name]] : []), ["sqd","SQD-Team & Regeln"]] : STEPS;
   document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k || (k === "betrieb" && S.view === "edit" && S.role === "team") ? 'aria-current="page"' : ""}>${esc(l)}</button>`).join("");
-  const V = { submit: vSubmit, dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb, sqd: vSqd, kc: vKc, kcmask: vKcMask, kcmail: vKcMail, login: vLogin, expired: vExpired };
+  const V = { cockpit: vCockpit, audit: vAudit, submit: vSubmit, dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb, sqd: vSqd, kc: vKc, kcmask: vKcMask, kcmail: vKcMail, login: vLogin, expired: vExpired };
   document.getElementById("app").innerHTML = (S.peek ? `<div class="peekbar"><span><b>Leseansicht des SQD-Teams</b> · ${esc(S.org.name)} · Änderungen sind nicht möglich.</span><button class="btn sm" data-a="peekend">Zurück zur SQD-Ansicht</button></div>` : "") + V[S.view]();
   document.getElementById("fab").hidden = S.role !== "betrieb" || S.peek || expired;
   if (S.view === "plan" && !S.peek) bindDnD();
@@ -919,6 +942,7 @@ function card(m) {
 
 /* ---------- DTV-SQD-Team: Betriebsliste und Detailansicht ---------- */
 const STL = { Entwurf: "In Bearbeitung", Eingereicht: "Bericht prüfen", Freigegeben: "Abgeschlossen", Abgelaufen: "Lizenz abgelaufen", Eingeladen: "Eingeladen", Angelegt: "Angelegt" };
+const stLabel = m => m.status === "Eingereicht" && m.paket !== "Q" ? "Eingereicht, Prüfung Z" : STL[m.status];
 const today = () => new Date().toISOString().slice(0, 10);
 const plus3y = d => (+d.slice(0, 4) + 3) + d.slice(4);
 const OFF = [0.3, -0.4, 0.1, -0.2, 0.4, -0.6];
@@ -1003,7 +1027,11 @@ const days = d => d ? Math.round((new Date(d) - new Date(today())) / 864e5) : nu
 function ampel(d) { const n = days(d); if (n === null) return '<span style="color:var(--muted)">–</span>'; const c = n < 0 ? "a-red" : n <= 60 ? "a-or" : "a-gr"; return `<span class="amp ${c}"></span><span class="num">${dDE(d)}</span>`; }
 function todos(m) {
   const t = [];
-  if (m.status === "Eingereicht") t.push(m.paket === "Q" ? ["Feedbackbericht prüfen", "red"] : ["Prüfergebnis ausstehend", "or"]);
+  const au = auditOf(m.id);
+  if (m.paket === "Q" && !au) { if (m.status === "Eingereicht") t.push(["Feedbackbericht prüfen", "red"]); }
+  else if (!au) { if (m.status !== "Abgelaufen") t.push(["Prüfer/in zuweisen", "red"]); }
+  else if (au.status === "eingereicht") t.push(["Endbericht freigeben", "red"]);
+  else if (au.status !== "freigegeben") t.push([`Prüfung: ${AST[au.status]}`, "or"]);
   if (!m.contacts.some(c => c.main)) t.push(["Keine Hauptansprechperson", "red"]);
   if (!m.contacts.some(c => c.kord || c.anw)) t.push(["Keine KORD3-Lizenz", "red"]);
   const l = days(m.lic); if (l !== null && l >= 0 && l <= 90) t.push(["Lizenz läuft in " + l + " Tagen ab", "or"]);
@@ -1034,28 +1062,29 @@ function vBetriebe() {
     <div class="hfpick" role="group" aria-label="Status filtern">${F.map(([k, l, n]) => `<button data-a="bfilter" data-v="${k}" aria-pressed="${S.bfilter === k}">${l} <span class="num">${n}</span></button>`).join("")}</div>
     <input type="text" id="bq" placeholder="Betrieb, Ort oder Kundennummer…" aria-label="Suchen" style="max-width:260px">
   </section>
-  <section class="panel" style="padding:0"><div class="tw"><table class="t blist"><thead><tr><th></th><th>Betrieb</th><th>Paket</th><th>Status</th><th>To-dos</th><th>Abschließen bis</th><th>Lizenz bis</th><th>Maßnahmen</th><th></th></tr></thead><tbody>
+  <section class="panel" style="padding:0"><div class="tw"><table class="t blist"><thead><tr><th></th><th>Betrieb</th><th>Paket</th><th>Prüfer/in</th><th>Status</th><th>To-dos</th><th>Abschließen bis</th><th>Lizenz bis</th><th>Maßnahmen</th><th></th></tr></thead><tbody>
     ${rows.map(m => { const td = todos(m), red = td.some(t => t[1] === "red"), md = m.measures.filter(x => x.status === "erledigt").length; return `<tr data-search="${esc((m.name + " " + m.ort + " " + (m.stamm?.kdnr || "")).toLowerCase())}" data-a="openb" data-v="${m.id}" class="clk">
       <td>${red ? '<span class="rdot" title="To-do"></span>' : ""}</td>
       <td><b>${esc(m.name)}</b><small style="display:block;color:var(--muted)">${esc(m.ort)}${m.stamm?.kdnr ? " · " + esc(m.stamm.kdnr) : ""}</small></td>
       <td><span class="chip">${m.paket}</span></td>
-      <td><span class="pill st-${m.status}">${STL[m.status]}</span></td>
+      <td>${auditOf(m.id) ? esc(prById(auditOf(m.id).pr).name) : m.paket !== "Q" ? '<span class="chip flag">offen</span>' : '<span style="color:var(--muted)">–</span>'}</td>
+      <td><span class="pill st-${m.status}">${stLabel(m)}</span></td>
       <td>${td.map(([t, c]) => `<span class="chip ${c === "red" ? "flag" : c === "or" ? "warnc" : ""}">${t}</span>`).join(" ") || '<span style="color:var(--muted)">–</span>'}</td>
       <td>${ampel(m.deadline)}</td><td class="num">${dDE(m.lic)}</td>
       <td class="num">${m.measures.length} <small style="color:var(--muted)">· ${md} erl.</small></td>
-      <td><button class="btn sm" data-a="openb" data-v="${m.id}">Öffnen</button></td></tr>`; }).join("") || '<tr><td colspan="9" style="color:var(--muted)">Keine Betriebe mit diesem Filter.</td></tr>'}
+      <td><button class="btn sm" data-a="openb" data-v="${m.id}">Öffnen</button></td></tr>`; }).join("") || '<tr><td colspan="10" style="color:var(--muted)">Keine Betriebe mit diesem Filter.</td></tr>'}
   </tbody></table></div></section>`;
 }
 
 function vBetrieb() {
   const m = modelById(S.openB);
   const md = m.measures.filter(x => x.status === "erledigt").length, td = todos(m);
-  const tabs = [["kette","Servicekette"],["massnahmen",`Maßnahmen (${m.measures.length})`],["fb","Feedbackbericht"],["verlauf","Verlauf & Dokumente"],["stamm","Stammdaten & Lizenz"]];
+  const tabs = [["kette","Servicekette"],["massnahmen",`Maßnahmen (${m.measures.length})`],["fb", m.paket !== "Q" || auditOf(m.id) ? "Endbericht" : "Feedbackbericht"],["verlauf","Verlauf & Dokumente"],["stamm","Stammdaten & Lizenz"]];
   if (!tabs.some(t => t[0] === S.btab)) S.btab = "fb";
   return `
   <section style="display:grid;gap:8px">
     <div><button class="link" data-a="go" data-v="betriebe">← Alle Betriebe</button></div>
-    <div class="row" style="justify-content:space-between"><h1>${esc(m.name)}</h1><span class="row"><span class="chip">${m.paket}</span><span class="pill st-${m.status}">${STL[m.status]}</span>${m.live ? '<button class="btn" data-a="peek">Als Betrieb ansehen (nur lesen)</button>' : ""}</span></div>
+    <div class="row" style="justify-content:space-between"><h1>${esc(m.name)}</h1><span class="row"><span class="chip">${m.paket}</span><span class="pill st-${m.status}">${stLabel(m)}</span>${m.live ? '<button class="btn" data-a="peek">Als Betrieb ansehen (nur lesen)</button>' : ""}</span></div>
     <p class="lead">${BRANCHEN[m.br]} · ${esc(m.ort)} · Koordinator/in (KORD3): ${esc(m.kord)}${m.live || m.id.startsWith("n") ? "" : ' · <span class="chip">Beispieldaten</span>'}</p>
     ${td.length ? `<div class="row">${td.map(([t, c]) => `<span class="chip ${c === "red" ? "flag" : c === "or" ? "warnc" : ""}">${c === "red" ? "● " : ""}${t}</span>`).join("")}</div>` : ""}
   </section>
@@ -1068,7 +1097,7 @@ function vBetrieb() {
     <div class="kpi"><span class="eyebrow">Lizenz bis</span><b class="num">${dDE(m.lic)}</b></div>
   </section>
   <nav class="tabs" role="tablist">${tabs.map(([k, l]) => `<button role="tab" data-a="btab" data-v="${k}" aria-selected="${S.btab === k}">${l}</button>`).join("")}</nav>
-  ${({ fb: tFeedback, massnahmen: tMassnahmen, kette: tKette, verlauf: tVerlauf, stamm: tStamm })[S.btab](m)}`;
+  ${({ fb: m.paket !== "Q" || auditOf(m.id) ? tEndbericht : tFeedback, massnahmen: tMassnahmen, kette: tKette, verlauf: tVerlauf, stamm: tStamm })[S.btab](m)}`;
 }
 function fbBlocks(m) {
   const store = m.live ? S.fbEdit : S.bfb;
@@ -1101,7 +1130,7 @@ function tFeedback(m) {
 }
 
 function originBar(ms) {
-  const orig = { eigen: 0, ueberarbeitet: 0 }; ms.forEach(x => orig[x.origin]++); const n = ms.length || 1;
+  const orig = { eigen: 0, ueberarbeitet: 0 }; ms.forEach(x => orig[x.origin] = (orig[x.origin] || 0) + 1); const n = ms.length || 1;
   return `<div style="display:grid;gap:6px"><span class="eyebrow">Herkunft der Maßnahmen</span>
     <div class="origin">${Object.entries(orig).map(([k, c]) => `<i style="width:${c / n * 100}%;background:${ORIGIN[k][1]}"></i>`).join("")}</div>
     <div class="legend">${Object.entries(orig).map(([k, c]) => `<span><i style="background:${ORIGIN[k][1]}"></i>${ORIGIN[k][0]}: ${c}</span>`).join("")}</div></div>`;
@@ -1158,6 +1187,16 @@ function vSqd() {
         <h3>Mindestanzahl Maßnahmen zum Einreichen</h3>
         <div class="row"><label class="f" style="width:140px">Paket Q<input type="number" min="0" max="20" id="min-q" value="${S.minM.Q}"></label><label class="f" style="width:140px">Paket Q+Z<input type="number" min="0" max="20" id="min-z" value="${S.minM["Q+Z"]}"></label></div>
         <small style="color:var(--muted)">Im Workshop offen: Q mindestens 1 oder 3, Z mindestens 3. Der Wert gilt sofort für alle Betriebe.</small>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>Bewertung Zertifizierung (Z)</h3>
+        <div class="row" style="flex-wrap:wrap"><label class="f" style="width:130px">Bestanden ab<input type="number" step="0.1" min="0" max="5" id="zr-pass" value="${zr().pass}"></label><label class="f" style="width:130px">Nachbesserung ab<input type="number" step="0.1" min="0" max="5" id="zr-fix" value="${zr().fix}"></label><label class="f" style="width:150px">Große Abweichung ab<input type="number" step="1" min="1" max="5" id="zr-dev" value="${zr().dev}"></label></div>
+        <small style="color:var(--muted)">Ø aus allen bewerteten Kriterien, N zählt nicht. Darunter: nicht bestanden, Rückstufung auf Q. „Große Abweichung“ in Punkten zwischen Selbstbild und Prüfung, Grundlage für den Gesprächsleitfaden.</small>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>Prüfer/innen</h3>
+        <div class="tw"><table class="t"><thead><tr><th>Name</th><th>Region</th><th>Betriebe</th></tr></thead><tbody>${PRUEFER.map(p => `<tr><td><b>${esc(p.name)}</b><small style="display:block;color:var(--muted)">${esc(p.email)}</small></td><td>${esc(p.region)}</td><td class="num">${countAssigned(p.id)}</td></tr>`).join("")}</tbody></table></div>
+        <small style="color:var(--muted)">Im Dummy 4 von ca. 20. Prüfer/innen haben keinen KC-Zugang, sondern nur das Prüfer-Cockpit in Qool.</small>
       </div>
       <div class="panel" style="display:grid;gap:8px">
         <h3>Kriterienkatalog</h3>
@@ -1342,6 +1381,11 @@ function tStamm(m) {
       <div class="row"><button class="btn ${m.locked ? "ok" : "danger"}" data-a="lock">${m.locked ? "Zugang entsperren" : "Zugang sperren"}</button></div>
       <small style="color:var(--muted)">Paketwechsel kommt im Regelfall automatisch aus dem CRM, wenn der Betrieb Z im DTV-Kundencenter dazubucht. Hier nur als Ausnahme oder Korrektur. Verlängerungen laufen manuell über CRM bzw. das SQD-Team. Nach Ablauf kann sich der Betrieb anmelden, aber nichts mehr bearbeiten.</small>
     </div>
+    ${m.paket !== "Q" || auditOf(m.id) ? (() => { const au = auditOf(m.id); return `<div class="panel" style="display:grid;gap:10px;align-content:start">
+      <h3>Vor-Ort-Prüfung (Z)</h3>
+      <label class="f">Prüfer/in<select id="aassign" ${au && au.status !== "zugewiesen" ? "" : ""}><option value="">– noch nicht zugewiesen –</option>${PRUEFER.map(p => `<option value="${p.id}" ${au?.pr === p.id ? "selected" : ""}>${p.name} · ${p.region} (${countAssigned(p.id)})</option>`).join("")}</select></label>
+      <dl class="kv"><dt>Status</dt><dd>${au ? AST[au.status] : "–"}</dd><dt>Zugewiesen am</dt><dd class="num">${dDE(au?.assigned)}</dd></dl>
+      <small style="color:var(--muted)">Die Prüferin bzw. der Prüfer bekommt eine E-Mail und sieht den Betrieb danach im Prüfer-Cockpit. Keine Kundennummer nötig. In Klammern: Anzahl zugewiesener Betriebe.</small></div>`; })() : ""}
     <div class="panel" style="display:grid;gap:8px;align-content:start">
       <div class="row" style="justify-content:space-between"><h3>Kontaktpersonen (${m.contacts.length})</h3><button class="btn sm" data-a="wedit" data-v="${m.id}" data-s="1">Kontakte bearbeiten</button></div>
       <ul class="team">${m.contacts.map(c => `<li style="grid-template-columns:28px 1fr"><span class="av">${esc((c.vn[0] || "") + (c.nn[0] || ""))}</span><span style="min-width:0"><b>${esc(c.vn)} ${esc(c.nn)}</b> ${c.main ? '<span class="chip ai">Hauptkontakt</span>' : ""} ${c.kord ? '<span class="chip own">KORD3</span>' : c.anw ? '<span class="chip warnc">Anwärter/in</span>' : ""} ${c.crm === "neu" ? '<span class="chip flag">neu: im CRM prüfen</span>' : ""}
@@ -1440,9 +1484,9 @@ function tagsFor(fn, main) {
   if (!t.length && main) t.push("ma", "ui");
   return t;
 }
-const BKEYS = ["org","team","lead","me","branche","kpSel","hfSel","kp","assign","ratings","notes","custom","status","measures","nextId","history","submitted","docs","promise","hfExtra","fbEdit","lic","teamComment","mine","reminders"];
+const BKEYS = ["org","team","lead","me","branche","kpSel","hfSel","kp","assign","ratings","notes","custom","status","measures","nextId","history","submitted","docs","promise","hfExtra","fbEdit","lic","teamComment","mine","reminders","audit"];
 function slice() { const o = {}; BKEYS.forEach(k => o[k] = S[k]); if (!o.team) o.team = TEAM; return JSON.parse(JSON.stringify(o)); }
-function switchOrg(i) { const cur = slice(), nxt = S.others[i]; S.others[i] = cur; Object.assign(S, nxt); TEAM = S.team || DEFAULT_TEAM; ensureSel(); }
+function switchOrg(i) { const cur = slice(), nxt = S.others[i]; S.others[i] = cur; Object.assign(S, nxt); S.audit = nxt.audit || null; TEAM = S.team || DEFAULT_TEAM; ensureSel(); }
 function finalizeRegistration() {
   const k = kcState(), d = KC_SAMPLE, cs = k.contacts.filter(c => c.ok), mainIdx = Math.max(0, cs.findIndex(c => c.main));
   if (!S.others.some(o => o.org.name === d.stamm.name)) S.others.push(slice());
@@ -1451,7 +1495,7 @@ function finalizeRegistration() {
     team: TEAM, lead: "c" + mainIdx, me: "c" + mainIdx, branche: d.stamm.br, kpSel: null, hfSel: ["gk","ma","ui"], mine: false,
     org: { name: d.stamm.name, stamm: d.stamm, paket: d.paket, q: { start: today(), einreichung: addMonths(today(), 6) }, self: false },
     lic: { start: today(), end: addMonths(today(), d.paket === "Q" ? 36 : 42), locked: false },
-    ratings: {}, notes: {}, custom: {}, measures: [], nextId: 1, assign: {}, status: "Entwurf", submitted: "", teamComment: "", docs: [], promise: null, hfExtra: {}, fbEdit: {}, reminders: "aus",
+    ratings: {}, notes: {}, custom: {}, measures: [], nextId: 1, assign: {}, status: "Entwurf", submitted: "", teamComment: "", docs: [], promise: null, hfExtra: {}, fbEdit: {}, reminders: "aus", audit: null,
     history: [{ d: today(), t: "Erstanmeldung über das DTV-Kundencenter", by: TEAM[mainIdx].name, txt: `${cs.length} Personen eingeladen.` }],
     kc: null, role: "betrieb", view: "dash"
   });
@@ -1686,7 +1730,7 @@ document.addEventListener("click", e => {
   if (S.peek && WRITE.includes(a)) { toast("Leseansicht: Das SQD-Team kann Inhalte des Betriebs nicht ändern."); return; }
   switch (a) {
     case "go": S.view = v; close(); render(); scrollTo(0, 0); break;
-    case "role": S.peek = false; S.role = v; S.view = v === "team" ? "betriebe" : v === "public" ? "kc" : "dash"; close(); render(); scrollTo(0, 0); break;
+    case "role": S.peek = false; S.role = v; S.view = v === "team" ? "betriebe" : v === "public" ? "kc" : v === "pruefer" ? "cockpit" : "dash"; close(); render(); scrollTo(0, 0); break;
     case "kcaddyes": kcState().adding = true; render(); document.getElementById("ka-vn")?.focus(); break;
     case "kcaddno": kcState().adding = false; render(); break;
     case "kcconfirm": S.view = "kcmail"; render(); scrollTo(0, 0); break;
@@ -1825,11 +1869,367 @@ function bindDnD() {
 }
 
 /* Direktlinks: #registrierung, #betrieb, #sqd */
+/* ---------- Prüfung Z (Mystery-Check) ---------- */
+const PRUEFER = [
+  { id: "rw", name: "Ralf Weber", region: "Nord/Ost", email: "r.weber@pruefer-sqd.example" },
+  { id: "ck", name: "Claudia Kern", region: "Süd", email: "c.kern@pruefer-sqd.example" },
+  { id: "mo", name: "Mehmet Öztürk", region: "West", email: "m.oeztuerk@pruefer-sqd.example" },
+  { id: "bs", name: "Birte Sommer", region: "Mitte", email: "b.sommer@pruefer-sqd.example" }
+];
+const prById = id => PRUEFER.find(p => p.id === id) || { name: "–", region: "", email: "" };
+const AST = { zugewiesen: "Zugewiesen", "in Prüfung": "In Prüfung", abgeschlossen: "Bewertung abgeschlossen", eingereicht: "Endbericht beim DTV", freigegeben: "Freigegeben" };
+const RES = { bestanden: ["Bestanden", "res-ok"], nachbessern: ["Nachbesserung erforderlich", "res-fix"], durchgefallen: ["Nicht bestanden", "res-fail"] };
+const zr = () => S.zRules || (S.zRules = { pass: 3, fix: 2.7, dev: 2 });
+const fmt2 = v => v === null ? "–" : v.toFixed(2).replace(".", ",");
+const hashS = s => { let h = 7; for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return h; };
+const auditOpen = a => ["zugewiesen", "in Prüfung"].includes(a.status);
+const auditDone = a => ["eingereicht", "freigegeben"].includes(a.status);
+function auditCrits(br) {
+  const out = [];
+  KP.forEach(kp => { if (kp.br[br] === "." || kp.br[br] === undefined) return;
+    HF.forEach(h => (CATALOG[kp.name.toLowerCase()]?.[h.k] || []).forEach((c, i) => { if (c[3] === 1) out.push({ kp: kp.id, hf: h.k, i, key: `${kp.id}|${h.k}|${i}`, c }); })); });
+  return out;
+}
+function seedVals(seed, crits, base, frac) {
+  const r = {};
+  crits.forEach((c, j) => { if (j >= crits.length * frac) return; const h = hashS(seed + c.key);
+    if (h % 23 === 0) { r[c.key] = "N"; return; }
+    r[c.key] = Math.max(0, Math.min(5, Math.round(base + ((h >>> 8) % 5 - 2) * 0.6 + ((h >>> 16) % 11 === 0 ? 2.4 * ((h & 1) ? 1 : -1) : 0)))); });
+  return r;
+}
+const AUDIT_SEED = {
+  hs: { pr: "rw", assigned: "2026-09-29", status: "in Prüfung", visit: "2026-10-06", base: 3.4, frac: 0.6, recs: [{ ref: "kp", kp: 6, text: "Zur Anreisezeit zwischen 15 und 17 Uhr eine zweite Person an der Rezeption einplanen." }] },
+  mh: { pr: "rw", assigned: "2026-10-07", status: "zugewiesen" },
+  tb: { pr: "rw", assigned: "2026-06-02", status: "freigegeben", visit: "2026-06-20", released: "2026-08-12", base: 3.6, frac: 1,
+    talk: "Gespräch am 05.08.2026 per Video mit Petra Schuster. Schwerpunkte: Wartezeiten an der Kasse, Beschilderung im Saunabereich.",
+    recs: [{ ref: "kp", kp: 11, text: "Beschilderung zwischen Umkleide und Saunabereich vereinfachen, Piktogramme statt Text." }, { ref: "allg", text: "Wartezeiten an der Kasse zu Stoßzeiten mit einer zweiten Kasse abfangen." }] }
+};
+function newAudit(pr) { return { pr, assigned: today(), status: "zugewiesen", visit: "", ratings: {}, notes: {}, orig: {}, skip: {}, recs: [], proofs: [], talk: "", nid: 1 }; }
+function auditOf(id) {
+  if (id === "ti") return S.audit || null;
+  S.audits ||= {};
+  if (S.audits[id] === undefined && AUDIT_SEED[id]) {
+    const s = AUDIT_SEED[id], b = allMock().find(x => x.id === id), a = { ...newAudit(s.pr), ...s, recs: (s.recs || []).map((r, i) => ({ id: i + 1, ...r })) };
+    a.nid = a.recs.length + 1;
+    if (s.base) a.ratings = seedVals(id, auditCrits(b.br), s.base, s.frac);
+    delete a.base; delete a.frac; S.audits[id] = a;
+  }
+  return S.audits[id] || null;
+}
+function setAudit(id, a) { if (id === "ti") S.audit = a; else { S.audits ||= {}; S.audits[id] = a; } }
+function selfOf(m) {
+  if (!["Eingereicht", "Freigegeben"].includes(m.status)) return null;
+  if (m.live) return S.ratings;
+  return seedVals("self" + m.id, auditCrits(m.br), (m.avg || 3.3) + 0.2, 1);
+}
+function auditResult(id) {
+  const a = auditOf(id), m = modelById(id), all = auditCrits(m.br), cr = all.filter(c => !a.skip[c.kp]);
+  const vals = cr.map(c => a.ratings[c.key]), nums = vals.filter(v => typeof v === "number");
+  const avg = nums.length ? Math.round(mean(nums) * 100) / 100 : null, r = zr();
+  const res = avg === null ? null : avg >= r.pass ? "bestanden" : avg >= r.fix ? "nachbessern" : "durchgefallen";
+  const kps = [...new Set(all.map(c => c.kp))].map(k => { const cs = all.filter(c => c.kp === k), ns = cs.map(c => a.ratings[c.key]).filter(v => typeof v === "number");
+    return { kp: kpById(k), total: cs.length, done: cs.filter(c => a.ratings[c.key] !== undefined).length, avg: mean(ns), skip: a.skip[k] }; });
+  return { a, m, crits: cr, t: cr.length, d: vals.filter(v => v !== undefined).length, avg, res, kps };
+}
+function compareRows(r) {
+  const self = selfOf(r.m);
+  return r.crits.map(c => { const p = r.a.ratings[c.key], s = self ? self[c.key] : undefined;
+    const d = typeof p === "number" && typeof s === "number" ? p - s : null; return { c, p, s, d }; })
+    .sort((x, y) => (y.d === null ? -1 : Math.abs(y.d)) - (x.d === null ? -1 : Math.abs(x.d)));
+}
+const critLabel = c => `${kpById(c.kp).name} · ${c.c[1]}`;
+const vTxt = v => v === undefined ? "–" : String(v);
+const resChip = (res, pre) => res ? `<span class="chip ${RES[res][1]}" style="justify-self:start">${pre ? "vorläufig: " : ""}${RES[res][0]}</span>` : '<span class="chip">noch kein Ergebnis</span>';
+function recLabel(x) {
+  if (x.ref === "krit") { const c = critOf(x.kp, x.hf, x.i); return `Kriterium ${c ? c[0] + " " + c[1] : ""} · ${kpById(x.kp).name}`; }
+  if (x.ref === "kp") return `Kontaktpunkt: ${kpById(x.kp).name}`;
+  if (x.ref === "hf") return `Handlungsfeld: ${HF[hfIdx(x.hf)].name}`;
+  return "Allgemein";
+}
+const myAudits = () => models().filter(m => auditOf(m.id)?.pr === S.prMe);
+const countAssigned = pid => models().filter(m => auditOf(m.id)?.pr === pid).length;
+
+function vCockpit() {
+  const list = myAudits(), p = prById(S.prMe), st = s => list.filter(m => auditOf(m.id).status === s).length;
+  const NEXT = { zugewiesen: "Mystery-Check planen und bewerten", "in Prüfung": "Bewertung fortsetzen", abgeschlossen: "Abgleich und Auswertungsgespräch", eingereicht: "Wartet auf Freigabe durch den DTV", freigegeben: "Abgeschlossen" };
+  const done = list.filter(m => auditOf(m.id).status === "freigegeben");
+  return `<section style="display:grid;gap:6px"><div class="eyebrow">Prüfer-Cockpit · ${esc(p.name)} · Region ${esc(p.region)}</div><h1>Meine Betriebe</h1>
+    <p class="lead">Du siehst nur Betriebe, die dir das DTV-SQD-Team zugewiesen hat. Selbstcheck und Maßnahmen des Betriebs bleiben verborgen, bis du deine Bewertung abgeschlossen hast. Aufenthalt und Übernachtung organisierst du wie bisher außerhalb von Qool.</p></section>
+  <section class="kpis">
+    <div class="kpi"><span class="eyebrow">Neu zugewiesen</span><b class="num">${st("zugewiesen")}</b></div>
+    <div class="kpi"><span class="eyebrow">In Prüfung</span><b class="num">${st("in Prüfung")}</b></div>
+    <div class="kpi"><span class="eyebrow">Abgleich / Gespräch</span><b class="num">${st("abgeschlossen")}</b></div>
+    <div class="kpi"><span class="eyebrow">Beim DTV</span><b class="num">${st("eingereicht")}</b></div>
+    <div class="kpi"><span class="eyebrow">Abgeschlossen</span><b class="num">${done.length}</b></div>
+  </section>
+  <section class="panel" style="padding:0"><div class="tw"><table class="t blist"><thead><tr><th>Betrieb</th><th>Zugewiesen</th><th>Status</th><th>Selbstcheck Betrieb</th><th>Fortschritt</th><th>Nächster Schritt</th><th></th></tr></thead><tbody>
+    ${list.map(m => { const r = auditResult(m.id), a = r.a, pct = r.t ? Math.round(r.d / r.t * 100) : 0; return `<tr class="clk" data-a="aopen" data-v="${m.id}">
+      <td><b>${esc(m.name)}</b><small style="display:block;color:var(--muted)">${esc(m.ort)} · ${BRANCHEN[m.br]}</small></td>
+      <td class="num">${dDE(a.assigned)}</td>
+      <td><span class="pill ast-${a.status.replace(" ", "-")}">${AST[a.status]}</span></td>
+      <td>${selfOf(m) ? '<span class="chip own">eingereicht</span>' : '<span class="chip warnc" title="Die Gegenüberstellung ist erst vollständig, wenn der Betrieb eingereicht hat">noch in Bearbeitung</span>'}</td>
+      <td style="min-width:110px"><span class="num">${r.d}/${r.t}</span><div class="bar" style="background:var(--surface-2)"><i style="width:${pct}%"></i></div></td>
+      <td>${NEXT[a.status]}</td>
+      <td><button class="btn sm" data-a="aopen" data-v="${m.id}">Öffnen</button></td></tr>`; }).join("") || '<tr><td colspan="7" style="color:var(--muted)">Dir ist aktuell kein Betrieb zugewiesen.</td></tr>'}
+  </tbody></table></div></section>
+  <section class="panel" style="display:grid;gap:10px"><h3>Zwischengespräche nach 18 Monaten</h3>
+    ${done.length ? `<ul class="docs">${done.map(m => { const a = auditOf(m.id), due = addMonths(a.released || a.assigned, 18); return `<li><span class="dico">18M</span><span style="min-width:0"><b>${esc(m.name)}</b><small>fällig ab ${dDE(due)} · ${m.measures.length} Maßnahmen, ${m.measures.filter(x => x.status === "erledigt").length} erledigt</small></span><button class="btn sm" data-a="aplan" data-v="${m.id}">Maßnahmenplan ansehen</button></li>`; }).join("")}</ul>` : '<p style="color:var(--muted)">Noch keine zertifizierten Betriebe.</p>'}
+    <small style="color:var(--muted)">Kein automatischer Reminder: Fällige Gespräche kommen über den CRM-Export mit Ablaufdaten. Turnus wird noch festgelegt.</small></section>`;
+}
+
+function vAudit() {
+  const id = S.openA, r = auditResult(id), a = r.a, m = r.m, closed = !auditOpen(a);
+  const tabs = [["pruefung", "Bewertung"], ["empf", `Handlungsempfehlungen (${a.recs.length})`], ["ergebnis", "Ergebnis"], ["abgleich", "Abgleich mit Selbstcheck"], ["gespraech", "Auswertungsgespräch"]];
+  if (!closed && ["abgleich", "gespraech"].includes(S.atab)) S.atab = "pruefung";
+  const T = { pruefung: tPruefung, empf: tEmpf, ergebnis: tErgebnis, abgleich: tAbgleich, gespraech: tGespraech };
+  return `<section style="display:grid;gap:8px">
+    <div><button class="link" data-a="go" data-v="cockpit">← Meine Betriebe</button></div>
+    <div class="row" style="justify-content:space-between"><h1>${esc(m.name)}</h1><span class="row"><span class="chip">Q+Z</span><span class="pill ast-${a.status.replace(" ", "-")}">${AST[a.status]}</span></span></div>
+    <p class="lead">${BRANCHEN[m.br]} · ${esc(m.stamm?.strasse || "")}${m.stamm?.strasse ? ", " : ""}${esc(m.ort)} · zugewiesen am ${dDE(a.assigned)}</p>
+    <label class="f" style="max-width:220px">Tag des Mystery-Checks<input type="date" id="avisit" value="${a.visit || ""}" ${auditDone(a) ? "disabled" : ""}></label>
+  </section>
+  <section class="kpis">
+    <div class="kpi"><span class="eyebrow">Bewertet</span><b class="num">${r.d}/${r.t}</b></div>
+    <div class="kpi"><span class="eyebrow">Ø Prüfung</span><b class="num">${fmt2(r.avg)}</b></div>
+    <div class="kpi"><span class="eyebrow">Ergebnis</span><b>${resChip(r.res, r.d < r.t)}</b></div>
+    <div class="kpi"><span class="eyebrow">Empfehlungen</span><b class="num">${a.recs.length}</b></div>
+  </section>
+  <nav class="tabs" role="tablist">${tabs.map(([k, l]) => { const dis = !closed && ["abgleich", "gespraech"].includes(k); return `<button role="tab" data-a="atab" data-v="${k}" aria-selected="${S.atab === k}" ${dis ? 'aria-disabled="true" title="Erst nach Abschluss der Bewertung"' : ""}>${dis ? "🔒 " : ""}${l}</button>`; }).join("")}</nav>
+  ${T[S.atab] ? T[S.atab](r) : tPruefung(r)}`;
+}
+function auditRow(a, c, ro, recRo) {
+  const v = a.ratings[c.key], cc = c.c, nr = a.recs.filter(x => x.ref === "krit" && x.key === c.key).length;
+  const lvl = typeof v === "number" ? `<div class="lvl"><b style="color:${SCORE[v][1]}">${v} · ${SCORE[v][0]}:</b> ${esc(cc[4][v])}</div>` : v === "N" ? '<div class="lvl"><b>N:</b> Nicht vorhanden bzw. nicht relevant. Zählt nicht in den Durchschnitt.</div>' : "";
+  return `<div class="crit"><div class="t"><span class="cnr">${cc[0]}</span> <b>${esc(cc[1])}</b><small>${esc(cc[2])}</small>${lvl}
+      <input type="text" class="anote" data-anote="${c.key}" value="${esc(a.notes[c.key] || "")}" placeholder="Beobachtung notieren …" ${ro ? "readonly" : ""} aria-label="Beobachtung zu ${esc(cc[1])}"></div>
+    <div class="scale" role="radiogroup" aria-label="Bewertung">${SCALE.map(s => `<button data-a="arate" data-k="${c.key}" data-v="${s}" aria-pressed="${v === s}" style="${v === s ? `background:${SCORE[s][1]}` : ""}" ${ro ? "disabled" : ""} title="${s} · ${SCORE[s][0]}${s !== "N" ? ": " + esc(firstSentence(cc[4][s])) : ""}">${s}</button>`).join("")}</div>
+    <button class="btn sm ${nr ? "has" : ""}" data-a="arec" data-k="${c.key}" ${recRo ? "disabled" : ""}>${nr ? `${nr} Empfehlung${nr > 1 ? "en" : ""} ✓` : "+ Empfehlung"}</button></div>`;
+}
+function tPruefung(r) {
+  const a = r.a, ro = !auditOpen(a), recRo = auditDone(a);
+  const kps = r.kps.filter(k => k.total);
+  if (!kps.find(k => k.kp.id === S.akp)) S.akp = kps[0]?.kp.id;
+  const k = kps.find(x => x.kp.id === S.akp), kp = k.kp, cs = r.crits.filter(c => c.kp === kp.id), skip = a.skip[kp.id];
+  const hidden = kp.hf.reduce((x, y) => x + y, 0) - k.total;
+  const dot = x => x.skip ? "leer" : !x.done ? "rot" : x.done < x.total ? "orange" : "gruen";
+  return `<div class="work">
+    <aside class="panel kpside" style="padding:0"><ul class="kplist">${kps.map(x => `<li><button data-a="akp" data-v="${x.kp.id}" aria-current="${x.kp.id === S.akp}"><span class="dot d-${dot(x)}"></span><span>${x.kp.name}</span><span></span><small class="num">${x.skip ? "–" : `${x.done}/${x.total}`}</small></button></li>`).join("")}</ul></aside>
+    <section class="panel" style="display:grid;gap:14px;min-width:0">
+      <div style="display:grid;gap:6px">
+        <div class="eyebrow">Kontaktpunkt ${kp.id} · aus Gastperspektive</div>
+        <div class="row" style="justify-content:space-between"><h1>${kp.name}</h1>${ro ? "" : skip ? `<button class="btn sm" data-a="aunskip" data-v="${kp.id}">Wieder aufnehmen</button>` : `<button class="btn sm" data-a="askip" data-v="${kp.id}">Bereich nicht vorhanden / nicht prüfbar</button>`}</div>
+        <div class="lead defs">${paras(KPDEF[kp.id] || "")}</div>
+        <small style="color:var(--muted)">${k.total} prüfbare Kriterien aus allen Handlungsfeldern${hidden ? ` · ${hidden} nicht prüfbare Kriterien (z. B. interne Abläufe) sind ausgeblendet` : ""}</small>
+      </div>
+      ${skip ? `<div class="hint"><b>Nicht geprüft.</b> Begründung: ${esc(skip)}<br>Die Kriterien dieses Kontaktpunkts zählen nicht in den Durchschnitt.</div>` : `
+      <div class="legend">${SCALE.map(s => `<span><i style="background:${SCORE[s][1]}"></i>${s} = ${SCORE[s][0]}</span>`).join("")}</div>
+      ${ro ? '<div class="hint">Die Bewertung ist abgeschlossen. Anpassungen nach Sichtung des Selbstchecks sind im Reiter „Abgleich“ begrenzt möglich.</div>' : ""}
+      ${HF.filter(h => cs.some(c => c.hf === h.k)).map(h => `<div class="hf"><div class="hf-head"><h3>${h.name}</h3></div>${cs.filter(c => c.hf === h.k).map(c => auditRow(a, c, ro, recRo)).join("")}</div>`).join("")}`}
+      <div class="kpfoot"><div><div class="eyebrow">Ø dieser Kontaktpunkt</div><span class="avg num">${fmt(k.avg)}</span></div>
+        <div class="row">${ro ? "" : '<button class="btn" data-a="anext">Speichern &amp; weiter</button>'}<button class="btn" data-a="atab" data-v="ergebnis">Zum Ergebnis</button></div></div>
+    </section></div>`;
+}
+function tEmpf(r) {
+  const a = r.a, ro = auditDone(a), ks = r.kps.filter(k => k.total);
+  return `<section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)">
+    <div class="panel" style="display:grid;gap:10px;align-content:start"><h3>Handlungsempfehlungen</h3>
+      <p style="color:var(--muted);font-size:.9rem">Deine eigenen Empfehlungen, unabhängig von den Maßnahmen des Betriebs. Der Betrieb entscheidet nach dem Bericht, welche er in seinen Maßnahmenplan übernimmt. Keine Fristen oder Verantwortlichen.</p>
+      <ul class="recs">${a.recs.map(x => `<li><span class="chip">${esc(recLabel(x))}</span><p>${esc(x.text)}</p>${ro ? "" : `<button class="ib del" data-a="arecdel" data-v="${x.id}" aria-label="Empfehlung löschen">✕</button>`}</li>`).join("") || '<li style="color:var(--muted)">Noch keine Empfehlungen. Am schnellsten geht es direkt am Kriterium über „+ Empfehlung“.</li>'}</ul>
+    </div>
+    ${ro ? "" : `<div class="panel" style="display:grid;gap:10px;align-content:start"><h3>Neue Empfehlung</h3>
+      <label class="f">Bezug<select id="rec-ref"><option value="allg|">Allgemein</option><optgroup label="Kontaktpunkt">${ks.map(k => `<option value="kp|${k.kp.id}">${k.kp.name}</option>`).join("")}</optgroup><optgroup label="Handlungsfeld">${HF.map(h => `<option value="hf|${h.k}">${h.name}</option>`).join("")}</optgroup></select></label>
+      <label class="f">Empfehlung<textarea id="rec-t" rows="4" placeholder="Was sollte der Betrieb konkret tun?"></textarea></label>
+      <div><button class="btn primary" data-a="arecadd">Hinzufügen</button></div></div>`}
+  </section>`;
+}
+function kpBars(r) {
+  return `<ul class="kpbars">${r.kps.filter(k => k.total).map(k => `<li><span>${k.kp.name}</span>${k.skip ? `<small style="color:var(--muted)">nicht geprüft: ${esc(k.skip)}</small>` : `<span class="bar"><i style="width:${(k.avg || 0) / 5 * 100}%;background:${k.avg === null ? "var(--rn)" : k.avg >= zr().pass ? "var(--ok)" : k.avg >= zr().fix ? "var(--warn)" : "var(--danger)"}"></i></span><b class="num">${fmt(k.avg)}</b>`}</li>`).join("")}</ul>`;
+}
+function tErgebnis(r) {
+  const a = r.a, z = zr(), open = r.t - r.d;
+  return `<section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)">
+    <div class="panel" style="display:grid;gap:12px;align-content:start"><h3>Durchschnitt je Kontaktpunkt</h3>${kpBars(r)}</div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="panel" style="display:grid;gap:10px"><div class="eyebrow">Gesamtergebnis</div><div class="bignum num">${fmt2(r.avg)}</div>${resChip(r.res, r.d < r.t)}
+        <small style="color:var(--muted)">Ø aus allen bewerteten Kriterien, N zählt nicht. Ab ${fmt(z.pass)} bestanden, ab ${fmt(z.fix)} Nachbesserung mit Belegen, darunter nicht bestanden (Rückstufung auf Q).</small></div>
+      ${auditOpen(a) ? `<div class="panel" style="display:grid;gap:10px"><h3>Bewertung abschließen</h3>
+        <p>${open ? `Noch ${open} von ${r.t} Kriterien offen. Bereiche, die es nicht gibt, bitte mit Begründung als „nicht vorhanden“ markieren.` : "Alle prüfbaren Kriterien sind bewertet."}</p>
+        <p style="color:var(--muted);font-size:.9rem">Danach siehst du den Selbstcheck und die Maßnahmen des Betriebs und kannst den Abgleich fürs Auswertungsgespräch vorbereiten.</p>
+        <div><button class="btn primary" data-a="aclose" ${open || !r.t ? "disabled" : ""}>Bewertung abschließen</button></div></div>`
+      : `<div class="hint">Bewertung abgeschlossen${a.closed ? ` am ${dDE(a.closed)}` : ""}.</div>`}
+    </div></section>`;
+}
+function adjScale(a, key, p, can) {
+  const o = a.orig[key] !== undefined ? a.orig[key] : p;
+  return `<div class="scale sm">${[0, 1, 2, 3, 4, 5].map(s => { const ok = can && typeof o === "number" && Math.abs(s - o) <= 1; return `<button data-a="aadj" data-k="${key}" data-v="${s}" aria-pressed="${p === s}" style="${p === s ? `background:${SCORE[s][1]}` : ""}" ${ok ? "" : "disabled"}>${s}</button>`; }).join("")}</div>`;
+}
+function tAbgleich(r) {
+  const a = r.a, m = r.m, self = selfOf(m), dev = zr().dev, can = a.status === "abgeschlossen";
+  const rows = compareRows(r), big = rows.filter(x => x.d !== null && Math.abs(x.d) >= dev), miss = rows.filter(x => x.d === null && typeof x.p === "number").length;
+  const show = UI.aall ? rows : big;
+  return `<section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)">
+    <div class="panel" style="display:grid;gap:10px;align-content:start;min-width:0">
+      <div class="row" style="justify-content:space-between"><h3>Selbstbild und Prüfung im Vergleich</h3><div class="hfpick"><button data-a="aall" data-v="0" aria-pressed="${!UI.aall}">Große Abweichungen (${big.length})</button><button data-a="aall" data-v="1" aria-pressed="${!!UI.aall}">Alle (${rows.length})</button></div></div>
+      ${self ? "" : '<div class="hint">Der Betrieb hat seinen Selbstcheck noch nicht eingereicht. Die Gegenüberstellung bleibt leer, bis er eingereicht ist.</div>'}
+      ${can ? `<p style="color:var(--muted);font-size:.9rem">Nach Sichtung darfst du einzelne Werte um höchstens einen Punkt anpassen. Der ursprüngliche Wert bleibt dokumentiert.</p>` : ""}
+      <div class="tw"><table class="t cmp"><thead><tr><th>Kontaktpunkt · Kriterium</th><th>Betrieb</th><th>Prüfung</th><th>Δ</th><th>Anpassen</th></tr></thead><tbody>
+        ${show.map(x => `<tr class="${x.d !== null && Math.abs(x.d) >= dev ? "bigdev" : ""}"><td>${esc(critLabel(x.c))}${r.a.notes[x.c.key] ? `<small style="display:block;color:var(--muted)">${esc(r.a.notes[x.c.key])}</small>` : ""}</td>
+          <td class="num">${x.s === undefined ? '<span class="chip">Eigenbewertung fehlt</span>' : vTxt(x.s)}</td>
+          <td class="num">${vTxt(x.p)}${a.orig[x.c.key] !== undefined ? `<small style="display:block;color:var(--muted)">vorher ${vTxt(a.orig[x.c.key])}</small>` : ""}</td>
+          <td class="num"><b>${x.d === null ? "–" : (x.d > 0 ? "+" : "") + x.d}</b></td>
+          <td>${typeof x.p === "number" ? adjScale(a, x.c.key, x.p, can) : ""}</td></tr>`).join("") || `<tr><td colspan="5" style="color:var(--muted)">${self ? `Keine Abweichungen von ${dev} Punkten oder mehr.` : "Noch keine Gegenüberstellung möglich."}</td></tr>`}
+      </tbody></table></div>
+    </div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="panel" style="display:grid;gap:6px"><h3>Überblick</h3><dl class="kv"><dt>Verglichen</dt><dd class="num">${rows.filter(x => x.d !== null).length}</dd><dt>Große Abweichungen</dt><dd class="num">${big.length} (ab ${dev} Punkten)</dd><dt>Ohne Eigenbewertung</dt><dd class="num">${miss}</dd><dt>Angepasst</dt><dd class="num">${Object.keys(a.orig).length}</dd></dl></div>
+      <div class="panel" style="display:grid;gap:8px"><h3>Maßnahmen des Betriebs</h3><small style="color:var(--muted)">Nur die Maßnahmen, keine internen Notizen.</small>
+        <ul class="recs">${m.measures.map(x => `<li><span class="chip">${esc(x.kp)}</span><p>${esc(x.text)}</p><small style="color:var(--muted)">${x.status}</small></li>`).join("") || '<li style="color:var(--muted)">Keine Maßnahmen.</li>'}</ul></div>
+    </div></section>`;
+}
+function talkTopics(r) {
+  const rows = compareRows(r).filter(x => x.d !== null), dev = zr().dev;
+  const big = rows.filter(x => Math.abs(x.d) >= dev);
+  return (big.length ? big : rows.filter(x => Math.abs(x.d) >= 1)).slice(0, 8);
+}
+function tGespraech(r) {
+  const a = r.a, can = a.status === "abgeschlossen", topics = talkTopics(r);
+  return `<section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)">
+    <div class="panel" style="display:grid;gap:12px;align-content:start"><div class="row" style="justify-content:space-between"><h3>Gesprächsleitfaden</h3><span class="chip ai">aus den Abweichungen erzeugt</span></div>
+      <p style="color:var(--muted);font-size:.9rem">Das Auswertungsgespräch findet digital statt. Die Themen ergeben sich aus den größten Unterschieden zwischen Selbstbild und Prüfung.</p>
+      ${selfOf(r.m) ? "" : '<div class="hint">Ohne eingereichten Selbstcheck gibt es noch keine Abweichungen. Du kannst das Gespräch trotzdem führen und den Bericht übermitteln.</div>'}
+      <ol class="talk">${topics.map(x => `<li><b>${esc(critLabel(x.c))}</b><span class="num">Betrieb ${vTxt(x.s)} · Prüfung ${vTxt(x.p)}</span>
+        <p>${x.s > x.p ? `Ihr habt euch hier mit ${x.s} eingeschätzt, beim Mystery-Check waren es ${x.p}. Woran macht ihr eure Einschätzung fest, und was habt ihr als Gast erlebt?` : `Beim Mystery-Check fiel das positiver auf (${x.p}) als in eurer Einschätzung (${x.s}). Was macht ihr hier bereits gut, ohne es zu merken?`}</p></li>`).join("") || '<li style="color:var(--muted)">Keine Themen aus Abweichungen.</li>'}</ol>
+      <small style="color:var(--muted)">Später optional: KI schlägt Formulierungen und Schwerpunkte vor. Zuerst bleibt der Leitfaden regelbasiert.</small>
+    </div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="panel" style="display:grid;gap:8px"><h3>Gesprächsnotizen</h3><textarea id="atalk" rows="7" ${auditDone(a) ? "readonly" : ""} placeholder="Ergebnisse und Absprachen aus dem Gespräch …">${esc(a.talk || "")}</textarea><small style="color:var(--muted)">Fließen in den Endbericht ein.</small></div>
+      ${can ? `<div class="panel" style="display:grid;gap:10px"><h3>Endbericht übermitteln</h3><p>Der Endbericht enthält deine Bewertung, die Gegenüberstellung, deine ${a.recs.length} Handlungsempfehlungen und die Gesprächsnotizen. Das DTV-SQD-Team gibt ihn frei.</p><div><button class="btn primary" data-a="asubmit">Gespräch geführt, Endbericht übermitteln</button></div></div>`
+        : auditDone(a) ? `<div class="hint">Endbericht am ${dDE(a.submitted)} übermittelt${a.status === "freigegeben" ? `, freigegeben am ${dDE(a.released)}` : ""}.</div>` : ""}
+    </div></section>`;
+}
+
+function endReport(r, mode) {
+  const a = r.a, res = a.res || r.res, topics = talkTopics(r).slice(0, 6), self = selfOf(r.m);
+  return `<div class="panel" style="display:grid;gap:14px;align-content:start">
+    <div class="row" style="justify-content:space-between"><h3>Endbericht Zertifizierung</h3>${resChip(res)}</div>
+    <div class="row" style="gap:24px;flex-wrap:wrap"><div><div class="eyebrow">Ø Prüfung</div><div class="bignum num">${fmt2(r.avg)}</div></div>
+      <dl class="kv"><dt>Prüfer/in</dt><dd>${esc(prById(a.pr).name)}</dd><dt>Mystery-Check</dt><dd class="num">${dDE(a.visit)}</dd><dt>Bewertet</dt><dd class="num">${r.d} Kriterien</dd></dl></div>
+    <div><div class="eyebrow">Je Kontaktpunkt</div>${kpBars(r)}</div>
+    <div><div class="eyebrow">Gegenüberstellung: größte Unterschiede</div>
+      ${self ? `<div class="tw"><table class="t cmp"><thead><tr><th>Kriterium</th><th>Selbstbild</th><th>Prüfung</th><th>Δ</th></tr></thead><tbody>${topics.map(x => `<tr><td>${esc(critLabel(x.c))}</td><td class="num">${vTxt(x.s)}</td><td class="num">${vTxt(x.p)}</td><td class="num"><b>${(x.d > 0 ? "+" : "") + x.d}</b></td></tr>`).join("") || '<tr><td colspan="4" style="color:var(--muted)">Keine nennenswerten Unterschiede.</td></tr>'}</tbody></table></div>`
+        : '<p class="hint">Selbstcheck lag bei Abschluss nicht vor, daher keine Gegenüberstellung.</p>'}</div>
+    <div><div class="eyebrow">Handlungsempfehlungen</div><ul class="recs">${a.recs.map(x => `<li><span class="chip">${esc(recLabel(x))}</span><p>${esc(x.text)}</p>${mode === "betrieb" ? (x.taken ? '<span class="chip own">im Maßnahmenplan</span>' : `<button class="btn sm" data-a="rectake" data-v="${x.id}">In Maßnahmenplan übernehmen</button>`) : x.taken ? '<span class="chip own">übernommen</span>' : ""}</li>`).join("") || '<li style="color:var(--muted)">Keine Empfehlungen.</li>'}</ul></div>
+    ${a.talk ? `<div><div class="eyebrow">Aus dem Auswertungsgespräch</div><p>${esc(a.talk)}</p></div>` : ""}
+  </div>`;
+}
+function tEndbericht(m) {
+  const a = auditOf(m.id);
+  if (!a) return `<section class="panel" style="display:grid;gap:10px;max-width:720px"><h3>Noch keine Prüferin bzw. kein Prüfer zugewiesen</h3>
+    <p>Bei Q+Z prüft eine Prüferin oder ein Prüfer den Betrieb unangekündigt aus Gastperspektive. Die Zuweisung machst du im Reiter „Stammdaten &amp; Lizenz“.</p><div><button class="btn primary" data-a="btab" data-v="stamm">Prüfer/in zuweisen</button></div></section>`;
+  const r = auditResult(m.id);
+  if (!auditDone(a)) return `<section class="panel" style="display:grid;gap:10px;max-width:720px"><h3>Prüfung läuft</h3>
+    <dl class="kv"><dt>Prüfer/in</dt><dd>${esc(prById(a.pr).name)}</dd><dt>Status</dt><dd>${AST[a.status]}</dd><dt>Fortschritt</dt><dd class="num">${r.d} von ${r.t} Kriterien</dd><dt>Selbstcheck</dt><dd>${selfOf(m) ? "eingereicht" : "noch nicht eingereicht"}</dd></dl>
+    <p style="color:var(--muted)">Ergebnis und Gegenüberstellung erscheinen hier, sobald der Endbericht übermittelt ist.</p></section>`;
+  const res = a.res || r.res, rel = a.status === "freigegeben";
+  const lbl = { bestanden: "Freigeben und Zertifikat ausstellen", nachbessern: "Freigeben und Nachbesserung anfordern", durchgefallen: "Freigeben und auf Q zurückstufen" }[res];
+  return `<section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)">${endReport(r, "sqd")}
+    <div style="display:grid;gap:12px;align-content:start"><div class="panel" style="display:grid;gap:10px"><h3>Freigabe</h3>
+      ${rel ? `<p class="hint">Freigegeben am ${dDE(a.released)}.${res === "bestanden" ? " Zertifikat ausgestellt, Schild intern bestellen." : res === "nachbessern" ? ` Belege eingegangen: ${a.proofs.length}.` : " Betrieb auf Q zurückgestuft."}</p>`
+        : `<p>Übermittelt am ${dDE(a.submitted)} von ${esc(prById(a.pr).name)}.</p>${selfOf(m) ? "" : '<p class="hint">Achtung: Der Selbstcheck des Betriebs liegt noch nicht vor.</p>'}<div><button class="btn primary" data-a="arelease">${lbl}</button></div>`}
+      <small style="color:var(--muted)">Offen: Gültigkeit des Zertifikats, Sperrfrist nach Nichtbestehen, genauer Ablauf der Nachbesserung.</small></div></div></section>`;
+}
+function releaseEnd(id) {
+  const r = auditResult(id), a = r.a, d = today(), res = r.res;
+  a.status = "freigegeben"; a.released = d; a.res = res;
+  const entry = { d, t: `Endbericht freigegeben: ${RES[res][0]}`, by: "DTV-SQD-Team", txt: res === "bestanden" ? "Zertifikat ausgestellt, Schild wird intern bestellt." : res === "nachbessern" ? "Nachbesserung angefordert, Belege können hochgeladen werden." : "Auf Q zurückgestuft." };
+  if (id === "ti") { if (S.status === "Eingereicht") S.status = "Freigegeben"; addDoc("Endbericht"); if (res === "bestanden") addDoc("Zertifikat"); if (res === "durchgefallen") S.org.paket = "Q"; S.history.unshift(entry); }
+  else { S.bstatus[id] = "Freigegeben"; (S.bhist[id] ||= []).unshift(entry); const dd = ((S.bdocs ||= {})[id] ||= []); dd.unshift({ t: "Endbericht", d, v: 1 }); if (res === "bestanden") dd.unshift({ t: "Zertifikat", d, v: 1 }); if (res === "durchgefallen") (S.bpaket ||= {})[id] = "Q"; }
+  render(); toast(`Endbericht freigegeben: ${RES[res][0]}`);
+}
+function betriebEnd() {
+  const r = auditResult("ti"), a = r.a, res = a.res || r.res;
+  const weak = r.crits.filter(c => typeof a.ratings[c.key] === "number" && a.ratings[c.key] < 3);
+  return `<div class="panel thanks" style="display:grid;gap:10px"><h2>${res === "bestanden" ? "Herzlichen Glückwunsch, ihr seid zertifiziert!" : res === "nachbessern" ? "Fast geschafft: Nachbesserung erforderlich" : "Diesmal hat es nicht gereicht"}</h2>
+      <p>${res === "bestanden" ? "Euer Zertifikat liegt unter Dokumente. Das ServiceQualität-Schild bestellt das SQD-Team für euch." : res === "nachbessern" ? `Euer Ergebnis liegt zwischen ${fmt(zr().fix)} und ${fmt(zr().pass)}. Ladet zu den schwächer bewerteten Kriterien Belege hoch, die Prüferin bzw. der Prüfer bewertet sie danach neu.` : "Ihr seid auf das Paket Q zurückgestuft. Eure Servicekette und euer Maßnahmenplan bleiben erhalten."}</p></div>
+    ${endReport(r, "betrieb")}
+    ${res === "nachbessern" ? `<div class="panel" style="display:grid;gap:8px"><h3>Belege hochladen</h3><ul class="recs">${weak.slice(0, 12).map(c => { const n = a.proofs.filter(p => p.key === c.key).length; return `<li><span class="chip">Prüfung ${a.ratings[c.key]}</span><p>${esc(critLabel(c))}</p>${n ? `<span class="chip own">${n} Beleg${n > 1 ? "e" : ""}</span>` : ""}<button class="btn sm" data-a="aproof" data-k="${c.key}">Beleg hochladen</button></li>`; }).join("")}</ul>
+      <small style="color:var(--muted)">Im Dummy simuliert. Ablauf der Neubewertung wird noch festgelegt.</small></div>` : ""}`;
+}
+function mailDrawer(id) {
+  const m = modelById(id), a = auditOf(id), p = prById(a.pr);
+  drawer(`<header><div><div class="eyebrow">Benachrichtigung</div><h2>E-Mail an ${esc(p.name)}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+    <div class="mail"><div class="mail-h"><span>Von: Qool · ServiceQualität Deutschland &lt;sqd@deutschertourismusverband.de&gt;</span><span>An: ${esc(p.name)} &lt;${esc(p.email)}&gt;</span><b>Neuer Prüfauftrag: ${esc(m.name)}</b></div>
+      <p>Hallo ${esc(p.name.split(" ")[0])},</p>
+      <p>dir wurde ein neuer Betrieb für die verdeckte Vor-Ort-Prüfung zugewiesen:</p>
+      <p><b>${esc(m.name)}</b><br>${esc(m.stamm?.strasse || "")}${m.stamm?.strasse ? "<br>" : ""}${esc(m.stamm?.plz || "")} ${esc(m.ort)}<br>${BRANCHEN[m.br]}</p>
+      <p>Bitte plane den Mystery-Check unangekündigt. Die Checkliste findest du in deinem Prüfer-Cockpit, eine Kundennummer brauchst du nicht.</p>
+      <p><span class="link">→ Im Prüfer-Cockpit öffnen</span></p>
+      <p>Viele Grüße<br>Dein Team von ServiceQualität Deutschland</p></div>
+    <small style="color:var(--muted)">Der Versand läuft später über SMTP. Im Klickdummy wird die Mail nur angezeigt.</small>
+    <div class="row"><button class="btn" data-a="close">Schließen</button><button class="btn primary" data-a="aswitch" data-v="${a.pr}">Als ${esc(p.name)} ansehen</button></div>`);
+}
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el) return;
+  const a = el.dataset.a, v = el.dataset.v, k = el.dataset.k;
+  const A = () => auditOf(S.openA);
+  switch (a) {
+    case "aopen": { e.stopPropagation(); S.openA = v; const au = auditOf(v); S.atab = auditOpen(au) ? "pruefung" : au.status === "abgeschlossen" ? "abgleich" : "ergebnis"; S.akp = null; S.view = "audit"; render(); scrollTo(0, 0); break; }
+    case "atab": if (el.getAttribute("aria-disabled") === "true") { toast("Erst nach Abschluss der Bewertung"); break; } S.atab = v; render(); scrollTo(0, 0); break;
+    case "akp": S.akp = +v; render(); scrollTo(0, 0); break;
+    case "anext": { const r = auditResult(S.openA), ks = r.kps.filter(x => x.total), i = ks.findIndex(x => x.kp.id === S.akp); S.akp = ks[(i + 1) % ks.length].kp.id; render(); scrollTo(0, 0); toast("Zwischengespeichert"); break; }
+    case "arate": { const au = A(); if (!auditOpen(au)) break; if (au.status === "zugewiesen") au.status = "in Prüfung"; const val = v === "N" ? "N" : +v; if (au.ratings[k] === val) delete au.ratings[k]; else au.ratings[k] = val; render(); break; }
+    case "askip": drawer(`<header><div><div class="eyebrow">Kontaktpunkt nicht prüfen</div><h2>${kpById(v).name}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+      <p>Standard ist, dass alle vorhandenen Kontaktpunkte geprüft werden. Wenn es den Bereich nicht gibt oder er nicht prüfbar ist, bitte begründen.</p>
+      <label class="f">Begründung (Pflicht)<textarea id="skip-t" rows="3" placeholder="z. B. Der Betrieb hat keinen Außenbereich."></textarea></label><p id="skip-err" class="err" role="alert"></p>
+      <div class="row"><button class="btn" data-a="close">Abbrechen</button><button class="btn primary" data-a="askipok" data-v="${v}">Als nicht geprüft markieren</button></div>`); break;
+    case "askipok": { const t = document.getElementById("skip-t").value.trim(); if (t.length < 5) { document.getElementById("skip-err").textContent = "Bitte eine Begründung angeben."; break; } const au = A(); au.skip[v] = t; if (au.status === "zugewiesen") au.status = "in Prüfung"; close(); render(); toast("Kontaktpunkt mit Begründung ausgenommen"); break; }
+    case "aunskip": delete A().skip[v]; render(); break;
+    case "arec": { const [kp, hf, i] = k.split("|"), c = critOf(+kp, hf, +i); drawer(`<header><div><div class="eyebrow">Handlungsempfehlung · ${kpById(kp).name}</div><h2>${esc(c[1])}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+      <p class="lead" style="font-size:.9rem">${esc(c[2])}</p>
+      <label class="f">Empfehlung<textarea id="rec-k" rows="4" placeholder="Was sollte der Betrieb an dieser Stelle konkret tun?"></textarea></label>
+      ${A().recs.filter(x => x.key === k).map(x => `<div class="hint">${esc(x.text)}</div>`).join("")}
+      <div class="row"><button class="btn" data-a="close">Abbrechen</button><button class="btn primary" data-a="arecsave" data-k="${k}">Speichern</button></div>`); document.getElementById("rec-k").focus(); break; }
+    case "arecsave": { const t = document.getElementById("rec-k").value.trim(); if (!t) { toast("Bitte die Empfehlung beschreiben"); break; } const au = A(), [kp, hf, i] = k.split("|"); au.recs.push({ id: au.nid++, ref: "krit", kp: +kp, hf, i: +i, key: k, text: t }); close(); render(); toast("Empfehlung gespeichert"); break; }
+    case "arecadd": { const t = document.getElementById("rec-t").value.trim(); if (!t) { toast("Bitte die Empfehlung beschreiben"); break; } const [ref, val] = document.getElementById("rec-ref").value.split("|"), au = A();
+      au.recs.push({ id: au.nid++, ref, ...(ref === "kp" ? { kp: +val } : ref === "hf" ? { hf: val } : {}), text: t }); render(); toast("Empfehlung hinzugefügt"); break; }
+    case "arecdel": A().recs = A().recs.filter(x => x.id !== +v); render(); break;
+    case "aclose": { const r = auditResult(S.openA); if (r.d < r.t) { toast("Noch nicht alle Kriterien bewertet"); break; } r.a.status = "abgeschlossen"; r.a.closed = today(); S.atab = "abgleich"; render(); scrollTo(0, 0); toast("Bewertung abgeschlossen. Jetzt siehst du den Selbstcheck des Betriebs."); break; }
+    case "aall": UI.aall = v === "1"; render(); break;
+    case "aadj": { const au = A(); if (au.status !== "abgeschlossen") break; const val = +v; if (au.orig[k] === undefined) au.orig[k] = au.ratings[k]; au.ratings[k] = val; if (au.orig[k] === val) delete au.orig[k]; render(); break; }
+    case "asubmit": { const au = A(), m = modelById(S.openA); au.status = "eingereicht"; au.submitted = today(); const entry = { d: today(), t: "Endbericht von der Prüfung übermittelt", by: prById(au.pr).name };
+      if (S.openA === "ti") S.history.unshift(entry); else (S.bhist[S.openA] ||= []).unshift(entry); render(); toast(`Endbericht für ${m.name} an das DTV-SQD-Team übermittelt`); break; }
+    case "aplan": { const m = modelById(v); drawer(`<header><div><div class="eyebrow">Maßnahmenplan · nur lesen</div><h2>${esc(m.name)}</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+      <ul class="recs">${m.measures.map(x => `<li><span class="chip">${esc(x.kp)}</span><p>${esc(x.text)}</p><span class="num">${x.status} · ${x.progress} %</span></li>`).join("") || '<li>Keine Maßnahmen.</li>'}</ul><button class="btn" data-a="close">Schließen</button>`); break; }
+    case "arelease": releaseEnd(S.openB); break;
+    case "aswitch": S.prMe = v; S.role = "pruefer"; S.view = "cockpit"; close(); render(); scrollTo(0, 0); break;
+    case "rectake": { if (S.peek) { toast("Leseansicht: keine Änderungen möglich"); break; } const x = S.audit.recs.find(y => y.id === +v); if (!x || x.taken) break; const crit = x.ref === "krit";
+      S.measures.push({ id: S.nextId++, kp: crit ? x.kp : null, hf: crit ? x.hf : null, crit: crit ? x.i : null, text: crit || x.ref === "allg" ? x.text : `${recLabel(x)}: ${x.text}`, prio: "mittel", status: "offen", resp: [], start: "", end: "", progress: 0, origin: "pruefer" });
+      x.taken = true; render(); toast("In den Maßnahmenplan übernommen"); break; }
+    case "aproof": { if (S.peek) break; S.audit.proofs.push({ key: k, d: today() }); render(); toast("Beleg hochgeladen (simuliert)"); break; }
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.id === "prme") { S.prMe = t.value; S.view = "cockpit"; render(); }
+  if (t.dataset.anote) { const au = auditOf(S.openA); if (!au || auditDone(au)) return; if (t.value.trim()) au.notes[t.dataset.anote] = t.value.trim(); else delete au.notes[t.dataset.anote]; save(); }
+  if (t.id === "atalk") { auditOf(S.openA).talk = t.value; save(); }
+  if (t.id === "avisit") { auditOf(S.openA).visit = t.value; save(); toast("Datum gespeichert"); }
+  if (t.id === "aassign") { const id = S.openB, cur = auditOf(id), m = modelById(id);
+    if (!t.value) { if (cur && cur.status !== "zugewiesen") { toast("Die Prüfung läuft bereits, Zuweisung kann nicht entfernt werden"); render(); return; } setAudit(id, null); render(); toast("Zuweisung entfernt"); return; }
+    if (cur) cur.pr = t.value; else setAudit(id, newAudit(t.value));
+    const entry = { d: today(), t: `Prüfer/in zugewiesen: ${prById(t.value).name}`, by: "DTV-SQD-Team" };
+    if (id === "ti") S.history.unshift(entry); else (S.bhist[id] ||= []).unshift(entry);
+    render(); mailDrawer(id); toast(`${prById(t.value).name} zugewiesen und benachrichtigt`); }
+  if (["zr-pass", "zr-fix", "zr-dev"].includes(t.id)) { const n = parseFloat(String(t.value).replace(",", ".")); if (isNaN(n)) return; zr()[t.id.slice(3)] = n; save(); toast("Regel gespeichert"); }
+});
+
 function applyHash() {
   const h = (location.hash || "").slice(1);
   if (["registrierung", "registrieren", "kc"].includes(h)) { S.peek = false; S.role = "public"; S.view = "kc"; }
   else if (h === "login") { S.peek = false; S.role = "public"; S.view = "login"; }
   else if (h === "betrieb") { S.peek = false; S.role = "betrieb"; S.view = "dash"; }
+  else if (h === "pruefer") { S.peek = false; S.role = "pruefer"; S.view = "cockpit"; }
   else if (h === "sqd") { S.peek = false; S.role = "team"; S.view = "betriebe"; }
 }
 applyHash();
