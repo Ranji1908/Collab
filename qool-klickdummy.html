@@ -237,6 +237,9 @@ ul.plain, ol.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px }
 details.praxis { border: 1px dashed var(--line); border-radius: 4px; padding: 8px 10px; display: grid; gap: 8px }
 details.praxis summary { cursor: pointer; font-weight: 600 } details.praxis > div { font-size: .88rem; margin-top: 8px }
 .panel { align-content: start }
+.picker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px }
+.picker .wide { grid-column: 1 / -1 }
+@media (max-width: 560px) { .picker { grid-template-columns: 1fr } }
 .subm { display: grid; gap: 8px; border-color: var(--accent) }
 .checkl { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .9rem }
 .checkl li { display: grid; grid-template-columns: 20px 1fr; gap: 6px }
@@ -784,7 +787,7 @@ function vPlan() {
   return `
   <section class="row" style="justify-content:space-between;align-items:end"><div style="display:grid;gap:6px"><div class="eyebrow">Maßnahmenplan</div><h1>Unser Maßnahmenplan</h1>
     <p class="lead">Ihr formuliert die Maßnahmen selbst, mehrere pro Kriterium oder allgemein ohne Kriterium. Die KI gibt nur Rückmeldung, ob eine Maßnahme konkret, messbar und zugeordnet ist. Karten per Drag &amp; Drop verschieben.</p></div>
-    ${ro ? "" : '<button class="btn" data-a="newgen">+ Allgemeine Maßnahme</button>'}</section>
+    ${ro ? "" : '<button class="btn primary" data-a="newgen">+ Maßnahme hinzufügen</button>'}</section>
   ${S.role === "betrieb" ? submitBox() : ""}
   <section class="kanban">${cols.map(([k, l]) => { const ms = S.measures.filter(m => m.status === k); return `
     <div class="col" data-col="${k}"><h3><span>${l}</span><span class="num">${ms.length}</span></h3>
@@ -1356,6 +1359,26 @@ function welcomeCard() {
   </section>`;
 }
 
+/* ---------- Kriterium für neue Maßnahme wählen ---------- */
+function critPicker() {
+  const np = UI.np, kp = np.kp ? kpById(np.kp) : null;
+  const hfs = kp ? HF.filter(h => hfActive(kp, h.k) && (kp.hf[hfIdx(h.k)] > 0 || (S.custom[`${kp.id}|${h.k}`] || []).length)) : [];
+  const crits = kp && np.hf ? [...Array.from({ length: kp.hf[hfIdx(np.hf)] }, (_, i) => { const c = critOf(kp.id, np.hf, i); const v = S.ratings[`${kp.id}|${np.hf}|${i}`]; return [String(i), `${c ? c[0] + " " + c[1] : "Kriterium " + (i + 1)}${v !== undefined ? ` (bewertet: ${v})` : ""}`]; }),
+    ...(S.custom[`${kp.id}|${np.hf}`] || []).map(c => [c.id, `Eigenes: ${c.t || "ohne Titel"}`])] : [];
+  const sel = np.kp && np.hf && np.cr !== "" ? critText(+np.kp, np.hf, np.cr.startsWith("c") ? -1 : +np.cr) : "";
+  return `<div class="picker">
+    <label class="f">Bezug<select id="np-kp"><option value="">Allgemein (ohne Kriterium)</option>${selKps().map(k => `<option value="${k.id}" ${String(k.id) === np.kp ? "selected" : ""}>${k.name}</option>`).join("")}</select></label>
+    ${kp ? `<label class="f">Handlungsfeld<select id="np-hf"><option value="">Bitte wählen</option>${hfs.map(h => `<option value="${h.k}" ${h.k === np.hf ? "selected" : ""}>${h.name}</option>`).join("")}</select></label>` : ""}
+    ${kp && np.hf ? `<label class="f wide">Kriterium<select id="np-cr"><option value="">Bitte wählen</option>${crits.map(([v, l]) => `<option value="${v}" ${v === np.cr ? "selected" : ""}>${esc(l)}</option>`).join("")}</select></label>` : ""}
+    ${sel && !np.cr.startsWith("c") ? `<p class="wide" style="color:var(--muted);font-size:.85rem">${esc(sel)}</p>` : ""}
+  </div>`;
+}
+function updatePicker() {
+  document.getElementById("np-wrap").innerHTML = critPicker();
+  const np = UI.np, fbBtn = document.querySelector('[data-a="feedback"]');
+  if (fbBtn) fbBtn.dataset.c = np.kp && np.hf && np.cr !== "" ? (np.cr.startsWith("c") ? ((S.custom[`${np.kp}|${np.hf}`] || []).find(c => c.id === np.cr)?.t || "") : critText(+np.kp, np.hf, +np.cr)) : "";
+}
+
 /* ---------- Teamversprechen ---------- */
 const PROMISE_TEXT = ["Wir stellen unsere Gäste und Kunden in den Mittelpunkt unserer Arbeit.", "Wir arbeiten als Team zusammen und nehmen alle mit, die mit Gästen und Kunden zu tun haben.", "Wir schauen ehrlich auf unsere Servicekette und benennen auch Schwächen.", "Wir setzen die Maßnahmen um, die wir uns vornehmen, und prüfen regelmäßig, was sie bewirken."];
 function promiseModal() {
@@ -1608,10 +1631,12 @@ document.addEventListener("click", e => {
     case "vis": S.vis = v; render(); break;
     case "dl": toast(`Download simuliert: ${v}`); break;
     case "reopen": S.status = "Entwurf"; S.history.unshift({ d: today(), t: "Neue Version begonnen", by: member(S.me).name }); render(); toast("Neue Version begonnen. Die eingereichten Dokumente bleiben archiviert."); break;
-    case "newgen": draftOrigin = "eigen"; drawer(`<header><div><div class="eyebrow">Maßnahmenplan</div><h2>Allgemeine Maßnahme</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
-        <p class="lead" style="font-size:.9rem">Für Maßnahmen, die zu keinem einzelnen Kriterium gehören, zum Beispiel eine Teamschulung.</p>
+    case "newgen": draftOrigin = "eigen"; UI.np = { kp: "", hf: "", cr: "" }; drawer(`<header><div><div class="eyebrow">Maßnahmenplan</div><h2>Neue Maßnahme</h2></div><button class="x" data-a="close" aria-label="Schließen">×</button></header>
+        <div id="np-wrap">${critPicker()}</div>
         ${measureForm({ prio: "mittel", status: "offen", progress: 0, resp: [], text: "" }, "", false)}<div class="row"><button class="btn" data-a="close">Abbrechen</button><button class="btn primary" data-a="savegen">Speichern</button></div>`); break;
-    case "savegen": { const f = readForm(); if (!f.text) { toast("Bitte die Maßnahme beschreiben"); break; } S.measures.push({ id: S.nextId++, kp: null, hf: null, crit: null, origin: draftOrigin, ...f }); close(); render(); toast("Allgemeine Maßnahme gespeichert"); break; }
+    case "savegen": { const f = readForm(); if (!f.text) { toast("Bitte die Maßnahme beschreiben"); break; } const np = UI.np || {}, crit = np.kp && np.hf && np.cr !== "";
+      S.measures.push({ id: S.nextId++, kp: crit ? +np.kp : null, hf: crit ? np.hf : null, crit: crit ? (np.cr.startsWith("c") ? np.cr : +np.cr) : null, origin: draftOrigin, ...f });
+      close(); render(); toast(crit ? "Maßnahme zum Kriterium gespeichert" : "Allgemeine Maßnahme gespeichert"); break; }
     case "submit": { if (!submitChecks().every(c => c[0])) { toast("Noch nicht alle Voraussetzungen erfüllt"); break; }
       const again = S.docs.some(d => d.t === "Teilnahmebestätigung");
       S.status = "Eingereicht"; S.submitted = today(); addDoc("Servicekette"); addDoc("Maßnahmenplan"); addDoc("Teilnahmebestätigung"); delete S.fbEdit.ti;
@@ -1641,6 +1666,7 @@ document.addEventListener("change", e => {
   if (wiz && (e.target.dataset.w || e.target.dataset.c)) { wizInput(e.target); return; }
   if (S.peek && (e.target.dataset.assign || e.target.dataset.custom || e.target.id === "branche" || e.target.id === "reminders")) { toast("Leseansicht: keine Änderungen möglich"); render(); return; }
   if (e.target.id === "me") { S.me = e.target.value; UI.promiseLater = false; render(); }
+  if (["np-kp", "np-hf", "np-cr"].includes(e.target.id)) { const np = UI.np; if (e.target.id === "np-kp") { np.kp = e.target.value; np.hf = ""; np.cr = ""; } else if (e.target.id === "np-hf") { np.hf = e.target.value; np.cr = ""; } else np.cr = e.target.value; updatePicker(); return; }
   if (e.target.id === "reminders") { S.reminders = e.target.value; save(); toast(e.target.value === "aus" ? "Erinnerungen ausgeschaltet" : "Erinnerungen eingeschaltet"); }
   if (e.target.dataset.custom) { const [kp, hf, id] = e.target.dataset.custom.split("|"); const c = (S.custom[`${kp}|${hf}`] || []).find(x => x.id === id); if (c) { c.t = e.target.value.trim(); save(); } }
   if (e.target.id === "branche") { S.branche = +e.target.value; S.kpSel = null; ensureSel(); render(); }
