@@ -1,0 +1,239 @@
+<title>Workshop Qool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: schmale Arbeitsspalte; Kopf mit Logo + Fortschritt, darunter Blöcke A–E mit je einer Fragekarte (Frage, Kontext, Antwortfeld, Status, Verantwortlich, Termin). */
+:root {
+  --bg: #f5f7f9; --surface: #ffffff; --surface-2: #eef2f6; --fg: #1d2329; --muted: #5d656d; --line: #d9dee3;
+  --accent: #0063a3; --accent-soft: #cfe1ee; --accent-fg: #ffffff;
+  --ok: #5a6e3a; --ok-bg: #e4ecd5; --warn: #8a5300; --warn-bg: #fdecc8; --open: #5d656d; --open-bg: #eef0f2; --err-bg: #fdecec; --err: #8a0a0c;
+  --font-display: "Barlow Semi Condensed", "Arial Narrow", Arial, sans-serif;
+  --font-body: "Source Sans 3", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #13171b; --surface: #1b2127; --surface-2: #222a32; --fg: #e6e9ec; --muted: #9aa3ab; --line: #333c45;
+  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620;
+  --ok: #b9d48c; --ok-bg: #2b3720; --warn: #f5cf8f; --warn-bg: #3a2c12; --open: #b4bcc4; --open-bg: #2a323a; --err-bg: #3d1517; --err: #ffb3b3; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #13171b; --surface: #1b2127; --surface-2: #222a32; --fg: #e6e9ec; --muted: #9aa3ab; --line: #333c45;
+  --accent: #4a9fd8; --accent-soft: #1f4763; --accent-fg: #0b1620;
+  --ok: #b9d48c; --ok-bg: #2b3720; --warn: #f5cf8f; --warn-bg: #3a2c12; --open: #b4bcc4; --open-bg: #2a323a; --err-bg: #3d1517; --err: #ffb3b3; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5 }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; line-height: 1.2; text-wrap: balance }
+p { margin: 0 }
+button, input, select, textarea { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.top { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10 }
+.top-in { max-width: 920px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center }
+.logo { background: #fff; border-radius: 4px; padding: 3px 6px; line-height: 0 }
+.logo img { height: 42px; width: auto }
+.ttl { display: grid; line-height: 1.15; border-left: 1px solid var(--line); padding-left: 14px }
+.ttl b { font-family: var(--font-display); font-size: 1.35rem; color: var(--accent) }
+.ttl span { color: var(--muted); font-size: .82rem }
+.prog { margin-left: auto; display: grid; gap: 4px; min-width: 200px; font-size: .85rem }
+.bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; display: flex }
+.bar i { display: block; height: 100% }
+.save { font-size: .8rem; color: var(--muted) }
+.save.err { color: var(--err) }
+main { max-width: 920px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 80px; display: grid; gap: 22px }
+.intro { display: grid; gap: 10px }
+.intro p { color: var(--muted); max-width: 70ch }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center }
+.filters button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 4px 12px; font-weight: 600; font-size: .85rem; cursor: pointer }
+.filters button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent) }
+.filters input { margin-left: auto; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 6px 10px; min-width: 0; width: 220px; max-width: 100% }
+.banner { background: var(--err-bg); color: var(--err); border-radius: 6px; padding: 10px 14px; font-size: .9rem }
+section.blk { display: grid; gap: 10px }
+.blk h2 { font-size: 1.3rem; display: flex; gap: 10px; align-items: baseline }
+.blk h2 small { font-family: var(--font-body); font-size: .85rem; color: var(--muted); font-weight: 400 }
+.blk > p { color: var(--muted); font-size: .9rem }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 10px }
+.q.s-geklaert { border-left: 4px solid var(--ok) } .q.s-vertagt { border-left: 4px solid var(--warn) } .q.s-offen { border-left: 4px solid var(--line) }
+.qh { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: start }
+.nr { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--accent); font-variant-numeric: tabular-nums }
+.qt b { display: block; font-weight: 700 }
+.qt p { color: var(--muted); font-size: .88rem; margin-top: 2px }
+.st { display: inline-flex; border: 1px solid var(--line); border-radius: 99px; overflow: hidden; flex: none }
+.st button { border: 0; background: transparent; padding: 3px 10px; font-size: .78rem; font-weight: 600; cursor: pointer; white-space: nowrap }
+.st button[data-v="offen"][aria-pressed="true"] { background: var(--open-bg); color: var(--open) }
+.st button[data-v="geklaert"][aria-pressed="true"] { background: var(--ok-bg); color: var(--ok) }
+.st button[data-v="vertagt"][aria-pressed="true"] { background: var(--warn-bg); color: var(--warn) }
+textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--surface); line-height: 1.45 }
+.meta { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 10px }
+.meta label { display: grid; gap: 3px; font-size: .78rem; font-weight: 600; color: var(--muted) }
+.meta input { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; background: var(--surface); min-width: 0 }
+@media (max-width: 560px) { .meta { grid-template-columns: 1fr } .qh { grid-template-columns: 28px minmax(0, 1fr) } .st { grid-column: 1 / -1 } .filters input { margin-left: 0; width: 100% } .prog { margin-left: 0; width: 100% } }
+.notes { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px }
+.notes textarea { min-height: 140px }
+.empty { color: var(--muted); font-size: .9rem }
+</style>
+<header class="top">
+  <div class="top-in">
+    <span class="logo"><img src="data:image/png;base64,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" alt="DTV Deutscher Tourismusverband e.V." width="68" height="42"></span>
+    <span class="ttl"><b>Workshop Qool</b><span>ServiceQualität Deutschland · offene Fragen</span></span>
+    <div class="prog" aria-live="polite">
+      <span id="progtxt">Fragen werden geladen …</span>
+      <div class="bar" aria-hidden="true"><i id="b-ok" style="background:var(--ok)"></i><i id="b-vt" style="background:var(--warn)"></i></div>
+      <span class="save" id="save">&nbsp;</span>
+    </div>
+  </div>
+</header>
+<main>
+  <section class="intro">
+    <h1>Offene Fragen</h1>
+    <p>Antwort direkt ins Feld schreiben. Gespeichert wird automatisch, sobald du kurz aufhörst zu tippen oder das Feld verlässt. Status, Verantwortliche und Termin halten fest, was noch zu tun ist.</p>
+    <div class="filters" role="group" aria-label="Filter">
+      <button data-f="alle" aria-pressed="true">Alle</button>
+      <button data-f="offen" aria-pressed="false">Offen</button>
+      <button data-f="geklaert" aria-pressed="false">Geklärt</button>
+      <button data-f="vertagt" aria-pressed="false">Vertagt</button>
+      <input type="search" id="search" placeholder="Suchen …" aria-label="Fragen durchsuchen">
+    </div>
+    <div class="banner" id="banner" hidden>Speichern ist in dieser Ansicht gerade nicht möglich. Eingaben bleiben nur in diesem Browser erhalten. Bitte die Seite über claude.ai angemeldet öffnen.</div>
+  </section>
+  <div id="list"></div>
+  <section class="notes">
+    <h2>Weitere Notizen</h2>
+    <textarea id="notes" data-k="notes" placeholder="Alles, was keiner Frage zugeordnet ist: Beschlüsse, neue Fragen, Aufgaben …"></textarea>
+  </section>
+</main>
+<script>
+const BLOCKS = [
+ { k: "A", t: "Ablauf und Logik", d: "Zuerst klären. Die Antworten auf 1–4 beantworten viele andere Fragen gleich mit.", q: [
+  ["Endet Q ohne Prüfung?", "Also Selbstcheck, automatischer Feedbackbericht, Teilnahmebestätigung. Ohne Freigabe durch das SQD-Team und ohne Nachbesserung?"],
+  ["Gilt die Mindestpunktzahl nur für Z?", "Zählen dort nur die Bewertungen des Prüfers zu den prüfbaren Kriterien? Unsere Ableitung aus der Berechnungslogik, bitte bestätigen."],
+  ["Bestehensregel bei Z", "Durchschnitt pro Kontaktpunkt oder gesamt? Was passiert, wenn ein Betrieb nicht besteht: nachbessern, erneut prüfen oder kein Zertifikat?"],
+  ["Wann findet die Prüfung vor Ort statt?", "Nach dem Einreichen des Selbstchecks oder unabhängig davon? Trägt der Prüfer seine Bewertungen direkt in Qool ein?"],
+  ["Was ist die Eigenleistung des Betriebs?", "Selbstbewertung, Maßnahmen oder deren Umsetzung? Wird davon etwas bewertet?"],
+  ["Rolle der KI", "Nur Rückmeldung und Plausibilitätsprüfung oder auch Vorschläge für Maßnahmen? Wie entstehen die automatisierten Handlungsempfehlungen bei Q: aus DTV-Textbausteinen, per KI oder beidem?"],
+  ["Statusgespräch nach 1,5 Jahren (Z)", "Was wird angeschaut? Der Stand der Maßnahmen im Tool?"],
+  ["Ende der Laufzeit", "Was passiert nach 3 bzw. 3,5 Jahren? Verlängerung, Rezertifizierung? Wird etwas für die nächste Runde übernommen?"],
+  ["Von Q auf Z aufstocken", "Geht das während der Laufzeit?"] ] },
+ { k: "B", t: "Aufbau der Servicekette", q: [
+  ["Zielgruppen", "Laut Factsheet Teil der Konfiguration. Wie werden sie abgebildet? Wirken sie sich auf die Kriterien aus?"],
+  ["Handlungsfelder und Themenfelder", "Ist das dasselbe? Bleibt es bei mindestens 3 Feldern mit Gast/Kunde als Pflicht?"],
+  ["Umfang", "Eine Tourist-Information hat rund 260 Kriterien, ein Hotel über 300. Braucht es eine Obergrenze oder eine Mindestauswahl?"],
+  ["Abwählen und N", "Soll es Grenzen geben? Bei Q vermutlich egal, bei Z prüft ohnehin der Prüfer."],
+  ["Eigene Kriterien des Betriebs", "Sollen sie ohne Einfluss auf die Wertung bleiben?"],
+  ["Kleinkram", "Pflichtpunkte für die Branche „Sonstige“. Zwei abweichende Zahlen bei den prüfbaren Kriterien (Ferienwohnung/Mitarbeitende, Wellness/Barrierefreiheit)."] ] },
+ { k: "C", t: "Rollen", q: [
+  ["Team im Betrieb", "Kontaktpunkte auf Personen verteilen: ja oder nein? Wer reicht ein? Wie läuft das Qualitäts- und Teamversprechen: digital oder per Upload?"],
+  ["KORD3", "Voraussetzung für die Buchung oder erst fürs Einreichen? Was passiert, wenn die Koordinatorin den Betrieb verlässt (Koordinatoren-Pool)?"],
+  ["Mehrere Standorte", "Wie werden Fälle wie die Schlösser Sachsen mit 19 Häusern abgebildet: ein Q oder 19?"],
+  ["SQD-Team", "Darf es während der Bearbeitung mitlesen? Nur Berater oder auch Prüfinstanz? Mit wie vielen Betrieben wird gerechnet?"],
+  ["Prüfer", "Intern oder extern? Was soll er im Tool sehen und eintragen?"] ] },
+ { k: "D", t: "Inhalte", q: [
+  ["Praxisbeispiele", "Hat das SQD-Team eigene, geprüfte Beispiele? Wie geht es mit den KI-recherchierten weiter: wer prüft sie, braucht es das Einverständnis der genannten Betriebe?"],
+  ["Videos, Wissensimpulse, Netzwerkveranstaltungen", "Wo gehören sie hin, in Qool oder ins Kundencenter? Wer liefert sie?"],
+  ["Fehlende Texte", "Definitionen der 28 Kontaktpunkte und 6 Handlungsfelder, Icons, Textbausteine für den Feedbackbericht, Text des Teamversprechens, FAQ und E-Mail-Texte, Datenschutzhinweise und Teilnahmebedingungen. Wer liefert was, bis wann?"],
+  ["Pflege und Darstellung", "Pflegt das SQD-Team die Inhalte selbst über einen Admin-Bereich? Sollen wir kurze Stufenlabels entwerfen, damit die Texte nicht erschlagen?"] ] },
+ { k: "E", t: "Systeme und Organisation", q: [
+  ["Zugang", "Nur über den Kauf im Shop des Kundencenters oder auch Selbstregistrierung? Anmeldung über das Kundencenter (Single Sign-on)?"],
+  ["Schnittstellen zu CRM und Kundencenter", "KORD3 prüfen, Lizenz und Laufzeit anlegen, Bericht und Bestätigung bzw. Zertifikat ins Kundencenter, Menüpunkt bei Ablauf ausblenden. Wer setzt die Seite von CRM und Kundencenter um?"],
+  ["Archiv", "Sollen Altdaten aus dem früheren Tool angezeigt werden? In welchem Format liegen sie vor?"],
+  ["Datenschutz bei der KI", "Hosting in der EU, Auftragsverarbeitungsvertrag, welche Daten an das Sprachmodell gehen dürfen."],
+  ["Beta", "Welche Branchen zuerst? Welche Testbetriebe? Wer ist im SQD-Team Ansprechperson?"] ] }
+];
+const QS = []; let n = 0;
+BLOCKS.forEach(b => b.q.forEach(([t, d]) => { n++; QS.push({ id: "q" + String(n).padStart(2, "0"), nr: n, blk: b.k, t, d }); }));
+
+const A = {};           // id -> {answer, status, owner, due}
+let db = null, dbOk = false, filter = "alle";
+const LS = "qool-workshop-backup";
+try { Object.assign(A, JSON.parse(localStorage.getItem(LS)) || {}); } catch (e) {}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const get = id => A[id] || {};
+
+function render() {
+  const q = (document.getElementById("search").value || "").trim().toLowerCase();
+  const html = BLOCKS.map(b => {
+    const items = QS.filter(x => x.blk === b.k).filter(x => {
+      const st = get(x.id).status || "offen";
+      if (filter !== "alle" && st !== filter) return false;
+      return !q || (x.t + " " + x.d + " " + (get(x.id).answer || "")).toLowerCase().includes(q);
+    });
+    if (!items.length) return "";
+    return `<section class="blk"><h2>${b.k} · ${b.t} <small>${items.length} ${items.length === 1 ? "Frage" : "Fragen"}</small></h2>${b.d ? `<p>${b.d}</p>` : ""}
+      ${items.map(x => { const a = get(x.id), st = a.status || "offen"; return `<article class="q s-${st}" id="${x.id}">
+        <div class="qh"><span class="nr">${x.nr}</span><div class="qt"><b>${esc(x.t)}</b><p>${esc(x.d)}</p></div>
+          <div class="st" role="group" aria-label="Status">${[["offen","Offen"],["geklaert","Geklärt"],["vertagt","Vertagt"]].map(([v, l]) => `<button data-id="${x.id}" data-v="${v}" aria-pressed="${st === v}">${l}</button>`).join("")}</div></div>
+        <textarea id="ans-${x.id}" data-id="${x.id}" data-f="answer" placeholder="Antwort / Ergebnis …" aria-label="Antwort zu Frage ${x.nr}">${esc(a.answer)}</textarea>
+        <div class="meta"><label>Verantwortlich<input id="own-${x.id}" data-id="${x.id}" data-f="owner" value="${esc(a.owner)}" placeholder="z. B. Birgit, SQD-Team, Basti"></label>
+          <label>Bis wann<input type="date" id="due-${x.id}" data-id="${x.id}" data-f="due" value="${esc(a.due)}"></label></div>
+      </article>`; }).join("")}</section>`;
+  }).join("");
+  document.getElementById("list").innerHTML = html || '<p class="empty">Keine Fragen für diesen Filter.</p>';
+  progress();
+}
+function progress() {
+  const c = { offen: 0, geklaert: 0, vertagt: 0 };
+  QS.forEach(x => c[get(x.id).status || "offen"]++);
+  document.getElementById("progtxt").textContent = `${c.geklaert} von ${QS.length} geklärt · ${c.vertagt} vertagt · ${c.offen} offen`;
+  document.getElementById("b-ok").style.width = (c.geklaert / QS.length * 100) + "%";
+  document.getElementById("b-vt").style.width = (c.vertagt / QS.length * 100) + "%";
+}
+function setSave(t, err) { const s = document.getElementById("save"); s.textContent = t; s.classList.toggle("err", !!err); }
+
+/* Speichern: eine Schreiboperation pro Frage, nach Tipppause */
+const timers = {}, writing = {}, pending = {};
+function queue(id) { clearTimeout(timers[id]); timers[id] = setTimeout(() => flush(id), 700); }
+async function flush(id) {
+  clearTimeout(timers[id]);
+  try { localStorage.setItem(LS, JSON.stringify(A)); } catch (e) {}
+  if (!dbOk) { setSave("Nur lokal gespeichert", true); return; }
+  if (writing[id]) { pending[id] = true; return; }
+  writing[id] = true; setSave("Speichert …");
+  try {
+    const body = { ...(A[id] || {}), updatedAt: new Date().toISOString() };
+    await (id === "notes" ? db.doc("workshop/notes") : db.collection("answers").doc(id)).set(body);
+    setSave("Gespeichert " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }));
+  } catch (e) {
+    setSave(e && e.code === "invalid_argument" ? "Keine Schreibrechte in dieser Ansicht" : "Speichern fehlgeschlagen, wird erneut versucht", true);
+    if (e && e.code === "unavailable") setTimeout(() => flush(id), 1500 + Math.random() * 1500);
+  } finally {
+    writing[id] = false;
+    if (pending[id]) { pending[id] = false; flush(id); }
+  }
+}
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.id === "search") { render(); return; }
+  if (t.id === "notes") { A.notes = { text: t.value }; queue("notes"); return; }
+  if (!t.dataset.id) return;
+  (A[t.dataset.id] ||= {})[t.dataset.f] = t.value; queue(t.dataset.id);
+  if (t.dataset.f === "due") flush(t.dataset.id);
+});
+document.addEventListener("focusout", e => { const id = e.target.dataset?.id || (e.target.id === "notes" ? "notes" : null); if (id && timers[id]) flush(id); });
+document.addEventListener("click", e => {
+  const s = e.target.closest(".st button");
+  if (s) { (A[s.dataset.id] ||= {}).status = s.dataset.v; flush(s.dataset.id); render(); return; }
+  const f = e.target.closest(".filters button");
+  if (f) { filter = f.dataset.f; document.querySelectorAll(".filters button").forEach(b => b.setAttribute("aria-pressed", b === f)); render(); }
+});
+
+/* Live-Daten aus dem Store; fremde Änderungen übernehmen, ohne das gerade bearbeitete Feld zu überschreiben */
+function applyRemote(id, data) {
+  const active = document.activeElement;
+  const editing = active && (active.dataset?.id === id || (id === "notes" && active.id === "notes"));
+  if (editing || writing[id] || timers[id]) return false;
+  const { updatedAt, ...rest } = data || {};
+  if (id === "notes") { A.notes = rest; document.getElementById("notes").value = rest.text || ""; return false; }
+  A[id] = rest; return true;
+}
+(async () => {
+  render();
+  document.getElementById("notes").value = A.notes?.text || "";
+  db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db) { document.getElementById("banner").hidden = false; setSave("Nur lokal gespeichert", true); return; }
+  dbOk = true; setSave("Verbunden");
+  db.collection("answers").onSnapshot(snap => {
+    let changed = false;
+    snap.docs.forEach(d => { if (applyRemote(d.id, d.data())) changed = true; });
+    if (changed) render(); else progress();
+  }, err => { setSave("Verbindung unterbrochen. Neu laden, um wieder live zu sehen.", true); });
+  db.doc("workshop/notes").onSnapshot(d => { if (d.exists) applyRemote("notes", d.data()); }, () => {});
+})();
+</script>
