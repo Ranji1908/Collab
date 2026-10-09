@@ -1,4 +1,5 @@
 <title>Qool Klickdummy</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -237,6 +238,18 @@ ul.plain, ol.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px }
 details.praxis { border: 1px dashed var(--line); border-radius: 4px; padding: 8px 10px; display: grid; gap: 8px }
 details.praxis summary { cursor: pointer; font-weight: 600 } details.praxis > div { font-size: .88rem; margin-top: 8px }
 .panel { align-content: start }
+.checkl.big { font-size: 1.05rem; gap: 8px }
+.lic .licbig { font-family: var(--font-display); font-size: 2.6rem; font-weight: 700; color: var(--accent); line-height: 1 }
+.lic { display: grid; gap: 8px }
+.thanks { border: 2px solid var(--ok) }
+.zsteps { margin: 0; padding-left: 22px; display: grid; gap: 6px }
+.zsteps li.done { color: var(--muted); text-decoration: line-through }
+.zsteps li.cur { font-weight: 700 }
+.report { background: #fff; color: #1d2329; border: 1px solid var(--line); border-radius: 6px; padding: 22px 26px; display: grid; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.08); max-width: 560px }
+.report .rp-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0063a3; padding-bottom: 8px; font-size: .8rem; color: #5d656d; text-transform: uppercase; letter-spacing: .06em }
+.report h3 { color: #0063a3; font-size: 1.5rem }
+.report small { color: #5d656d }
+.attach { display: inline-block; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-size: .85rem; justify-self: start }
 .picker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px }
 .picker .wide { grid-column: 1 / -1 }
 @media (max-width: 560px) { .picker { grid-template-columns: 1fr } }
@@ -402,7 +415,7 @@ function suggestResp(kp, hfk) {
 const ORIGIN = { eigen: ["eigene Formulierung", "var(--r5)"], ueberarbeitet: ["eigene, nach KI-Rückmeldung überarbeitet", "var(--accent)"] };
 
 /* ---------- Zustand ---------- */
-const KEY = "qool-dummy-v3";
+const KEY = "qool-dummy-v4";
 function fresh() {
   return {
     view: "dash", role: "betrieb", me: "my", lead: "sh", team: null, pending: null,
@@ -420,7 +433,7 @@ function fresh() {
     promise: { by: "sh", d: "2026-10-01" },
     docs: [{ t: "Teamversprechen", d: "2026-10-01", v: 1 }],
     hfExtra: {}, fbEdit: {}, reminders: "aus", vis: "spider", others: [], peek: false, kc: null,
-    minM: { "Q": 1, "Q+Z": 3 }, bblock: {}, bfb: {},
+    minM: { "Q": 3, "Q+Z": 3 }, bblock: {}, bfb: {},
     sqd: [{ id: "u1", name: "Annik Bedey", email: "a.bedey@sqd.example", role: "Admin" }, { id: "u2", name: "Larissa Gerigk", email: "l.gerigk@sqd.example", role: "Bearbeitung" }, { id: "u3", name: "Sophia-Magdalena Kindt", email: "s.kindt@sqd.example", role: "Bearbeitung" }, { id: "u4", name: "Praktikum SQD", email: "praktikum@sqd.example", role: "Nur lesen" }],
     measures: [
       { id: 1, kp: 14, hf: "gk", crit: 1, text: "Dienstplan so anpassen, dass von 10 bis 16 Uhr immer eine Person im Verkaufsraum ansprechbar ist. Wird im Teammeeting im November festgelegt.", prio: "hoch", status: "offen", resp: ["sh","my"], start: "2026-11-01", end: "2026-12-15", progress: 0, origin: "ueberarbeitet" },
@@ -481,27 +494,96 @@ const complete = () => { const o = overall(); return o.t > 0 && o.d === o.t; };
 function submitChecks() {
   const o = overall(), n = S.measures.length, m = minM();
   return [[o.t > 0 && o.d === o.t, `Servicekette vollständig bewertet (${o.d} von ${o.t})`],
-    [n >= m, `Mindestens ${m} ${m === 1 ? "Maßnahme" : "Maßnahmen"} im Maßnahmenplan (aktuell ${n})`],
-    [!!S.promise, "Teamversprechen bestätigt"],
-    [!kordMissing(), "Mindestens eine Person mit KORD3-Lizenz oder als Anwärter/in"]];
+    [n >= m, `Mindestens ${m} ${m === 1 ? "Maßnahme" : "Maßnahmen"} angelegt (aktuell ${n})`]];
 }
-function addDoc(t) { const v = S.docs.filter(d => d.t === t).length + 1; S.docs.unshift({ t, d: new Date().toISOString().slice(0, 10), v }); }
+function addDoc(t, data) { const v = S.docs.filter(d => d.t === t).length + 1; S.docs.unshift({ t, d: new Date().toISOString().slice(0, 10), v, ...(data ? { data } : {}) }); }
+const PAKET_NAME = { "Q": "Qualifizierung (Q)", "Q+Z": "Qualifizierung & Zertifizierung (Q+Z)" };
+function licensePanel() {
+  const exp = licExpired();
+  return `<div class="panel lic"><div class="row" style="justify-content:space-between"><h3>Eure Lizenz</h3><span class="chip ${exp ? "flag" : "own"}">${exp ? "abgelaufen" : "aktiv"}</span></div>
+    <div class="licbig">${paket() === "Q" ? "Q" : "Q + Z"}</div>
+    <dl class="kv"><dt>Paket</dt><dd>${PAKET_NAME[paket()]}</dd><dt>Gültig seit</dt><dd class="num">${dDE(S.lic.start)}</dd><dt>Gültig bis</dt><dd class="num">${dDE(S.lic.end)}</dd><dt>Hauptansprechperson</dt><dd>${esc(member(S.lead).name)}</dd></dl>
+    <small style="color:var(--muted)">${paket() === "Q" ? "Selbstcheck mit Teilnahmebestätigung. Eine Zertifizierung (Z) könnt ihr im DTV-Kundencenter dazubuchen." : "Selbstcheck plus verdeckte Vor-Ort-Prüfung, danach Zertifikat und Schild."}</small></div>`;
+}
 function submitBox() {
-  if (S.status === "Eingereicht") return `<div class="panel subm"><b>Eingereicht am ${dDE(S.submitted)}.</b> Die Teilnahmebestätigung liegt im DTV-Kundencenter. Der Feedbackbericht wird gerade vom SQD-Team geprüft.</div>`;
-  if (S.status === "Freigegeben") return `<div class="panel subm"><b>Abgeschlossen.</b> Teilnahmebestätigung und Feedbackbericht liegen im DTV-Kundencenter. Ihr könnt Servicekette und Maßnahmen weiter pflegen und eine neue Version einreichen. <button class="btn sm" data-a="reopen">Neue Version beginnen</button></div>`;
-  const ch = submitChecks(), ok = ch.every(c => c[0]);
-  return `<div class="panel subm"><div class="row" style="justify-content:space-between"><h3>Einreichen</h3><button class="btn primary" data-a="submit" ${ok ? "" : "disabled"}>Servicekette und Maßnahmenplan einreichen</button></div>
-    <ul class="checkl">${ch.map(([o, t]) => `<li class="${o ? "y" : "n"}"><span>${o ? "✓" : "○"}</span>${t}</li>`).join("")}</ul>
-    <small style="color:var(--muted)">Nach dem Einreichen wird die Teilnahmebestätigung sofort erstellt (${paket() === "Q" ? "Paket Q" : "Paket Q+Z: danach folgt die Vor-Ort-Prüfung"}). Ob Maßnahmen schon erledigt sind, spielt keine Rolle.</small></div>`;
+  return `<div class="panel subm row" style="justify-content:space-between"><span>${S.status === "Entwurf" ? `Alles bewertet und mindestens ${minM()} Maßnahmen angelegt? Dann könnt ihr einreichen.` : `Eingereicht am ${dDE(S.submitted)}.`}</span><button class="btn" data-a="go" data-v="submit">Zum Einreichen →</button></div>`;
+}
+function reportData() {
+  const o = overall();
+  const ort = S.org.stamm?.ort || "";
+  return { name: S.org.name, ort: S.org.name.includes(ort) ? "" : ort, kdnr: S.org.stamm?.kdnr || "", paket: paket(), kps: selKps().length, crits: o.t, measures: S.measures.length, team: TEAM.length, lead: member(S.lead).name, date: today() };
+}
+function vSubmit() {
+  const ch = submitChecks(), ok = ch.every(c => c[0]), z = paket() !== "Q";
+  const rep = S.docs.find(d => d.t === "Teilnahmebestätigung" && d.data);
+  const lead = member(S.lead);
+  let main;
+  if (S.status === "Entwurf") main = `<div class="panel subm" style="display:grid;gap:12px">
+      <h2>Servicekette und Maßnahmenplan einreichen</h2>
+      <ul class="checkl big">${ch.map(([o, t]) => `<li class="${o ? "y" : "n"}"><span>${o ? "✓" : "○"}</span>${t}</li>`).join("")}</ul>
+      <p style="color:var(--muted)">Ob die Maßnahmen schon erledigt sind, spielt keine Rolle. ${z ? "Nach dem Einreichen folgt die verdeckte Vor-Ort-Prüfung, den Bericht gibt es nach Eingang der Prüfergebnisse." : "Nach dem Einreichen wird eure Teilnahmebestätigung sofort erstellt und an die Hauptansprechperson geschickt."}</p>
+      <div class="row"><button class="btn primary" data-a="submit" ${ok ? "" : "disabled"}>Jetzt einreichen</button>${ok ? "" : '<span style="color:var(--muted)">Erst möglich, wenn beide Punkte erfüllt sind.</span>'}${!ch[0][0] ? '<button class="link" data-a="go" data-v="edit">Zur Servicekette</button>' : ""}${!ch[1][0] ? '<button class="link" data-a="go" data-v="plan">Zum Maßnahmenplan</button>' : ""}</div>
+    </div>`;
+  else if (z && S.status === "Eingereicht") main = `<div class="panel thanks" style="display:grid;gap:12px">
+      <h2>Vielen Dank, eure Servicekette ist eingereicht!</h2>
+      <p>Eingereicht am ${dDE(S.submitted)}. Jetzt warten wir auf den Eingang der Prüfergebnisse aus der verdeckten Vor-Ort-Prüfung. Sobald sie vorliegen, bekommt ihr euren Bericht und das Zertifikat.</p>
+      <ol class="zsteps"><li class="done">Servicekette und Maßnahmen eingereicht</li><li class="cur">Verdeckte Vor-Ort-Prüfung (Termin wird nicht angekündigt)</li><li>Prüfergebnisse gehen ein</li><li>Feedbackgespräch, Bericht, Zertifikat und Schild</li></ol>
+    </div>`;
+  else main = `<div class="panel thanks" style="display:grid;gap:12px">
+      <h2>${UI.justSubmitted ? "Vielen Dank für eure Teilnahme!" : "Eingereicht"}</h2>
+      <p>${UI.justSubmitted ? "Eure Servicekette und euer Maßnahmenplan sind eingereicht. " : `Eingereicht am ${dDE(S.submitted)}. `}Die Teilnahmebestätigung ist erstellt, liegt in der Schaltzentrale und im DTV-Kundencenter und wurde an ${esc(lead.name)} geschickt.</p>
+      ${rep ? reportPreview(rep) : ""}
+      <div class="row">${rep ? `<button class="btn primary" data-a="pdf" data-v="${rep.v}">Teilnahmebestätigung als PDF herunterladen</button>` : ""}<button class="btn" data-a="go" data-v="dash">Zur Schaltzentrale</button>${S.status === "Freigegeben" ? '<button class="btn" data-a="reopen">Neue Version beginnen</button>' : ""}</div>
+    </div>
+    ${rep ? `<div class="panel" style="display:grid;gap:8px"><h3>E-Mail an die Hauptansprechperson</h3>
+      <div class="mail"><div class="mail-h"><span>Von: Qool · ServiceQualität Deutschland &lt;sqd@deutschertourismusverband.de&gt;</span><span>An: ${esc(lead.name)} &lt;${esc(lead.email || "")}&gt;</span><b>Geschafft: ${esc(S.org.name)} hat ServiceQualität Deutschland abgeschlossen</b></div>
+        <p>Liebe/r ${esc(lead.name)},</p>
+        <p>herzlichen Glückwunsch! Ihr habt eure Servicekette mit ${rep.data.crits} Kriterien an ${rep.data.kps} Kontaktpunkten bewertet und ${rep.data.measures} Maßnahmen geplant. Das ist eine starke Leistung von euch und eurem Team.</p>
+        <p>Im Anhang findet ihr eure Teilnahmebestätigung. Ihr findet sie jederzeit auch in Qool und im DTV-Kundencenter.</p>
+        <p>Vielen Dank für eure Teilnahme und viel Erfolg bei der Umsetzung!<br>Euer Team von ServiceQualität Deutschland</p>
+        <span class="attach">📎 Teilnahmebestaetigung_${esc(fileSafe(S.org.name))}.pdf</span></div>
+      <small style="color:var(--muted)">Der Versand läuft später über SMTP, die Zugangsdaten folgen. Im Klickdummy wird die Mail nur angezeigt.</small></div>` : ""}`;
+  return `<section style="display:grid;gap:6px"><div class="eyebrow">Einreichen</div><h1>${S.status === "Entwurf" ? "Einreichen" : "Eingereicht"}</h1></section>
+  <section class="grid2" style="grid-template-columns:minmax(0,2fr) minmax(260px,1fr)"><div style="display:grid;gap:14px;align-content:start">${main}</div><div style="display:grid;gap:14px;align-content:start">${licensePanel()}${docsPanel(S.docs)}</div></section>`;
+}
+const fileSafe = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ß/g, "ss").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
+function reportPreview(d) {
+  const r = d.data;
+  return `<div class="report"><div class="rp-head"><img src="${document.querySelector(".logo img").src}" alt="DTV" width="65" height="40"><span>ServiceQualität Deutschland</span></div>
+    <h3>Teilnahmebestätigung</h3>
+    <p><b>${esc(r.name)}</b>${r.ort ? `, ${esc(r.ort)}` : ""} hat die ${r.paket === "Q" ? "Qualifizierung (Q)" : "Qualifizierung"} von ServiceQualität Deutschland erfolgreich abgeschlossen und sich dabei richtig ins Zeug gelegt.</p>
+    <p>Das Team hat die eigene Servicekette mit ${r.crits} Kriterien an ${r.kps} Kontaktpunkten ehrlich eingeschätzt und ${r.measures} Maßnahmen zur Verbesserung geplant.</p>
+    <p>Vielen Dank für die Teilnahme!</p>
+    <small>Berlin, ${dDE(r.date)} · Deutscher Tourismusverband e.V., Team ServiceQualität Deutschland${r.kdnr ? ` · Kundennummer ${esc(r.kdnr)}` : ""}</small></div>`;
+}
+async function downloadReport(doc) {
+  const r = doc.data;
+  if (!window.jspdf) { toast("PDF-Bibliothek nicht geladen"); return; }
+  const pdf = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+  try { pdf.addImage(document.querySelector(".logo img").src, "PNG", 20, 18, 39, 24); } catch (e) {}
+  pdf.setDrawColor(0, 99, 163); pdf.setLineWidth(0.8); pdf.line(20, 50, 190, 50);
+  pdf.setFont("helvetica", "bold"); pdf.setFontSize(11); pdf.setTextColor(93, 101, 109); pdf.text("SERVICEQUALITÄT DEUTSCHLAND", 20, 62);
+  pdf.setFontSize(26); pdf.setTextColor(0, 99, 163); pdf.text("Teilnahmebestätigung", 20, 76);
+  pdf.setFont("helvetica", "normal"); pdf.setFontSize(12.5); pdf.setTextColor(29, 35, 41);
+  const lines = [`${r.name}${r.ort ? ", " + r.ort : ""} hat die ${r.paket === "Q" ? "Qualifizierung (Q)" : "Qualifizierung"} von ServiceQualität Deutschland erfolgreich abgeschlossen und sich dabei richtig ins Zeug gelegt.`, "",
+    `Das Team hat die eigene Servicekette mit ${r.crits} Kriterien an ${r.kps} Kontaktpunkten ehrlich eingeschätzt und ${r.measures} Maßnahmen zur Verbesserung geplant.`, "", "Vielen Dank für die Teilnahme!"];
+  let y = 92; lines.forEach(t => { const w = pdf.splitTextToSize(t, 170); pdf.text(w, 20, y); y += Math.max(1, w.length) * 6.2; });
+  pdf.setFontSize(10); pdf.setTextColor(93, 101, 109);
+  pdf.text(`Berlin, ${dDE(r.date)}`, 20, 250); pdf.text("Deutscher Tourismusverband e.V. · Team ServiceQualität Deutschland", 20, 256); if (r.kdnr) pdf.text(`Kundennummer ${r.kdnr} · Version ${doc.v}`, 20, 262);
+  const name = `Teilnahmebestaetigung_${fileSafe(r.name)}_${r.date}.pdf`;
+  const dl = window.claude?.use ? await window.claude.use("downloads") : null;
+  if (!dl) { toast("Download ist in dieser Ansicht nicht verfügbar. Bitte die Seite über claude.ai öffnen."); return; }
+  try { await dl.save({ filename: name, data: pdf.output("arraybuffer") }); }
+  catch (e) { if (e?.code !== "declined") toast("Download nicht möglich: " + (e?.message || e?.code || "unbekannter Fehler")); }
 }
 function docsPanel(docs, sqd) {
   const types = ["Teilnahmebestätigung", "Feedbackbericht", "Servicekette", "Maßnahmenplan", "Teamversprechen"];
   const has = types.filter(t => docs.some(d => d.t === t));
   return `<div class="panel" style="display:grid;gap:8px"><div class="row" style="justify-content:space-between"><h3>Dokumente</h3><span class="chip">alle Versionen im DTV-Kundencenter</span></div>
-    ${has.length ? `<ul class="docs">${has.map(t => { const vs = docs.filter(d => d.t === t); const l = vs[0]; return `<li><span class="dico">PDF</span><span style="min-width:0"><b>${t}</b><small>Version ${l.v} · ${dDE(l.d)}${vs.length > 1 ? ` · ${vs.length - 1} ältere Version${vs.length > 2 ? "en" : ""}` : ""}</small></span><button class="btn sm" data-a="dl" data-v="${t} (Version ${l.v}, ${dDE(l.d)})">Herunterladen</button></li>`; }).join("")}</ul>`
+    ${has.length ? `<ul class="docs">${has.map(t => { const vs = docs.filter(d => d.t === t); const l = vs[0]; return `<li><span class="dico">PDF</span><span style="min-width:0"><b>${t}</b><small>Version ${l.v} · ${dDE(l.d)}${vs.length > 1 ? ` · ${vs.length - 1} ältere Version${vs.length > 2 ? "en" : ""}` : ""}</small></span>${l.data && !sqd ? `<button class="btn sm" data-a="pdf" data-v="${l.v}">Herunterladen</button>` : `<button class="btn sm" data-a="dl" data-v="${t} (Version ${l.v}, ${dDE(l.d)})">Herunterladen</button>`}</li>`; }).join("")}</ul>`
       : `<p style="color:var(--muted)">${sqd ? "Noch keine Dokumente." : "Nach dem Einreichen erscheinen hier Teilnahmebestätigung, Servicekette und Maßnahmenplan, später der Feedbackbericht. Jede Version bleibt mit Datum erhalten."}</p>`}</div>`;
 }
-const STATUS_B = { Entwurf: "In Bearbeitung", Eingereicht: "Eingereicht, Bericht in Prüfung", Freigegeben: "Abgeschlossen" };
+const STATUS_B = { Entwurf: "In Bearbeitung", Eingereicht: "Eingereicht", Freigegeben: "Abgeschlossen" };
 
 /* ---------- KI-Rückmeldung zu einer selbst geschriebenen Maßnahme (im Dummy regelbasiert) ---------- */
 const VAGUE = /\b(verbessern|optimieren|prüfen|überprüfen|mehr|besser|ggf|eventuell|irgendwann|anpassen)\b/i;
@@ -543,7 +625,7 @@ function plausibility() {
 }
 
 /* ---------- Ansichten ---------- */
-const STEPS = [["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["team","Team & Aufteilung"],["edit","Servicekette"],["plan","Maßnahmenplan"]];
+const STEPS = [["dash","Schaltzentrale"],["kps","Kontaktpunkte"],["hfs","Handlungsfelder"],["team","Team & Aufteilung"],["edit","Servicekette"],["plan","Maßnahmenplan"],["submit","Einreichen"]];
 
 function render() {
   const pub = S.role === "public";
@@ -560,11 +642,12 @@ function render() {
   if (S.role === "team" && !["betriebe","betrieb","edit","sqd"].includes(S.view)) S.view = "betriebe";
   if (S.role === "team" && ["betrieb","edit"].includes(S.view) && !S.openB) S.view = "betriebe";
   if (S.role === "betrieb" && ["betriebe","betrieb","sqd"].includes(S.view)) S.view = "dash";
+  if (S.view !== "submit") UI.justSubmitted = false;
   const expired = S.role === "betrieb" && licExpired();
   if (expired) S.view = "expired"; else if (S.view === "expired") S.view = "dash";
   const steps = pub || expired ? [] : S.role === "team" ? [["betriebe","Alle Betriebe"], ...(S.openB ? [["betrieb", modelById(S.openB).name]] : []), ["sqd","SQD-Team & Regeln"]] : STEPS;
-  document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k || (k === "betrieb" && S.view === "edit" && S.role === "team") ? 'aria-current="page"' : ""}>${S.role === "team" ? "" : `<small>${i + 1}</small>`}${esc(l)}</button>`).join("");
-  const V = { dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb, sqd: vSqd, kc: vKc, kcmask: vKcMask, kcmail: vKcMail, login: vLogin, expired: vExpired };
+  document.getElementById("steps").innerHTML = steps.map(([k, l], i) => `<button data-a="go" data-v="${k}" ${S.view === k || (k === "betrieb" && S.view === "edit" && S.role === "team") ? 'aria-current="page"' : ""}>${esc(l)}</button>`).join("");
+  const V = { submit: vSubmit, dash: vDash, kps: vKps, hfs: vHfs, team: vTeam, edit: vEdit, plan: vPlan, betriebe: vBetriebe, betrieb: vBetrieb, sqd: vSqd, kc: vKc, kcmask: vKcMask, kcmail: vKcMail, login: vLogin, expired: vExpired };
   document.getElementById("app").innerHTML = (S.peek ? `<div class="peekbar"><span><b>Leseansicht des SQD-Teams</b> · ${esc(S.org.name)} · Änderungen sind nicht möglich.</span><button class="btn sm" data-a="peekend">Zurück zur SQD-Ansicht</button></div>` : "") + V[S.view]();
   document.getElementById("fab").hidden = S.role !== "betrieb" || S.peek || expired;
   if (S.view === "plan" && !S.peek) bindDnD();
@@ -628,6 +711,7 @@ function vDash() {
           <button class="btn primary" data-a="go" data-v="plan">Maßnahmenplan bearbeiten</button></div>
         <div class="tile ${S.status === "Freigegeben" ? "done" : "locked"}"><h3>Feedbackbericht</h3><p>${fbTxt}</p></div>
       </div>
+      ${licensePanel()}
       ${docsPanel(S.docs)}
       <div class="panel" style="display:grid;gap:10px">
         <div class="row" style="justify-content:space-between"><h3>Team und Fortschritt</h3><button class="link" data-a="go" data-v="team">Team verwalten</button></div>
@@ -895,7 +979,7 @@ const days = d => d ? Math.round((new Date(d) - new Date(today())) / 864e5) : nu
 function ampel(d) { const n = days(d); if (n === null) return '<span style="color:var(--muted)">–</span>'; const c = n < 0 ? "a-red" : n <= 60 ? "a-or" : "a-gr"; return `<span class="amp ${c}"></span><span class="num">${dDE(d)}</span>`; }
 function todos(m) {
   const t = [];
-  if (m.status === "Eingereicht") t.push(["Feedbackbericht prüfen", "red"]);
+  if (m.status === "Eingereicht") t.push(m.paket === "Q" ? ["Feedbackbericht prüfen", "red"] : ["Prüfergebnis ausstehend", "or"]);
   if (!m.contacts.some(c => c.main)) t.push(["Keine Hauptansprechperson", "red"]);
   if (!m.contacts.some(c => c.kord || c.anw)) t.push(["Keine KORD3-Lizenz", "red"]);
   const l = days(m.lic); if (l !== null && l >= 0 && l <= 90) t.push(["Lizenz läuft in " + l + " Tagen ab", "or"]);
@@ -1638,10 +1722,12 @@ document.addEventListener("click", e => {
       S.measures.push({ id: S.nextId++, kp: crit ? +np.kp : null, hf: crit ? np.hf : null, crit: crit ? (np.cr.startsWith("c") ? np.cr : +np.cr) : null, origin: draftOrigin, ...f });
       close(); render(); toast(crit ? "Maßnahme zum Kriterium gespeichert" : "Allgemeine Maßnahme gespeichert"); break; }
     case "submit": { if (!submitChecks().every(c => c[0])) { toast("Noch nicht alle Voraussetzungen erfüllt"); break; }
-      const again = S.docs.some(d => d.t === "Teilnahmebestätigung");
-      S.status = "Eingereicht"; S.submitted = today(); addDoc("Servicekette"); addDoc("Maßnahmenplan"); addDoc("Teilnahmebestätigung"); delete S.fbEdit.ti;
-      S.history.unshift({ d: today(), t: again ? "Neue Version eingereicht" : "Eingereicht", by: member(S.me).name, txt: "Teilnahmebestätigung, Servicekette und Maßnahmenplan als PDF ins DTV-Kundencenter übertragen." });
-      render(); toast("Eingereicht. Die Teilnahmebestätigung liegt im DTV-Kundencenter."); break; }
+      const again = S.history.some(h => /eingereicht/i.test(h.t)), z = paket() !== "Q";
+      S.status = "Eingereicht"; S.submitted = today(); addDoc("Servicekette"); addDoc("Maßnahmenplan"); delete S.fbEdit.ti;
+      if (!z) addDoc("Teilnahmebestätigung", reportData());
+      S.history.unshift({ d: today(), t: again ? "Neue Version eingereicht" : "Eingereicht", by: member(S.me).name, txt: z ? "Warten auf die Ergebnisse der Vor-Ort-Prüfung." : `Teilnahmebestätigung erstellt und an ${member(S.lead).name} geschickt.` });
+      UI.justSubmitted = true; S.view = "submit"; render(); scrollTo(0, 0); break; }
+    case "pdf": { const d = S.docs.find(x => x.t === "Teilnahmebestätigung" && x.v === +v && x.data); if (d) downloadReport(d); break; }
     case "detail": detailDrawer(k); break;
     case "feedback": renderFeedback(el.dataset.c); break;
     case "savedetail": {
