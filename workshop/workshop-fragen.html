@@ -65,6 +65,30 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid va
 .meta label { display: grid; gap: 3px; font-size: .78rem; font-weight: 600; color: var(--muted) }
 .meta input { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; background: var(--surface); min-width: 0 }
 @media (max-width: 560px) { .meta { grid-template-columns: 1fr } .qh { grid-template-columns: 28px minmax(0, 1fr) } .st { grid-column: 1 / -1 } .filters input { margin-left: 0; width: 100% } .prog { margin-left: 0; width: 100% } }
+.flow { display: grid; gap: 0 }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; position: relative }
+.step.k-klar { border-left: 4px solid var(--ok) } .step.k-offen { border-left: 4px solid var(--warn) }
+.sh { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center }
+.sh input.stt { font-weight: 700; border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; background: transparent; min-width: 0; width: 100% }
+.sh input.stt:hover, .sh input.stt:focus { border-color: var(--line); background: var(--surface) }
+.sctl { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end }
+.sctl select { border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; background: var(--surface); font-size: .8rem }
+.ib { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; width: 28px; height: 28px; padding: 0; cursor: pointer; font-size: .85rem }
+.ib:hover { border-color: var(--accent) } .ib:disabled { opacity: .35; cursor: default }
+.ib.del:hover { border-color: var(--err); color: var(--err) }
+.step textarea { min-height: 52px }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 10px }
+.srow label { display: grid; gap: 3px; font-size: .78rem; font-weight: 600; color: var(--muted) }
+.srow input { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; background: var(--surface); min-width: 0 }
+.ins { display: flex; justify-content: center; position: relative; height: 30px; align-items: center }
+.ins::before { content: ""; position: absolute; left: 33px; top: 0; bottom: 0; border-left: 2px dashed var(--line) }
+.ins button { position: relative; border: 1px dashed var(--accent); color: var(--accent); background: var(--bg); border-radius: 99px; padding: 1px 12px; font-size: .78rem; font-weight: 600; cursor: pointer; opacity: .55 }
+.ins button:hover, .ins button:focus-visible { opacity: 1; background: var(--surface) }
+.confirm { display: flex; gap: 8px; align-items: center; background: var(--err-bg); color: var(--err); border-radius: 6px; padding: 6px 10px; font-size: .85rem; flex-wrap: wrap }
+.confirm button { border: 1px solid currentColor; background: transparent; color: inherit; border-radius: 6px; padding: 2px 10px; cursor: pointer; font-weight: 600 }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .82rem; color: var(--muted) }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle }
+@media (max-width: 560px) { .sh { grid-template-columns: 28px minmax(0, 1fr) } .sctl { grid-column: 1 / -1; justify-content: flex-start } .srow { grid-template-columns: 1fr } }
 .notes { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 8px }
 .notes textarea { min-height: 140px }
 .empty { color: var(--muted); font-size: .9rem }
@@ -81,8 +105,14 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid va
   </div>
 </header>
 <main>
+  <section class="intro" id="ablauf-sec">
+    <h1>Ablauf</h1>
+    <p>Was passiert von der Buchung bis zum Ende der Laufzeit? Schritte lassen sich bearbeiten, verschieben, löschen und an jeder Stelle einfügen. Grün = klar, orange = noch offen.</p>
+    <div class="legend"><span><i style="background:var(--ok)"></i>klar</span><span><i style="background:var(--warn)"></i>offen</span><span>Q = nur Qualifizierung · Z = nur Zertifizierung · Q+Z = beide</span></div>
+    <div class="flow" id="flow"><p class="empty">Ablauf wird geladen …</p></div>
+  </section>
   <section class="intro">
-    <h1>Offene Fragen</h1>
+    <h2 style="font-size:1.75rem">Offene Fragen</h2>
     <p>Antwort direkt ins Feld schreiben. Gespeichert wird automatisch, sobald du kurz aufhörst zu tippen oder das Feld verlässt. Status, Verantwortliche und Termin halten fest, was noch zu tun ist.</p>
     <div class="filters" role="group" aria-label="Filter">
       <button data-f="alle" aria-pressed="true">Alle</button>
@@ -176,6 +206,57 @@ function progress() {
 }
 function setSave(t, err) { const s = document.getElementById("save"); s.textContent = t; s.classList.toggle("err", !!err); }
 
+/* ---------- Ablauf ---------- */
+let STEPS = null, confirmDel = null, flowLoaded = false;
+const LS_FLOW = "qool-workshop-ablauf";
+try { const b = JSON.parse(localStorage.getItem(LS_FLOW)); if (Array.isArray(b)) STEPS = b; } catch (e) {}
+const newId = () => "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function insBtn(i) { return `<div class="ins"><button data-ins="${i}" aria-label="Schritt an Position ${i + 1} einfügen">+ Schritt einfügen</button></div>`; }
+function renderFlow() {
+  const el = document.getElementById("flow");
+  if (!STEPS) { el.innerHTML = flowLoaded ? "" : '<p class="empty">Ablauf wird geladen …</p>'; if (!flowLoaded) return; STEPS = []; }
+  if (!STEPS.length) { el.innerHTML = '<p class="empty">Noch keine Schritte.</p>' + insBtn(0); return; }
+  el.innerHTML = insBtn(0) + STEPS.map((s, i) => `<article class="step k-${s.status || "offen"}" data-step="${s.id}">
+    <div class="sh"><span class="nr">${i + 1}</span>
+      <input class="stt" id="t-${s.id}" data-sid="${s.id}" data-sf="title" value="${esc(s.title)}" placeholder="Was passiert?" aria-label="Schritt ${i + 1}">
+      <div class="sctl">
+        <select data-sid="${s.id}" data-sf="track" aria-label="Gilt für">${["Q+Z", "Q", "Z"].map(t => `<option ${s.track === t ? "selected" : ""}>${t}</option>`).join("")}</select>
+        <select data-sid="${s.id}" data-sf="status" aria-label="Status">${[["klar", "klar"], ["offen", "offen"]].map(([v, l]) => `<option value="${v}" ${(s.status || "offen") === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <button class="ib" data-mv="-1" data-sid="${s.id}" ${i === 0 ? "disabled" : ""} aria-label="Nach oben">↑</button>
+        <button class="ib" data-mv="1" data-sid="${s.id}" ${i === STEPS.length - 1 ? "disabled" : ""} aria-label="Nach unten">↓</button>
+        <button class="ib del" data-del="${s.id}" aria-label="Schritt löschen">✕</button>
+      </div></div>
+    ${confirmDel === s.id ? `<div class="confirm">Schritt „${esc(s.title || "ohne Titel")}“ löschen? <button data-delok="${s.id}">Löschen</button> <button data-delno="1">Abbrechen</button></div>` : ""}
+    <textarea id="n-${s.id}" data-sid="${s.id}" data-sf="note" placeholder="Notiz: Was genau passiert, was ist noch offen?" aria-label="Notiz zu Schritt ${i + 1}">${esc(s.note)}</textarea>
+    <div class="srow"><label>Wer<input id="w-${s.id}" data-sid="${s.id}" data-sf="who" value="${esc(s.who)}" placeholder="Betrieb, SQD-Team, Prüfer, System …"></label><label>Bezug zu Frage<input id="r-${s.id}" data-sid="${s.id}" data-sf="ref" value="${esc(s.ref)}" placeholder="z. B. 1, 4"></label></div>
+  </article>` + insBtn(i + 1)).join("");
+}
+let flowTimer = null, flowWriting = false, flowPending = false;
+function queueFlow(now) { clearTimeout(flowTimer); flowTimer = setTimeout(saveFlow, now ? 0 : 700); }
+async function saveFlow() {
+  clearTimeout(flowTimer); flowTimer = null;
+  try { localStorage.setItem(LS_FLOW, JSON.stringify(STEPS)); } catch (e) {}
+  if (!dbOk) { setSave("Nur lokal gespeichert", true); return; }
+  if (flowWriting) { flowPending = true; return; }
+  flowWriting = true; setSave("Speichert …");
+  try { await db.doc("workshop/ablauf").set({ steps: STEPS, updatedAt: new Date().toISOString() }); setSave("Gespeichert " + new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })); }
+  catch (e) { setSave(e && e.code === "invalid_argument" ? "Keine Schreibrechte in dieser Ansicht" : "Speichern fehlgeschlagen", true); }
+  finally { flowWriting = false; if (flowPending) { flowPending = false; saveFlow(); } }
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-ins],[data-mv],[data-del],[data-delok],[data-delno]"); if (!t) return;
+  if (t.dataset.ins !== undefined) { const s = { id: newId(), title: "", note: "", who: "", ref: "", track: "Q+Z", status: "offen" }; STEPS.splice(+t.dataset.ins, 0, s); renderFlow(); document.getElementById("t-" + s.id)?.focus(); queueFlow(true); return; }
+  if (t.dataset.mv) { const i = STEPS.findIndex(x => x.id === t.dataset.sid), j = i + +t.dataset.mv; if (j < 0 || j >= STEPS.length) return; [STEPS[i], STEPS[j]] = [STEPS[j], STEPS[i]]; renderFlow(); queueFlow(true); return; }
+  if (t.dataset.del) { confirmDel = t.dataset.del; renderFlow(); return; }
+  if (t.dataset.delno) { confirmDel = null; renderFlow(); return; }
+  if (t.dataset.delok) { STEPS = STEPS.filter(x => x.id !== t.dataset.delok); confirmDel = null; renderFlow(); queueFlow(true); }
+});
+function onStepInput(t) {
+  const s = STEPS.find(x => x.id === t.dataset.sid); if (!s) return;
+  s[t.dataset.sf] = t.value;
+  if (t.tagName === "SELECT") { renderFlow(); queueFlow(true); } else queueFlow();
+}
+
 /* Speichern: eine Schreiboperation pro Frage, nach Tipppause */
 const timers = {}, writing = {}, pending = {};
 function queue(id) { clearTimeout(timers[id]); timers[id] = setTimeout(() => flush(id), 700); }
@@ -201,11 +282,14 @@ async function flush(id) {
 document.addEventListener("input", e => {
   const t = e.target;
   if (t.id === "search") { render(); return; }
+  if (t.dataset.sid) { if (t.tagName !== "SELECT") onStepInput(t); return; }
   if (t.id === "notes") { A.notes = { text: t.value }; queue("notes"); return; }
   if (!t.dataset.id) return;
   (A[t.dataset.id] ||= {})[t.dataset.f] = t.value; queue(t.dataset.id);
   if (t.dataset.f === "due") flush(t.dataset.id);
 });
+document.addEventListener("change", e => { if (e.target.tagName === "SELECT" && e.target.dataset.sid) onStepInput(e.target); });
+document.addEventListener("focusout", e => { if (e.target.dataset?.sid && flowTimer) saveFlow(); });
 document.addEventListener("focusout", e => { const id = e.target.dataset?.id || (e.target.id === "notes" ? "notes" : null); if (id && timers[id]) flush(id); });
 document.addEventListener("click", e => {
   const s = e.target.closest(".st button");
@@ -224,16 +308,23 @@ function applyRemote(id, data) {
   A[id] = rest; return true;
 }
 (async () => {
-  render();
+  render(); renderFlow();
   document.getElementById("notes").value = A.notes?.text || "";
   db = window.claude?.use ? await window.claude.use("db") : null;
-  if (!db) { document.getElementById("banner").hidden = false; setSave("Nur lokal gespeichert", true); return; }
+  if (!db) { document.getElementById("banner").hidden = false; setSave("Nur lokal gespeichert", true); flowLoaded = true; renderFlow(); return; }
   dbOk = true; setSave("Verbunden");
   db.collection("answers").onSnapshot(snap => {
     let changed = false;
     snap.docs.forEach(d => { if (applyRemote(d.id, d.data())) changed = true; });
     if (changed) render(); else progress();
   }, err => { setSave("Verbindung unterbrochen. Neu laden, um wieder live zu sehen.", true); });
+  db.doc("workshop/ablauf").onSnapshot(d => {
+    flowLoaded = true;
+    const inFlow = document.activeElement && document.activeElement.closest && document.activeElement.closest("#flow");
+    if (inFlow || flowTimer || flowWriting) return;
+    STEPS = d.exists && Array.isArray(d.data().steps) ? d.data().steps.map(x => ({ ...x })) : (STEPS || []);
+    renderFlow();
+  }, () => { flowLoaded = true; renderFlow(); });
   db.doc("workshop/notes").onSnapshot(d => { if (d.exists) applyRemote("notes", d.data()); }, () => {});
 })();
 </script>
