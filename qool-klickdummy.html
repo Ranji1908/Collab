@@ -1050,7 +1050,7 @@ function vBetriebe() {
 function vBetrieb() {
   const m = modelById(S.openB);
   const md = m.measures.filter(x => x.status === "erledigt").length, td = todos(m);
-  const tabs = [["fb","Feedbackbericht"],["massnahmen",`Maßnahmen (${m.measures.length})`],["kette","Servicekette"],["verlauf","Verlauf & Dokumente"],["stamm","Stammdaten & Lizenz"]];
+  const tabs = [["kette","Servicekette"],["massnahmen",`Maßnahmen (${m.measures.length})`],["fb","Feedbackbericht"],["verlauf","Verlauf & Dokumente"],["stamm","Stammdaten & Lizenz"]];
   if (!tabs.some(t => t[0] === S.btab)) S.btab = "fb";
   return `
   <section style="display:grid;gap:8px">
@@ -1701,7 +1701,7 @@ document.addEventListener("click", e => {
     case "sqddel": S.sqd = S.sqd.filter(u => u.id !== v); render(); break;
     case "seminar": toast("Im echten System geht es hier zur Seminarbuchung im DTV-Shop."); break;
     case "bfilter": S.bfilter = v; render(); break;
-    case "openb": e.stopPropagation(); S.openB = v; S.btab = ["Eingeladen","Angelegt"].includes(modelById(v).status) ? "stamm" : "fb"; S.view = "betrieb"; render(); scrollTo(0, 0); break;
+    case "openb": e.stopPropagation(); S.openB = v; { const st = modelById(v).status; S.btab = ["Eingeladen","Angelegt"].includes(st) ? "stamm" : st === "Eingereicht" ? "fb" : "kette"; } S.view = "betrieb"; render(); scrollTo(0, 0); break;
     case "btab": S.btab = v; render(); break;
     case "wopen": openWizard(); break;
     case "madd": memberDrawer(); break;
