@@ -534,9 +534,6 @@ function licensePanel() {
     <dl class="kv"><dt>Paket</dt><dd>${PAKET_NAME[paket()]}</dd><dt>Gültig seit</dt><dd class="num">${dDE(S.lic.start)}</dd><dt>Gültig bis</dt><dd class="num">${dDE(S.lic.end)}</dd><dt>Hauptansprechperson</dt><dd>${esc(member(S.lead).name)}</dd></dl>
     <small style="color:var(--muted)">${paket() === "Q" ? "Selbstcheck mit Teilnahmebestätigung. Eine Zertifizierung (Z) könnt ihr im DTV-Kundencenter dazubuchen." : "Selbstcheck plus verdeckte Vor-Ort-Prüfung, danach Zertifikat und Schild."}</small></div>`;
 }
-function submitBox() {
-  return `<div class="panel subm row" style="justify-content:space-between"><span>${S.status === "Entwurf" ? `Alles bewertet und mindestens ${minM()} Maßnahmen angelegt? Dann könnt ihr einreichen.` : `Eingereicht am ${dDE(S.submitted)}.`}</span><button class="btn" data-a="go" data-v="submit">Zum Einreichen →</button></div>`;
-}
 function reportData() {
   const o = overall();
   const ort = S.org.stamm?.ort || "";
@@ -864,7 +861,6 @@ function vEdit() {
         <div><div class="eyebrow">Ø dieser Kontaktpunkt</div><span class="avg num">${fmt(st.avg)}</span> <small style="color:var(--muted)">nur zur eigenen Standortbestimmung, keine Bewertung durch den DTV</small></div>
         <div class="row">${!locked ? `<button class="btn" data-a="nextkp">Speichern &amp; weiter</button>` : ""}<button class="btn" data-a="go" data-v="plan">Zum Maßnahmenplan</button></div>
       </div>
-      ${S.role === "betrieb" ? submitBox() : ""}
     </section>
   </div>`;
 }
@@ -901,7 +897,6 @@ function vPlan() {
   <section class="row" style="justify-content:space-between;align-items:end"><div style="display:grid;gap:6px"><div class="eyebrow">Maßnahmenplan</div><h1>Unser Maßnahmenplan</h1>
     <p class="lead">Ihr formuliert die Maßnahmen selbst, mehrere pro Kriterium oder allgemein ohne Kriterium. Die KI gibt nur Rückmeldung, ob eine Maßnahme konkret, messbar und zugeordnet ist. Karten per Drag &amp; Drop verschieben.</p></div>
     ${ro ? "" : '<button class="btn primary" data-a="newgen">+ Maßnahme hinzufügen</button>'}</section>
-  ${S.role === "betrieb" ? submitBox() : ""}
   <section class="kanban">${cols.map(([k, l]) => { const ms = S.measures.filter(m => m.status === k); return `
     <div class="col" data-col="${k}"><h3><span>${l}</span><span class="num">${ms.length}</span></h3>
     ${ms.map(card).join("") || '<p style="color:var(--muted);font-size:.85rem">Keine Maßnahmen</p>'}</div>`; }).join("")}</section>`;
