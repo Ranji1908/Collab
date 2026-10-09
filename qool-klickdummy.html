@@ -964,7 +964,7 @@ function mockModel(b) {
   const stamm = b.stamm || { name: b.name, br: b.br, strasse: "Hafenstraße 12", plz: "", ort: b.ort, land: "", tel: "", web: "", kdnr: "" };
   const contacts = b.contacts || [{ vn, nn: rest.join(" "), fn: "Koordinator/in", email: `${vn[0].toLowerCase()}.${rest.join("").toLowerCase().replace(/[^a-zäöüß]/g, "")}@betrieb.example`, tel: "", main: true, kord: true }];
   const lic = S.bvalid[b.id] || b.lic || b.valid || "";
-  return withEdit({ ...b, stamm, contacts: b.nolead ? contacts.map(c => ({ ...c, main: false })) : contacts, live: false, status: S.bstatus[b.id] || b.status, valid: lic, lic, locked: !!S.bblock[b.id], paket: b.paket || "Q", deadline: (S.bstatus[b.id] || b.status) === "Entwurf" ? b.deadline || "" : "", lastActive: b.lastActive || "",
+  return withEdit({ ...b, stamm, contacts: b.nolead ? contacts.map(c => ({ ...c, main: false })) : contacts, live: false, status: S.bstatus[b.id] || b.status, valid: lic, lic, locked: !!S.bblock[b.id], paket: (S.bpaket || {})[b.id] || b.paket || "Q", deadline: (S.bstatus[b.id] || b.status) === "Entwurf" ? b.deadline || "" : "", lastActive: b.lastActive || "",
     docs: [...(S.bdocs?.[b.id] || []), ...(b.status === "Freigegeben" ? [{ t: "Feedbackbericht", d: b.sub, v: 1 }, { t: "Teilnahmebestätigung", d: b.sub, v: 1 }] : b.status === "Eingereicht" ? [{ t: "Teilnahmebestätigung", d: b.sub, v: 1 }] : [])], comment: S.bcomment[b.id] || "",
     history: [...(S.bhist[b.id] || []), ...b.history],
     kps: b.kps.map(([name, avg]) => ({ name, avg, done: 1, total: 1, hf: HF.map((h, i) => b.hfs.includes(i) ? clamp(avg + OFF[i]) : null) })),
@@ -1312,10 +1312,11 @@ function tStamm(m) {
     </div>
     <div class="panel" style="display:grid;gap:10px;align-content:start">
       <h3>Lizenz und Zugang</h3>
-      <dl class="kv"><dt>Paket</dt><dd>${m.paket}</dd><dt>Status</dt><dd>${m.locked ? '<span class="chip flag">gesperrt</span>' : '<span class="chip own">aktiv</span>'}</dd></dl>
+      <label class="f" style="max-width:320px">Paket<select id="licpaket"><option value="Q" ${m.paket === "Q" ? "selected" : ""}>Q · Qualifizierung</option><option value="Q+Z" ${m.paket !== "Q" ? "selected" : ""}>Q+Z · Qualifizierung &amp; Zertifizierung</option></select></label>
+      <dl class="kv"><dt>Status</dt><dd>${m.locked ? '<span class="chip flag">gesperrt</span>' : '<span class="chip own">aktiv</span>'}</dd></dl>
       <label class="f" style="max-width:220px">Gültig bis<input type="date" id="licdate" value="${m.lic || ""}"></label>
       <div class="row"><button class="btn ${m.locked ? "ok" : "danger"}" data-a="lock">${m.locked ? "Zugang entsperren" : "Zugang sperren"}</button></div>
-      <small style="color:var(--muted)">Verlängerungen laufen manuell über CRM bzw. das SQD-Team. Nach Ablauf kann sich der Betrieb anmelden, aber nichts mehr bearbeiten.</small>
+      <small style="color:var(--muted)">Paketwechsel kommt im Regelfall automatisch aus dem CRM, wenn der Betrieb Z im DTV-Kundencenter dazubucht. Hier nur als Ausnahme oder Korrektur. Verlängerungen laufen manuell über CRM bzw. das SQD-Team. Nach Ablauf kann sich der Betrieb anmelden, aber nichts mehr bearbeiten.</small>
     </div>
     <div class="panel" style="display:grid;gap:8px;align-content:start">
       <div class="row" style="justify-content:space-between"><h3>Kontaktpersonen (${m.contacts.length})</h3><button class="btn sm" data-a="wedit" data-v="${m.id}" data-s="1">Kontakte bearbeiten</button></div>
@@ -1761,6 +1762,9 @@ document.addEventListener("change", e => {
   if (e.target.dataset.kcok) { kcState().contacts[+e.target.dataset.kcok].ok = e.target.checked; render(); }
   if (e.target.dataset.fbok !== undefined) { const m = modelById(S.openB), b = fbBlocks(m)[+e.target.dataset.fbok]; const ta = document.querySelector(`[data-fbtx="${e.target.dataset.fbok}"]`); if (ta) b.text = ta.value; b.ok = e.target.checked; render(); }
   if (e.target.dataset.fbtx !== undefined) { fbBlocks(modelById(S.openB))[+e.target.dataset.fbtx].text = e.target.value; save(); }
+  if (e.target.id === "licpaket") { const v = e.target.value, id = S.openB, entry = { d: today(), t: `Paket geändert auf ${v} (SQD-Team)`, by: "SQD-Team" };
+    if (id === "ti") { S.org.paket = v; S.history.unshift(entry); } else { S.bpaket = S.bpaket || {}; S.bpaket[id] = v; }
+    render(); toast(v === "Q" ? "Paket auf Q geändert. Die Vor-Ort-Prüfung entfällt." : "Paket auf Q+Z geändert. Nach dem Einreichen folgt die Vor-Ort-Prüfung."); }
   if (e.target.id === "licdate") { if (S.openB === "ti") S.lic.end = e.target.value; else S.bvalid[S.openB] = e.target.value; render(); toast("Gültigkeit angepasst"); }
   if (e.target.dataset.sqdrole) { const u = S.sqd.find(x => x.id === e.target.dataset.sqdrole); if (u) { u.role = e.target.value; save(); toast(`${u.name}: ${u.role}`); } }
   if (e.target.id === "min-q" || e.target.id === "min-z") { S.minM[e.target.id === "min-q" ? "Q" : "Q+Z"] = Math.max(0, +e.target.value || 0); save(); toast("Mindestanzahl gespeichert"); }
