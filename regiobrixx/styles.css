@@ -217,23 +217,26 @@ h3{
   font-size:.96rem;padding-top:24px;border-top:1px solid var(--rule);
 }
 
-/* ---- Zwischenband ---- */
-.interlude{padding-block:clamp(72px,10vw,150px)}
-.interlude-grid{
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-  gap:clamp(32px,6vw,96px);align-items:center;
+/* ---- Referenz ---- */
+.reference{
+  display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);
+  gap:clamp(40px,6vw,96px);align-items:center;
 }
-.interlude-figure{--ar:4/3}
-.interlude-text{max-width:none}
-.interlude-text .kicker{margin-bottom:clamp(18px,2.5vw,26px)}
-.interlude-line{
-  font-family:var(--serif);font-size:clamp(1.7rem,3vw,2.5rem);
-  line-height:1.15;letter-spacing:-.015em;max-width:15em;text-wrap:balance;
+.reference-text h2+.sec-sub{margin-top:clamp(20px,3vw,28px)}
+.reference-text .sec-sub+.sec-sub{margin-top:18px}
+.reference-figures{
+  display:grid;grid-template-columns:1fr 1fr;gap:clamp(16px,2.5vw,32px);
 }
-.interlude-cap{
-  margin-top:clamp(22px,3vw,32px);padding-top:18px;border-top:1px solid var(--rule);
-  font-size:.84rem;color:var(--ink-faint);line-height:1.6;max-width:34ch;
+.reference-figures figure{margin:0}
+.specs{
+  display:flex;flex-wrap:wrap;gap:0;margin:clamp(28px,4vw,40px) 0 0;
+  border-top:1px solid var(--rule);
 }
+.specs div{padding:16px clamp(20px,3vw,34px) 0 0}
+.specs dt{
+  font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);
+}
+.specs dd{margin:6px 0 0;font-family:var(--serif);font-size:1.25rem;line-height:1.1}
 
 /* ---- Steps ---- */
 .steps,.perks{list-style:none;margin:0;padding:0}
@@ -263,13 +266,13 @@ h3{
 }
 .plan+.plan .plan-tag{left:clamp(28px,3.5vw,48px)}
 .plan h3{font-family:var(--serif);font-size:2.2rem;font-weight:400;line-height:1}
-.plan-for{margin-top:14px;color:var(--ink-soft);font-size:.94rem;min-height:3em}
-.price{
-  margin-top:28px;font-family:var(--serif);font-size:clamp(2rem,3.4vw,2.7rem);
-  line-height:1;letter-spacing:-.02em;
+.plan-for{margin-top:14px;font-size:.94rem;min-height:3em}
+.plan-scope{margin-top:22px;font-size:.92rem;color:var(--ink-soft);line-height:1.65}
+.plan-ask{
+  margin-top:auto;padding-top:34px;font-size:.7rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink-faint);
 }
-.moq{margin-top:14px;font-size:.86rem;color:var(--ink-soft);line-height:1.6}
-.plan .link-arrow{margin-top:auto;padding-top:34px}
+.plan .link-arrow{margin-top:18px}
 
 /* ---- Matrix ---- */
 .table-scroll{overflow-x:auto}
@@ -370,11 +373,11 @@ h3{
   .plan{border-top:1px solid var(--rule);padding-right:0;padding-block:54px 36px}
   .plan+.plan{border-left:0;padding-left:0}
   .plan-for{min-height:0}
-  .plan .link-arrow{padding-top:26px}
+  .plan-ask{padding-top:26px}
   .margins-row{grid-template-columns:1fr 1fr;row-gap:36px}
   .margins-note{grid-column:1/-1}
   .split{grid-template-columns:1fr;gap:48px}
-  .interlude-grid{grid-template-columns:1fr;gap:clamp(28px,5vw,40px)}
+  .reference{grid-template-columns:1fr;gap:clamp(36px,5vw,48px)}
   .gallery .offset,.gallery .offset.reveal.in{transform:none}
   .gallery .offset.reveal{transform:translateY(14px)}
 }
@@ -402,6 +405,7 @@ h3{
   .gallery{grid-template-columns:1fr;row-gap:48px}
   .hero-figure img{aspect-ratio:4/3}
   .margins-row{grid-template-columns:1fr}
+  .specs div{padding-right:28px}
   .footer-inner{flex-direction:column;align-items:flex-start;gap:20px}
 }
 

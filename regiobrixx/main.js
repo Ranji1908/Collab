@@ -146,7 +146,7 @@
         'Viele Grüße'
       ].join('\n');
 
-      window.location.href = 'mailto:hallo@regiobrixx.de?subject=' +
+      window.location.href = 'mailto:info@hermibricks.de?subject=' +
         encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     });
   }

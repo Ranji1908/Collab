@@ -7,10 +7,10 @@ für touristische Destinationen). Inhalte stammen aus dem Konzeptdokument „Reg
 
 | Datei | Inhalt |
 |---|---|
-| `index.html` | Komplette Seite (Hero, Modelle, Ablauf, Pakete, Vorteile, Vertrieb, Über uns, Kontakt) |
+| `index.html` | Komplette Seite (Hero, Modelle, Referenz, Ablauf, Pakete, Vorteile, Vertrieb, Über uns, Kontakt) |
 | `styles.css` | Design-Tokens, Layout, Komponenten, Responsive- und Print-Regeln |
 | `main.js` | Mobile-Navigation, Parallax, Scroll-Reveal, Kontaktformular |
-| `images/` | Produktfotos der bestehenden Modelle |
+| `images/` | Konzeptbilder der Modelle und Fotos des Altmühltal-Sets |
 
 ## Lokal ansehen
 
@@ -33,9 +33,18 @@ zu kurz ab; `main.js` verschiebt es beim Scrollen innerhalb dieses Spielraums
 Ohne JavaScript oder bei `prefers-reduced-motion: reduce` bleiben die Bilder
 mittig stehen — das Layout ändert sich dadurch nicht.
 
+## Inhaltliche Festlegungen
+
+- Die Galerie zeigt **Konzeptbilder**, keine lieferbaren Produkte — die Bildunterschriften
+  sind entsprechend mit „Konzept" ausgezeichnet.
+- Paketpreise stehen bewusst **nicht** auf der Seite („Preis auf Anfrage"), damit kleinere
+  Destinationen nicht vorab abspringen. Der Leistungsumfang bleibt vollständig sichtbar.
+- Die Argumente sind auf die Abschnitte verteilt, ohne sich zu wiederholen: „Warum
+  Klemmbausteine" trägt die Produktargumente, „Ablauf" den Prozess, „Ihre Vorteile" die
+  kaufmännische Sicht, „Vertrieb" die Rechte.
+
 ## Noch anzupassen
 
-- **E-Mail-Adresse:** Platzhalter `hallo@regiobrixx.de` in `index.html` und `main.js` ersetzen.
 - **Kontaktformular:** öffnet aktuell das Mail-Programm (`mailto:`) mit vorausgefüllter Nachricht.
   Für serverseitigen Versand das `submit`-Handling in `main.js` gegen einen Form-Endpoint tauschen.
 - **Impressum/Datenschutz:** Links in der Fußzeile ergänzen.
