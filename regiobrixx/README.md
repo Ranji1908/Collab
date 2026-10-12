@@ -11,6 +11,7 @@ für touristische Destinationen). Inhalte stammen aus dem Konzeptdokument „Reg
 | `styles.css` | Design-Tokens, Layout, Komponenten, Responsive- und Print-Regeln |
 | `main.js` | Mobile-Navigation, Parallax, Scroll-Reveal, Kontaktformular |
 | `images/` | Konzeptbilder der Modelle und Fotos des Altmühltal-Sets |
+| `.github/workflows/deploy.yml` | Veröffentlicht die Seite bei jedem Push auf `main` via GitHub Pages |
 
 ## Lokal ansehen
 
@@ -42,6 +43,35 @@ mittig stehen — das Layout ändert sich dadurch nicht.
 - Die Argumente sind auf die Abschnitte verteilt, ohne sich zu wiederholen: „Warum
   Klemmbausteine" trägt die Produktargumente, „Ablauf" den Prozess, „Ihre Vorteile" die
   kaufmännische Sicht, „Vertrieb" die Rechte.
+
+## Deployment
+
+Die Seite läuft auf **GitHub Pages**. Jeder Push auf `main` stößt den Workflow
+`.github/workflows/deploy.yml` an, der alles außer `.git`, `.github` und
+`README.md` veröffentlicht. Es gibt keinen Build-Schritt.
+
+### Einmalige Einrichtung
+
+1. **Repo-Settings → Pages → Source** auf `GitHub Actions` stellen.
+   Ohne diesen Schritt läuft der Workflow zwar, veröffentlicht aber nichts.
+2. **`CNAME` im Repo-Wurzelverzeichnis** anlegen, Inhalt ist exakt die Domain
+   (eine Zeile, ohne `https://`, ohne Slash). Beispiel: `regiobrixx.de`
+   Wichtig: Bei Actions-basiertem Deploy reicht das Eintragen der Domain im
+   Pages-Formular **nicht** — ohne die Datei im Repo ist die Domain nach dem
+   nächsten Deploy wieder weg.
+3. **DNS beim Domain-Anbieter** auf GitHub zeigen lassen. Die konkreten Werte
+   zeigt GitHub selbst unter Settings → Pages an, sobald die Domain einge-
+   tragen ist. Grundmuster:
+   - Hauptdomain (`example.de`): vier `A`-Records auf GitHubs Pages-IPs
+   - `www.example.de`: ein `CNAME` auf `<user>.github.io`
+4. Nach dem DNS-Wechsel in den Pages-Settings **„Enforce HTTPS"** aktivieren.
+   Das geht erst, wenn das Zertifikat ausgestellt ist — das dauert nach der
+   DNS-Umstellung meist einige Minuten bis zu einer Stunde.
+
+### Änderungen veröffentlichen
+
+Commit auf `main` pushen. Der Workflow-Lauf ist unter *Actions* sichtbar und
+braucht rund eine Minute.
 
 ## Noch anzupassen
 

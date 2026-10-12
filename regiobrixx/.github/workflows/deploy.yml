@@ -1,0 +1,52 @@
+name: Deploy auf GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Laufende Deploys nicht abbrechen, aber auch nicht parallel laufen lassen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: Seite zusammenstellen
+        # Alles außer Repo-Innereien wird veröffentlicht. So landen neue
+        # Dateien automatisch mit online, ohne diese Liste zu pflegen.
+        run: |
+          mkdir -p _site
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='_site' \
+            --exclude='README.md' \
+            ./ _site/
+          echo "Veröffentlicht werden:"
+          find _site -type f | sort
+
+      - name: Pages konfigurieren
+        uses: actions/configure-pages@v5
+
+      - name: Artefakt hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deployen
+        id: deployment
+        uses: actions/deploy-pages@v4
