@@ -17,8 +17,8 @@ hochladen (z. B. GitHub Pages, Netlify, Strato, IONOS).
 | Variante | Preis |
 |---|---|
 | Feste Größe, Stoff aus dem Lager | ab 49 € |
-| Feste Größe, Wunschstoff | ab 79 € |
-| Nach Maß | ab 99 € |
+| Feste Größe, eigener Stoff (nicht inkl.) | ab 79 € |
+| Nach Maß, eigener Stoff (nicht inkl.) | ab 99 € |
 | Aufdruck (Verein/Gruppe) | +25 € pro Dirndl |
 
 Vinted-Shop wird nur verlinkt (Vinted erlaubt kein Einbetten per iframe):
