@@ -298,6 +298,16 @@ textarea { min-height: 7rem; resize: vertical; }
 .faq details[open] summary::after { content: "–"; }
 .faq details p { color: var(--muted); margin-top: var(--s2); max-width: 40rem; }
 
+/* Instagram */
+.insta-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--s3); margin-bottom: var(--s4); }
+.insta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); }
+@media (min-width: 800px) { .insta-grid { grid-template-columns: repeat(6, 1fr); } }
+.insta-grid a { position: relative; display: block; border-radius: 6px; overflow: hidden; }
+.insta-grid img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; transition: transform .3s ease; }
+.insta-grid a:hover img { transform: scale(1.05); }
+.insta-handle { font-family: var(--f-hand); font-size: 1.8rem; color: var(--rot); line-height: 1; }
+.btn svg.ig { width: 1.2em; height: 1.2em; }
+
 /* Footer */
 footer { padding-block: var(--s5); border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
 footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s3); }
@@ -611,7 +621,7 @@ footer nav { display: flex; gap: var(--s4); flex-wrap: wrap; }
       <p class="hand" style="font-size:1.6rem">Wir melden uns innerhalb von ein, zwei Tagen.</p>
       <div class="kontakt-alt">
         <p>Lieber direkt schreiben? <br><a id="mail-link" href="mailto:hallo@example.de">hallo@example.de</a></p>
-        <p>Oder über <a href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">unser Profil auf Vinted</a>. Auf Instagram findet ihr uns unter <a href="https://www.instagram.com/explore/tags/gmachtvouns/" target="_blank" rel="noopener">#gmachtvouns</a>.</p>
+        <p>Oder über <a href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">unser Profil auf Vinted</a>. Auf Instagram findet ihr uns unter <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener">@gmachtvouns</a>.</p>
       </div>
     </div>
 
@@ -681,6 +691,30 @@ footer nav { display: flex; gap: var(--s4); flex-wrap: wrap; }
   </div>
 </section>
 
+<section id="instagram" style="padding-top:0">
+  <div class="wrap">
+    <div class="insta-head">
+      <div class="sec-head" style="margin-bottom:0">
+        <p class="eyebrow">Neues aus der Nähstube</p>
+        <h2>Schau uns beim Nähen zu</h2>
+        <p class="lead">Neue Stücke, Stoffe und was gerade auf dem Nähtisch liegt, zeigen wir zuerst auf Instagram.</p>
+      </div>
+      <div style="display:grid;gap:var(--s2);justify-items:start">
+        <span class="insta-handle">@gmachtvouns</span>
+        <a class="btn" href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener"><svg class="ig" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>Auf Instagram folgen</a>
+      </div>
+    </div>
+    <div class="insta-grid">
+        <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener" aria-label="Auf Instagram ansehen: Rotes Dirndl mit Rosenschürze"><img src="img/rot-schleife.jpg" alt="Rotes Dirndl mit Rosenschürze" loading="lazy"></a>
+        <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener" aria-label="Auf Instagram ansehen: Perlknöpfe am blauen Mieder"><img src="img/blau-perlen.jpg" alt="Perlknöpfe am blauen Mieder" loading="lazy"></a>
+        <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener" aria-label="Auf Instagram ansehen: Satinschleife in Flieder"><img src="img/rosa-schleife.jpg" alt="Satinschleife in Flieder" loading="lazy"></a>
+        <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener" aria-label="Auf Instagram ansehen: Salbeigrünes Dirndl"><img src="img/salbei-ganz.jpg" alt="Salbeigrünes Dirndl" loading="lazy"></a>
+        <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener" aria-label="Auf Instagram ansehen: Puffärmel mit Spitze"><img src="img/rot-aermel.jpg" alt="Puffärmel mit Spitze" loading="lazy"></a>
+        <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener" aria-label="Auf Instagram ansehen: Herzknöpfe"><img src="img/rosa-knoepfe.jpg" alt="Herzknöpfe" loading="lazy"></a>
+    </div>
+  </div>
+</section>
+
 <section class="vinted" id="vinted">
   <div class="wrap">
     <div class="box">
@@ -723,7 +757,7 @@ footer nav { display: flex; gap: var(--s4); flex-wrap: wrap; }
       <a href="#impressum">Impressum</a>
       <a href="#datenschutz">Datenschutz</a>
       <a href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">Vinted</a>
-      <a href="https://www.instagram.com/explore/tags/gmachtvouns/" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.instagram.com/gmachtvouns/" target="_blank" rel="noopener">Instagram</a>
     </nav>
   </div>
 </footer>
