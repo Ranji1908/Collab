@@ -1,4 +1,4 @@
-# Dirndl von Mila – Website
+# gmacht vo uns – Website
 
 Statische One-Page-Seite (`index.html` + `img/`). Kein Build nötig: Ordner auf einen beliebigen Webspace
 hochladen (z. B. GitHub Pages, Netlify, Strato, IONOS).
@@ -6,7 +6,7 @@ hochladen (z. B. GitHub Pages, Netlify, Strato, IONOS).
 ## Vor dem Livegang anpassen
 
 - **E-Mail-Adresse**: in `index.html` ganz unten im Script `KONTAKT_EMAIL` setzen (aktuell Platzhalter `hallo@example.de`).
-- **Name/Marke**: „Dirndl von Mila“ ist ein Platzhalter (abgeleitet vom Vinted-Namen `mila68`).
+- **Name/Marke**: „gmacht vo uns“, Dirndl von Anna. Die Story („Des is gmacht vo uns“) erklärt den Namen.
 - **Geschichte**: Die Dachboden-Geschichte ist ausgedacht – bitte mit der echten Geschichte abgleichen.
 - **Impressum & Datenschutz**: In Deutschland Pflicht bei geschäftlicher Nutzung. Die Footer-Links sind noch leer.
 - **Vereinsfoto** (`img/verein-vfb.jpg`): Einverständnis der Eltern bzw. abgebildeten Personen und des Vereins (Wappen) einholen.
