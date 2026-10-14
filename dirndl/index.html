@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dirndl von Mila</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Handgenähte Dirndl für Kinder: aus geretteten Stoffen, aus deinem Wunschstoff oder nach Maß. Ab 49 €. Auch mit Vereinsaufdruck.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,800&family=Caveat:wght@500;700&display=swap">
+<style>
+/* Layout: ein Schnittmuster-Bogen. Steppnähte trennen die Abschnitte, Preise hängen als Etiketten, Fotos liegen wie auf dem Werktisch. */
+:root {
+  --bg: #f1f3f2;          /* Leinen, leicht kühl */
+  --surface: #ffffff;
+  --ink: #1d2826;         /* Tannengrün, fast schwarz */
+  --muted: #56625f;
+  --line: #cfd6d3;
+  --rot: #b3232c;         /* Trachtenrot */
+  --rot-ink: #ffffff;
+  --senf: #d6b245;        /* Schürzengelb */
+  --taube: #6f86a5;       /* Taubenblau */
+  --rosa: #c27b92;
+  --salbei: #7d9a8c;
+  --tag: #fbf7ea;         /* Etikettenkarton */
+  --shadow: 0 1px 2px rgb(20 30 28 / .08), 0 8px 24px rgb(20 30 28 / .08);
+
+  --f-display: "Young Serif", Georgia, "Times New Roman", serif;
+  --f-body: "Nunito Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-hand: "Caveat", "Comic Sans MS", cursive;
+
+  --s1: .25rem; --s2: .5rem; --s3: 1rem; --s4: 1.5rem; --s5: 2.5rem; --s6: 4rem; --s7: 6rem;
+  --wrap: 72rem;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141a19; --surface: #1d2523; --ink: #ebeae4; --muted: #a7b0ac; --line: #34403d;
+    --rot: #e05a60; --rot-ink: #1a0a0b; --senf: #e1c25f; --taube: #9fb3cf; --rosa: #dc9db1; --salbei: #a2bdb0;
+    --tag: #2a2a22; --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #141a19; --surface: #1d2523; --ink: #ebeae4; --muted: #a7b0ac; --line: #34403d;
+  --rot: #e05a60; --rot-ink: #1a0a0b; --senf: #e1c25f; --taube: #9fb3cf; --rosa: #dc9db1; --salbei: #a2bdb0;
+  --tag: #2a2a22; --shadow: 0 1px 2px rgb(0 0 0 / .4), 0 8px 24px rgb(0 0 0 / .35);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 1.0625rem/1.65 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--taube); outline-offset: 3px; border-radius: 4px; }
+
+.wrap {
+  max-width: var(--wrap); margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (min-width: 700px) { .wrap { padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); } }
+
+h1, h2, h3 { font-family: var(--f-display); font-weight: 400; line-height: 1.12; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.4rem, 6vw, 4.4rem); letter-spacing: -.01em; }
+h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); }
+h3 { font-size: 1.35rem; }
+p { margin: 0; }
+.lead { font-size: 1.2rem; color: var(--muted); max-width: 36rem; }
+.eyebrow { font: 800 .78rem/1 var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: var(--rot); }
+.hand { font-family: var(--f-hand); font-weight: 700; color: var(--rot); line-height: 1.1; }
+.prose { max-width: 38rem; display: grid; gap: var(--s3); }
+
+/* Steppnaht */
+.naht { border: 0; height: 0; border-top: 2px dashed var(--line); margin: 0; }
+section { padding-block: var(--s6); }
+@media (min-width: 900px) { section { padding-block: var(--s7); } }
+.sec-head { display: grid; gap: var(--s3); margin-bottom: var(--s5); max-width: 42rem; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: .55em; justify-content: center;
+  font: 800 1rem/1 var(--f-body); text-decoration: none; cursor: pointer;
+  padding: 1rem 1.4rem; border-radius: 999px; border: 2px solid var(--ink);
+  background: transparent; color: var(--ink); transition: transform .15s ease, background .15s ease;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-rot { background: var(--rot); border-color: var(--rot); color: var(--rot-ink); }
+.btn svg { width: 1.1em; height: 1.1em; flex: none; }
+.btn-row { display: flex; flex-wrap: wrap; gap: var(--s3); }
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); padding-block: .8rem; }
+.logo { font-family: var(--f-display); font-size: 1.35rem; text-decoration: none; display: flex; align-items: baseline; gap: .35rem; white-space: nowrap; }
+.logo span { font-family: var(--f-hand); color: var(--rot); font-size: 1.5rem; }
+.nav { display: flex; gap: var(--s4); align-items: center; font-weight: 600; font-size: .95rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { color: var(--rot); }
+.nav .btn { padding: .65rem 1rem; font-size: .9rem; }
+@media (max-width: 820px) { .nav a:not(.btn) { display: none; } }
+
+/* Hero */
+.hero { padding-block: var(--s5) var(--s6); }
+.hero .wrap { display: grid; gap: var(--s5); align-items: center; }
+@media (min-width: 900px) { .hero .wrap { grid-template-columns: 1.05fr 1fr; } }
+.hero-text { display: grid; gap: var(--s4); min-width: 0; }
+.hero h1 em { font-style: normal; color: var(--rot); }
+.hero-facts { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); font-weight: 600; color: var(--muted); font-size: .95rem; }
+.hero-facts li { display: flex; gap: .4rem; align-items: center; }
+.hero-facts li::before { content: ""; width: .55rem; height: .55rem; border-radius: 50%; background: var(--senf); }
+.hero-facts { list-style: none; padding: 0; margin: 0; }
+
+.table {
+  position: relative; display: grid; grid-template-columns: 1.25fr 1fr; grid-template-rows: auto auto; gap: var(--s3);
+}
+.table figure { margin: 0; border-radius: 6px; overflow: hidden; box-shadow: var(--shadow); background: var(--surface); }
+.table img { width: 100%; height: 100%; object-fit: cover; }
+.table .big { grid-row: span 2; aspect-ratio: 643 / 777; }
+.table .sm { aspect-ratio: 1 / 1; }
+.table .sm:first-of-type { transform: rotate(1.5deg); }
+.price-pin {
+  position: absolute; left: -.5rem; bottom: -1.2rem; transform: rotate(-6deg);
+  background: var(--tag); color: var(--ink); padding: .6rem 1.1rem .5rem 1.6rem; border-radius: 4px 14px 14px 4px;
+  box-shadow: var(--shadow); font-family: var(--f-hand); font-size: 1.8rem; font-weight: 700; line-height: 1;
+}
+.price-pin::before { content: ""; position: absolute; left: .5rem; top: 50%; width: .5rem; height: .5rem; margin-top: -.25rem; border-radius: 50%; background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--line); }
+
+/* Drei Wege */
+.wege { display: grid; gap: var(--s4); }
+@media (min-width: 800px) { .wege { grid-template-columns: repeat(3, 1fr); } }
+.weg { display: grid; gap: var(--s2); align-content: start; padding-top: var(--s3); border-top: 3px solid var(--weg, var(--rot)); }
+.weg p { color: var(--muted); }
+
+/* Geschichte */
+.story { background: var(--surface); border-block: 1px solid var(--line); }
+.story .wrap { display: grid; gap: var(--s5); }
+@media (min-width: 900px) { .story .wrap { grid-template-columns: 1fr 1.1fr; align-items: start; } }
+.story-img { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); }
+.story-img img { border-radius: 6px; aspect-ratio: 4 / 5; object-fit: cover; width: 100%; }
+.story-img img:nth-child(2) { margin-top: var(--s5); }
+.story-img figcaption { grid-column: 1 / -1; font-family: var(--f-hand); font-size: 1.35rem; color: var(--muted); }
+.story-img figure { margin: 0; display: contents; }
+.werte { list-style: none; margin: var(--s4) 0 0; padding: 0; display: grid; gap: var(--s4); }
+@media (min-width: 600px) { .werte { grid-template-columns: 1fr 1fr; } }
+.werte li { display: grid; gap: .2rem; }
+.werte strong { font-family: var(--f-display); font-weight: 400; font-size: 1.15rem; }
+.werte span { color: var(--muted); font-size: .98rem; }
+
+/* Werke */
+.werke { display: grid; gap: var(--s6); }
+.werk { display: grid; gap: var(--s4); }
+@media (min-width: 900px) {
+  .werk { grid-template-columns: 1fr 1.6fr; align-items: center; }
+  .werk:nth-child(even) .werk-text { order: 2; }
+}
+.werk-text { display: grid; gap: var(--s3); min-width: 0; }
+.werk-text .swatches { display: flex; gap: .4rem; }
+.werk-text .swatches i { width: 1.6rem; height: 1.6rem; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.details { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; color: var(--muted); }
+.details li::before { content: "✂"; color: var(--rot); margin-right: .5rem; font-size: .9em; }
+.strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s2); min-width: 0; }
+.strip img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 6px; }
+.strip.two { grid-template-columns: 1fr 1fr; }
+.strip.one { grid-template-columns: 1fr; }
+.strip.one img { aspect-ratio: 5 / 4; }
+@media (max-width: 520px) { .strip:not(.one) { grid-template-columns: 1fr 1fr; } .strip:not(.one):not(.two) img:last-child { display: none; } }
+
+/* Preise */
+.preise-bg { background: var(--surface); border-block: 1px solid var(--line); }
+.tags { display: grid; gap: var(--s5) var(--s4); padding-top: var(--s4); }
+@media (min-width: 700px) { .tags { grid-template-columns: repeat(3, 1fr); } }
+.tag {
+  position: relative; background: var(--tag); border-radius: 10px 10px 6px 6px; padding: var(--s5) var(--s4) var(--s4);
+  box-shadow: var(--shadow); display: grid; gap: var(--s2); align-content: start;
+  clip-path: polygon(18% 0, 82% 0, 100% 12%, 100% 100%, 0 100%, 0 12%);
+}
+.tag::before { content: ""; position: absolute; top: 1.1rem; left: 50%; width: .9rem; height: .9rem; margin-left: -.45rem; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 2px var(--line); }
+.tag:nth-child(1) { transform: rotate(-1.5deg); }
+.tag:nth-child(3) { transform: rotate(1.5deg); }
+.tag .preis { font-family: var(--f-display); font-size: 3.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.tag .preis small { font-family: var(--f-body); font-size: 1rem; font-weight: 800; color: var(--muted); margin-right: .25rem; vertical-align: .9em; }
+.tag h3 { font-size: 1.25rem; }
+.tag p { color: var(--muted); font-size: .97rem; }
+.tag ul { margin: var(--s2) 0 0; padding-left: 1.1rem; font-size: .95rem; display: grid; gap: .2rem; }
+.extra {
+  margin-top: var(--s5); display: flex; flex-wrap: wrap; gap: var(--s3) var(--s4); align-items: center;
+  border: 2px dashed var(--senf); border-radius: 10px; padding: var(--s4);
+}
+.extra .plus { font-family: var(--f-display); font-size: 2.4rem; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.extra p { flex: 1 1 18rem; min-width: 0; }
+.fine { font-size: .9rem; color: var(--muted); margin-top: var(--s3); }
+
+/* Vereine */
+.verein .wrap { display: grid; gap: var(--s5); align-items: center; }
+@media (min-width: 900px) { .verein .wrap { grid-template-columns: .9fr 1fr; } }
+.verein img { border-radius: 6px; box-shadow: var(--shadow); aspect-ratio: 3 / 4; object-fit: cover; width: 100%; }
+.verein figure { margin: 0; display: grid; gap: var(--s2); }
+.verein figcaption { font-family: var(--f-hand); font-size: 1.35rem; color: var(--muted); }
+
+/* Schleife */
+.schleife .wrap { display: grid; gap: var(--s5); }
+@media (min-width: 900px) { .schleife .wrap { grid-template-columns: 1fr 1fr; align-items: center; } }
+.schleife svg { width: 100%; max-width: 22rem; height: auto; margin-inline: auto; display: block; }
+.schleife-list { list-style: none; padding: 0; margin: var(--s4) 0 0; display: grid; gap: var(--s3); }
+.schleife-list li { display: grid; grid-template-columns: 2.2rem 1fr; gap: var(--s3); align-items: start; }
+.schleife-list b { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 50%; background: var(--senf); color: #1d2826; font-family: var(--f-display); font-weight: 400; }
+.schleife-list span { color: var(--muted); }
+.schleife-list strong { color: var(--ink); }
+
+/* Ablauf */
+.ablauf { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s4); counter-reset: s; }
+@media (min-width: 800px) { .ablauf { grid-template-columns: repeat(4, 1fr); } }
+.ablauf li { counter-increment: s; display: grid; gap: var(--s2); align-content: start; }
+.ablauf li::before { content: counter(s); font-family: var(--f-hand); font-size: 2.6rem; color: var(--rot); line-height: 1; }
+.ablauf p { color: var(--muted); font-size: .98rem; }
+
+/* Größen */
+.groessen { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.groessen table { border-collapse: collapse; width: 100%; min-width: 40rem; font-variant-numeric: tabular-nums; font-size: .95rem; }
+.groessen th, .groessen td { padding: .7rem .8rem; text-align: center; border-bottom: 1px solid var(--line); }
+.groessen th:first-child, .groessen td:first-child { text-align: left; font-weight: 800; position: sticky; left: 0; background: var(--surface); }
+.groessen thead th { font-family: var(--f-display); font-weight: 400; font-size: 1.05rem; }
+.groessen tr:last-child td { border-bottom: 0; }
+
+/* Anfrage */
+.anfrage { background: var(--surface); border-block: 1px solid var(--line); }
+.anfrage .wrap { display: grid; gap: var(--s5); }
+@media (min-width: 960px) { .anfrage .wrap { grid-template-columns: 1fr 1.25fr; align-items: start; } }
+form { display: grid; gap: var(--s4); min-width: 0; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: var(--s2); min-width: 0; }
+legend, label.l { font-weight: 800; font-size: .95rem; margin-bottom: .3rem; padding: 0; }
+.opts { display: grid; gap: var(--s2); }
+@media (min-width: 560px) { .opts { grid-template-columns: repeat(3, 1fr); } }
+.opt { position: relative; }
+.opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.opt span {
+  display: grid; gap: .1rem; height: 100%; padding: .8rem 1rem; border: 2px solid var(--line); border-radius: 10px;
+  background: var(--bg); transition: border-color .15s, background .15s;
+}
+.opt span b { font-family: var(--f-display); font-weight: 400; font-size: 1.4rem; }
+.opt span small { color: var(--muted); font-size: .85rem; line-height: 1.3; }
+.opt input:checked + span { border-color: var(--rot); background: color-mix(in srgb, var(--rot) 8%, var(--surface)); }
+.opt input:focus-visible + span { outline: 3px solid var(--taube); outline-offset: 2px; }
+.row2 { display: grid; gap: var(--s3); }
+@media (min-width: 560px) { .row2 { grid-template-columns: 1fr 1fr; } }
+.field { display: grid; gap: .3rem; min-width: 0; }
+input[type="text"], input[type="email"], input[type="number"], input[type="tel"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--bg); width: 100%;
+  border: 2px solid var(--line); border-radius: 8px; padding: .7rem .85rem;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--taube); outline: none; }
+textarea { min-height: 7rem; resize: vertical; }
+.check { display: flex; gap: .7rem; align-items: flex-start; padding: .9rem 1rem; border: 2px dashed var(--senf); border-radius: 10px; cursor: pointer; }
+.check input { width: 1.2rem; height: 1.2rem; margin-top: .25rem; accent-color: var(--rot); flex: none; }
+.check small { display: block; color: var(--muted); }
+.summe {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s2);
+  padding: var(--s3) var(--s4); background: var(--tag); border-radius: 10px;
+}
+.summe .betrag { font-family: var(--f-display); font-size: 2.2rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.summe small { color: var(--muted); display: block; }
+.send { display: grid; gap: var(--s3); }
+.send .btn-row .btn { flex: 1 1 12rem; }
+.status { font-weight: 600; color: var(--salbei); min-height: 1.4em; }
+.kontakt-alt { display: grid; gap: var(--s3); margin-top: var(--s4); }
+.kontakt-alt a { font-weight: 800; }
+
+/* Vinted */
+.vinted .box {
+  display: grid; gap: var(--s4); padding: var(--s5); border-radius: 14px;
+  background: var(--ink); color: var(--bg);
+}
+@media (min-width: 800px) { .vinted .box { grid-template-columns: 1.4fr 1fr; align-items: center; } }
+.vinted .box p { color: color-mix(in srgb, var(--bg) 78%, var(--ink)); }
+.vinted .btn { border-color: var(--bg); color: var(--bg); }
+.vinted .btn-rot { background: var(--senf); border-color: var(--senf); color: #1d2826; }
+.vinted .hand { color: var(--senf); font-size: 1.6rem; }
+
+/* FAQ */
+.faq { display: grid; gap: 0; max-width: 46rem; }
+.faq details { border-bottom: 2px dashed var(--line); padding-block: var(--s3); }
+.faq summary { cursor: pointer; font-family: var(--f-display); font-size: 1.2rem; list-style: none; display: flex; justify-content: space-between; gap: var(--s3); }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--rot); font-family: var(--f-body); font-weight: 800; }
+.faq details[open] summary::after { content: "–"; }
+.faq details p { color: var(--muted); margin-top: var(--s2); max-width: 40rem; }
+
+/* Footer */
+footer { padding-block: var(--s5); border-top: 1px solid var(--line); font-size: .92rem; color: var(--muted); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--s3); }
+footer nav { display: flex; gap: var(--s4); flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#start">Dirndl <span>von Mila</span></a>
+    <nav class="nav" aria-label="Hauptnavigation">
+      <a href="#werke">Werke</a>
+      <a href="#geschichte">Geschichte</a>
+      <a href="#preise">Preise</a>
+      <a href="#vereine">Vereine</a>
+      <a class="btn btn-rot" href="#anfrage">Anfragen</a>
+    </nav>
+  </div>
+</header>
+
+<main id="start">
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-text">
+      <p class="eyebrow">Handgenäht · Einzelstücke · für Kinder</p>
+      <h1>Dirndl aus Stoffen, die <em>schon eine Geschichte</em> haben.</h1>
+      <p class="lead">Jedes Dirndl nähe ich selbst, Stich für Stich. Aus geretteten Stoffen, aus deinem Wunschstoff oder genau nach Maß. Damit Tracht etwas für alle ist und nicht nur für die, die 200 Euro für ein Kinderkleid ausgeben wollen.</p>
+      <div class="btn-row">
+        <a class="btn btn-rot" href="#anfrage">Dirndl anfragen</a>
+        <a class="btn" href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">Fertige Dirndl auf Vinted</a>
+      </div>
+      <ul class="hero-facts">
+        <li>ab 49 €</li>
+        <li>feste Größen oder nach Maß</li>
+        <li>Vereinsaufdruck möglich</li>
+      </ul>
+    </div>
+    <div class="table">
+      <figure class="big"><img src="img/rot-schleife.jpg" alt="Rotes Dirndl mit gelber Schürze voller Rosen und grau-weiß gestreifter Schleife" width="643" height="777"></figure>
+      <figure class="sm"><img src="img/blau-perlen.jpg" alt="Taubenblaues Mieder mit gestickten Ranken und Perlknöpfen" width="455" height="692" loading="lazy"></figure>
+      <figure class="sm"><img src="img/rosa-knoepfe.jpg" alt="Altrosa Mieder mit Herzknöpfen" width="690" height="693" loading="lazy"></figure>
+      <div class="price-pin" aria-hidden="true">ab 49 €</div>
+    </div>
+  </div>
+</section>
+
+<hr class="naht">
+
+<section id="wege">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">So kommst du zu deinem Dirndl</p>
+      <h2>Drei Wege, ein Dirndl</h2>
+    </div>
+    <div class="wege">
+      <div class="weg" style="--weg: var(--senf)">
+        <h3>Aus meinem Stofflager</h3>
+        <p>Du suchst dir einen Stoff aus meinem Fundus aus, ich nähe in einer festen Kindergröße. Der schnellste und günstigste Weg.</p>
+      </div>
+      <div class="weg" style="--weg: var(--taube)">
+        <h3>Mit deinem Wunschstoff</h3>
+        <p>Du bringst einen Stoff mit oder wir suchen ihn gemeinsam aus. Omas Tischdecke, ein Lieblingsvorhang, ein Stoff aus dem Laden: fast alles geht.</p>
+      </div>
+      <div class="weg" style="--weg: var(--rot)">
+        <h3>Genau nach Maß</h3>
+        <p>Für alle, die zwischen zwei Größen stehen oder ein Dirndl wollen, das richtig sitzt. Du schickst mir die Maße, ich schneide den Schnitt zu.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="story" id="geschichte">
+  <div class="wrap">
+    <figure class="story-img">
+      <img src="img/rot-rock.jpg" alt="Gelber Rosenstoff und grau gestreifter Schürzenstoff, in Falten gelegt" loading="lazy">
+      <img src="img/rosa-rock.jpg" alt="Beeren-farbener Karostoff in weichen Falten" loading="lazy">
+      <figcaption>Früher Tischwäsche und Vorhang, heute Rock und Schürze.</figcaption>
+    </figure>
+    <div class="prose">
+      <p class="eyebrow">Die Geschichte</p>
+      <h2>Angefangen hat alles mit einer Kiste vom Dachboden</h2>
+      <p>Beim Ausräumen vom Haus meiner Oma stand sie da: eine alte Truhe, randvoll mit Stoff. Tischdecken mit Rosen, die nie benutzt wurden. Vorhänge aus den Siebzigern. Leinen aus der Aussteuer, sauber gefaltet und mit Lavendelsäckchen dazwischen.</p>
+      <p>Wegwerfen kam nicht in Frage. Also habe ich die Nähmaschine aufgebaut und für meine Nichte ein Dirndl daraus genäht. Dann wollte die Freundin eins. Dann deren kleine Schwester. Seitdem rette ich Stoffe, wo ich sie finde: auf dem Flohmarkt, aus Restposten, aus den Schränken von Freunden.</p>
+      <p>Ein Kinderdirndl wird ein, zwei Sommer getragen, dann ist es zu klein. Darum sollen meine Dirndl schön sein, gut gemacht und trotzdem bezahlbar. Und wenn eins zu klein wird, freut sich das nächste Kind darüber.</p>
+      <ul class="werte">
+        <li><strong>Zweites Leben für Stoff</strong><span>Gute Stoffe gehören getragen, nicht in den Müll.</span></li>
+        <li><strong>Tradition für alle</strong><span>Tracht ist Heimat, und Heimat sollte kein Luxus sein.</span></li>
+        <li><strong>Mit der Hand gemacht</strong><span>Zuschnitt, Naht, Knopf: alles von mir, nichts aus der Fabrik.</span></li>
+        <li><strong>Jedes Stück ein Unikat</strong><span>Kein Stoff kommt doppelt vor. Dein Dirndl gibt es nur einmal.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="werke">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Aus der Werkstatt</p>
+      <h2>Die letzten Werke</h2>
+      <p class="lead">Jedes Dirndl bekommt einen Namen. Meistens sagt der Stoff schon, welchen.</p>
+    </div>
+    <div class="werke">
+      <article class="werk">
+        <div class="werk-text">
+          <div class="swatches" aria-hidden="true"><i style="background:#b3232c"></i><i style="background:#d6b245"></i><i style="background:#9aa3ad"></i></div>
+          <h3>Rosenrot</h3>
+          <p>Rotes Mieder, gelber Rock mit großen Rosen, dazu eine grau-weiß gestreifte Schürze. Der Rosenstoff war mal eine Tischdecke, die vierzig Jahre im Schrank lag.</p>
+          <ul class="details">
+            <li>Puffärmel aus weißem Baumwollstoff mit Spitzenkante</li>
+            <li>Knopfleiste am Rücken, Perlmuttknopf</li>
+            <li>Bund in Senfgelb</li>
+          </ul>
+        </div>
+        <div class="strip">
+          <img src="img/rot-mieder.jpg" alt="Rotes Mieder mit weißem Rüschenärmel" loading="lazy">
+          <img src="img/rot-aermel.jpg" alt="Puffärmel mit Spitzenkante" loading="lazy">
+          <img src="img/rot-ruecken.jpg" alt="Rückenansicht mit Perlmuttknopf" loading="lazy">
+        </div>
+      </article>
+
+      <article class="werk">
+        <div class="werk-text">
+          <div class="swatches" aria-hidden="true"><i style="background:#d9a7b0"></i><i style="background:#b04a72"></i><i style="background:#c7a0c3"></i></div>
+          <h3>Altrosa</h3>
+          <p>Mieder aus rosa Leinen, Rock in Beerenkaro, Schleife aus schimmerndem Satin. Und vier Herzknöpfe in zwei Rosatönen, weil eine Farbe einfach zu wenig war.</p>
+          <ul class="details">
+            <li>Mieder mit weißem Leinenfutter</li>
+            <li>Herzknöpfe, abwechselnd hell und dunkel</li>
+            <li>Satinschleife in Flieder</li>
+          </ul>
+        </div>
+        <div class="strip">
+          <img src="img/rosa-knoepfe.jpg" alt="Herzknöpfe am rosa Mieder" loading="lazy">
+          <img src="img/rosa-schleife.jpg" alt="Fliederfarbene Satinschleife" loading="lazy">
+          <img src="img/rosa-schulter.jpg" alt="Schulterpartie mit weißem Futter" loading="lazy">
+        </div>
+      </article>
+
+      <article class="werk">
+        <div class="werk-text">
+          <div class="swatches" aria-hidden="true"><i style="background:#7f93ad"></i><i style="background:#b3a88f"></i><i style="background:#f4f1ea"></i></div>
+          <h3>Taubenblau</h3>
+          <p>Ein Stoff mit eingestickten Blattranken, glänzender Rock, Schürze aus sandfarbenem Leinen. Die kleine Zusatzschleife ist aus dem Rest vom Mieder.</p>
+          <ul class="details">
+            <li>Flügelärmel</li>
+            <li>Perlknöpfe mit gestickten Schlaufen</li>
+            <li>Doppelschleife: Leinen und Miederstoff</li>
+          </ul>
+        </div>
+        <div class="strip">
+          <img src="img/blau-mieder.jpg" alt="Taubenblaues Mieder mit Flügelärmeln" loading="lazy">
+          <img src="img/blau-schleife.jpg" alt="Sandfarbene Schleife mit kleiner blauer Schleife" loading="lazy">
+          <img src="img/blau-rock.jpg" alt="Glänzender blauer Rockstoff" loading="lazy">
+        </div>
+      </article>
+
+      <article class="werk">
+        <div class="werk-text">
+          <div class="swatches" aria-hidden="true"><i style="background:#a9aea2"></i><i style="background:#8fa3a3"></i><i style="background:#6f7468"></i></div>
+          <h3>Salbei</h3>
+          <p>Ganz in Salbei und Silbergrün, mit Flügelärmeln, Silberknöpfen und einer Satinschleife. Schlicht, aber für jedes Fest gut genug.</p>
+          <ul class="details">
+            <li>Gefalteter Rock mit Schwung</li>
+            <li>Trachtenknöpfe in Altsilber</li>
+            <li>Schleife zum Anstecken als Extra</li>
+          </ul>
+        </div>
+        <div class="strip one">
+          <img src="img/salbei-ganz.jpg" alt="Salbeigrünes Dirndl, flach auf einem Holztisch ausgelegt" loading="lazy">
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="preise-bg" id="preise">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Preise</p>
+      <h2>Ehrliche Preise, kein Kleingedrucktes</h2>
+      <p class="lead">Jedes Dirndl besteht aus Mieder, Rock und Schürze mit Schleife. Der Preis hängt nur davon ab, wo der Stoff herkommt und wie genau es passen soll.</p>
+    </div>
+    <div class="tags">
+      <div class="tag">
+        <h3>Feste Größe</h3>
+        <p class="preis"><small>ab</small>49&nbsp;€</p>
+        <p>Stoff aus meinem Lager, in einer festen Kindergröße.</p>
+        <ul><li>Größen 86 bis 140</li><li>gerettete Stoffe nach Verfügbarkeit</li></ul>
+      </div>
+      <div class="tag">
+        <h3>Wunschstoff</h3>
+        <p class="preis"><small>ab</small>79&nbsp;€</p>
+        <p>Dein Stoff, oder wir suchen zusammen einen aus.</p>
+        <ul><li>auch Erbstücke und Lieblingsstoffe</li><li>in fester Größe</li></ul>
+      </div>
+      <div class="tag">
+        <h3>Nach Maß</h3>
+        <p class="preis"><small>ab</small>99&nbsp;€</p>
+        <p>Schnitt nach deinen Maßen, damit es wirklich sitzt.</p>
+        <ul><li>ideal zwischen zwei Größen</li><li>mit Wunschstoff möglich</li></ul>
+      </div>
+    </div>
+    <div class="extra">
+      <span class="plus">+25&nbsp;€</span>
+      <p><strong>Aufdruck für Vereine, Gruppen und Feste.</strong> Wappen, Logo oder Schriftzug auf dem Rücken, pro Dirndl.</p>
+      <a class="btn" href="#vereine">Mehr für Vereine</a>
+    </div>
+    <p class="fine">Alle Preise sind Startpreise für Kindergrößen. Bei sehr aufwendigen Stoffen oder Extras sage ich dir den genauen Preis vorher.</p>
+  </div>
+</section>
+
+<section class="verein" id="vereine">
+  <div class="wrap">
+    <figure>
+      <img src="img/verein-vfb.jpg" alt="Vier Mädchen von hinten in gleichen grünen Dirndln mit weißer Schleife und Vereinswappen auf dem Rücken, in einem Festzelt" loading="lazy">
+      <figcaption>Vier Mädels, ein Verein: Dirndl mit Wappen fürs Festzelt.</figcaption>
+    </figure>
+    <div class="prose">
+      <p class="eyebrow">Für Vereine &amp; Gruppen</p>
+      <h2>Alle im gleichen Dirndl, jedes mit eurem Wappen</h2>
+      <p>Für Sportverein, Trachtenverein, Kindergarten, Tanzgruppe oder das nächste Dorffest: Ich nähe mehrere Dirndl im gleichen Stoff und drucke euer Wappen oder Logo auf den Rücken.</p>
+      <p>Jedes Kind bekommt seine eigene Größe, und trotzdem sieht die ganze Gruppe zusammen aus wie aus einem Guss. Schick mir einfach euer Logo und wie viele Dirndl ihr braucht.</p>
+      <div class="btn-row"><a class="btn btn-rot" href="#anfrage" data-verein="1">Gruppenanfrage stellen</a></div>
+    </div>
+  </div>
+</section>
+
+<hr class="naht">
+
+<section class="schleife" id="schleife">
+  <div class="wrap">
+    <svg viewBox="0 0 320 300" role="img" aria-labelledby="schleife-t">
+      <title id="schleife-t">Taille eines Dirndls von vorne, mit den vier Positionen der Schleife</title>
+      <path d="M70 40 Q160 20 250 40 L262 120 Q160 110 58 120 Z" fill="var(--rot)" opacity=".9"/>
+      <path d="M58 120 Q160 110 262 120 L300 290 L20 290 Z" fill="var(--senf)" opacity=".55"/>
+      <path d="M95 128 Q160 120 225 128 L245 290 L75 290 Z" fill="var(--taube)" opacity=".55"/>
+      <rect x="54" y="114" width="212" height="16" rx="6" fill="var(--ink)" opacity=".85"/>
+      <g fill="var(--bg)" stroke="var(--ink)" stroke-width="3">
+        <circle cx="90" cy="122" r="16"/><circle cx="230" cy="122" r="16"/><circle cx="160" cy="122" r="16"/>
+      </g>
+      <g font-family="Young Serif, Georgia, serif" font-size="18" fill="var(--ink)" text-anchor="middle" dominant-baseline="central">
+        <text x="90" y="123">1</text><text x="230" y="123">2</text><text x="160" y="123">3</text>
+      </g>
+      <text x="160" y="20" font-family="Caveat, cursive" font-size="22" fill="var(--muted)" text-anchor="middle">④ hinten</text>
+      <text x="90" y="160" font-family="Caveat, cursive" font-size="20" fill="var(--ink)" text-anchor="middle">links</text>
+      <text x="230" y="160" font-family="Caveat, cursive" font-size="20" fill="var(--ink)" text-anchor="middle">rechts</text>
+    </svg>
+    <div class="prose">
+      <p class="eyebrow">Gut zu wissen</p>
+      <h2>Die Schleife verrät mehr, als man denkt</h2>
+      <p>Wo die Schürzenschleife gebunden ist, hat in Bayern und Österreich eine Bedeutung. Beim Kinderdirndl ist es einfach: vorne in der Mitte.</p>
+      <ul class="schleife-list">
+        <li><b>1</b><span><strong>Links:</strong> ledig und noch zu haben.</span></li>
+        <li><b>2</b><span><strong>Rechts:</strong> vergeben, verlobt oder verheiratet.</span></li>
+        <li><b>3</b><span><strong>Vorne Mitte:</strong> traditionell für Kinder und junge Mädchen.</span></li>
+        <li><b>4</b><span><strong>Hinten:</strong> verwitwet, oder eine Bedienung im Festzelt.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<hr class="naht">
+
+<section id="ablauf">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Ablauf</p>
+      <h2>Von der Anfrage bis zum Fest</h2>
+    </div>
+    <ol class="ablauf">
+      <li><h3>Anfrage schicken</h3><p>Größe, Wunschfarben, Anlass. Das Formular unten hilft dir dabei.</p></li>
+      <li><h3>Stoff &amp; Maße klären</h3><p>Ich schicke dir Fotos von passenden Stoffen oder schaue mir deinen an. Bei Maßanfertigung bekommst du eine kurze Messanleitung.</p></li>
+      <li><h3>Ich nähe</h3><p>Zuschnitt, Mieder, Rock, Schürze, Schleife. Wie lange es dauert, sage ich dir bei der Anfrage, damit es rechtzeitig zum Fest fertig ist.</p></li>
+      <li><h3>Abholen oder Versand</h3><p>Persönlich abholen oder bequem per Post. Und dann: ab ins Festzelt.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section id="groessen" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Größentabelle</p>
+      <h2>Welche Größe passt?</h2>
+      <p class="lead">Richtwerte für Kindergrößen. Miss am besten den Brustumfang über dem Unterhemd. Liegt dein Kind zwischen zwei Größen, nimm die größere oder lass nach Maß nähen.</p>
+    </div>
+    <div class="groessen" tabindex="0" role="region" aria-label="Größentabelle, seitlich scrollbar">
+      <table>
+        <thead><tr><th scope="col">Größe</th><th scope="col">86</th><th scope="col">92</th><th scope="col">98</th><th scope="col">104</th><th scope="col">110</th><th scope="col">116</th><th scope="col">122</th><th scope="col">128</th><th scope="col">134</th><th scope="col">140</th></tr></thead>
+        <tbody>
+          <tr><td>Alter ca.</td><td>1–1½</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td><td>9</td><td>10</td></tr>
+          <tr><td>Körpergröße (cm)</td><td>81–86</td><td>87–92</td><td>93–98</td><td>99–104</td><td>105–110</td><td>111–116</td><td>117–122</td><td>123–128</td><td>129–134</td><td>135–140</td></tr>
+          <tr><td>Brust (cm)</td><td>52</td><td>53</td><td>55</td><td>56</td><td>57</td><td>59</td><td>61</td><td>64</td><td>66</td><td>69</td></tr>
+          <tr><td>Taille (cm)</td><td>50</td><td>51</td><td>52</td><td>53</td><td>54</td><td>55</td><td>57</td><td>58</td><td>60</td><td>62</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="anfrage" id="anfrage">
+  <div class="wrap">
+    <div class="prose">
+      <p class="eyebrow">Anfrage</p>
+      <h2>Erzähl mir von deinem Dirndl</h2>
+      <p>Füll aus, was du schon weißt. Den Rest klären wir zusammen. Die Anfrage ist unverbindlich und kostet nichts.</p>
+      <p class="hand" style="font-size:1.6rem">Ich melde mich innerhalb von ein, zwei Tagen.</p>
+      <div class="kontakt-alt">
+        <p>Lieber direkt schreiben? <br><a id="mail-link" href="mailto:hallo@example.de">hallo@example.de</a></p>
+        <p>Oder über <a href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">mein Profil auf Vinted</a>.</p>
+      </div>
+    </div>
+
+    <form id="form" novalidate>
+      <fieldset>
+        <legend>Was soll es werden?</legend>
+        <div class="opts">
+          <label class="opt"><input type="radio" name="variante" id="v-fest" value="Feste Größe, Stoff aus dem Lager" data-preis="49" checked><span><b>49 €</b><small>Feste Größe, Stoff aus dem Lager</small></span></label>
+          <label class="opt"><input type="radio" name="variante" id="v-stoff" value="Feste Größe, mit Wunschstoff" data-preis="79"><span><b>79 €</b><small>Feste Größe, mit Wunschstoff</small></span></label>
+          <label class="opt"><input type="radio" name="variante" id="v-mass" value="Nach Maß" data-preis="99"><span><b>99 €</b><small>Nach Maß genäht</small></span></label>
+        </div>
+      </fieldset>
+
+      <div class="row2">
+        <div class="field">
+          <label class="l" for="groesse">Größe</label>
+          <select id="groesse" name="groesse">
+            <option>Weiß ich noch nicht</option>
+            <option>86</option><option>92</option><option>98</option><option selected>104</option><option>110</option>
+            <option>116</option><option>122</option><option>128</option><option>134</option><option>140</option>
+            <option>Nach Maß</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="l" for="anzahl">Wie viele Dirndl?</label>
+          <input id="anzahl" name="anzahl" type="number" min="1" max="50" value="1" inputmode="numeric">
+        </div>
+      </div>
+
+      <label class="check" for="druck">
+        <input type="checkbox" id="druck" name="druck">
+        <span><strong>Mit Aufdruck (+25 € pro Dirndl)</strong><small>Für Vereine, Gruppen, Feste: Wappen oder Logo auf dem Rücken.</small></span>
+      </label>
+
+      <div class="row2">
+        <div class="field">
+          <label class="l" for="name">Dein Name</label>
+          <input id="name" name="name" type="text" autocomplete="name" placeholder="z. B. Anna Huber">
+        </div>
+        <div class="field">
+          <label class="l" for="anlass">Anlass &amp; Termin</label>
+          <input id="anlass" name="anlass" type="text" placeholder="z. B. Volksfest, Mitte Juli">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="l" for="wunsch">Farben, Stoff, Ideen</label>
+        <textarea id="wunsch" name="wunsch" placeholder="z. B. gerne Blau, mit Rüschenärmeln. Ich hätte noch eine alte Tischdecke mit Blumen …"></textarea>
+      </div>
+
+      <div class="summe" aria-live="polite">
+        <div><small>Richtpreis</small><span class="betrag" id="betrag">ab 49 €</span></div>
+        <small id="rechnung">1 × 49 €</small>
+      </div>
+
+      <div class="send">
+        <div class="btn-row">
+          <button class="btn btn-rot" type="submit" id="senden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+            Per E-Mail anfragen
+          </button>
+          <button class="btn" type="button" id="kopieren">Text kopieren</button>
+        </div>
+        <p class="status" id="status" role="status"></p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="vinted" id="vinted">
+  <div class="wrap">
+    <div class="box">
+      <div class="prose">
+        <p class="hand">Sofort zu haben</p>
+        <h2>Fertige Dirndl findest du auf Vinted</h2>
+        <p>Manche Dirndl nähe ich einfach so, weil ein Stoff zu schön zum Liegenlassen war. Die fertigen Stücke stelle ich auf Vinted ein. Dort kannst du direkt kaufen, mit Käuferschutz und Versand.</p>
+      </div>
+      <div class="btn-row">
+        <a class="btn btn-rot" href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">Zum Vinted-Profil</a>
+        <a class="btn" href="#anfrage">Lieber anfertigen lassen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="fragen" style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <p class="eyebrow">Fragen</p>
+      <h2>Was oft gefragt wird</h2>
+    </div>
+    <div class="faq">
+      <details><summary>Kann ich wirklich meinen eigenen Stoff bringen?</summary><p>Ja. Tischdecken, Vorhänge, Bettwäsche, Omas Kleid: Wenn der Stoff fest genug ist und reicht, wird ein Dirndl daraus. Schick mir vorher ein Foto, dann sage ich dir, ob es klappt und wie viel ich brauche.</p></details>
+      <details><summary>Wie messe ich für ein Maß-Dirndl?</summary><p>Du brauchst ein Maßband und fünf Minuten. Ich schicke dir eine kurze Anleitung mit Brust, Taille, Rückenlänge und gewünschter Rocklänge.</p></details>
+      <details><summary>Kann man die Dirndl waschen?</summary><p>Ja. Wie, hängt vom Stoff ab. Zu jedem Dirndl bekommst du einen Pflegehinweis dazu. Die meisten Baumwoll- und Leinenstoffe vertragen den Schonwaschgang.</p></details>
+      <details><summary>Gibt es Dirndl auch für Erwachsene?</summary><p>Frag gerne an. Kinderdirndl sind mein Schwerpunkt, aber nach Maß ist vieles möglich.</p></details>
+      <details><summary>Wie viele Dirndl schafft ihr für einen Verein?</summary><p>Das hängt vom Termin ab. Je früher du anfragst, desto besser. Schreib mir Anzahl, Größen und das Datum vom Fest, dann sage ich dir ehrlich, was machbar ist.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Dirndl von Mila · handgenäht mit Liebe</p>
+    <nav aria-label="Rechtliches">
+      <a href="#impressum">Impressum</a>
+      <a href="#datenschutz">Datenschutz</a>
+      <a href="https://www.vinted.de/member/58626566-mila68" target="_blank" rel="noopener">Vinted</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(() => {
+  // Hier die echte Adresse eintragen
+  const KONTAKT_EMAIL = "hallo@example.de";
+  const DRUCK = 25;
+
+  const $ = (s) => document.querySelector(s);
+  const form = $("#form"), status = $("#status");
+  const mailLink = $("#mail-link");
+  mailLink.href = "mailto:" + KONTAKT_EMAIL; mailLink.textContent = KONTAKT_EMAIL;
+
+  const euro = (n) => n.toLocaleString("de-DE") + " €";
+  const variante = () => form.querySelector('input[name="variante"]:checked');
+  const anzahl = () => Math.min(50, Math.max(1, parseInt($("#anzahl").value, 10) || 1));
+
+  function rechnen() {
+    const basis = Number(variante().dataset.preis);
+    const druck = $("#druck").checked ? DRUCK : 0;
+    const n = anzahl();
+    $("#betrag").textContent = "ab " + euro((basis + druck) * n);
+    $("#rechnung").textContent = n + " × " + euro(basis) + (druck ? " + " + n + " × " + euro(druck) + " Aufdruck" : "");
+    if (variante().id === "v-mass") $("#groesse").value = "Nach Maß";
+  }
+
+  function text() {
+    const f = (id) => $(id).value.trim();
+    return [
+      "Hallo Mila,",
+      "",
+      "ich interessiere mich für ein Dirndl:",
+      "• Variante: " + variante().value,
+      "• Größe: " + f("#groesse"),
+      "• Anzahl: " + anzahl(),
+      "• Aufdruck: " + ($("#druck").checked ? "ja" : "nein"),
+      f("#anlass") ? "• Anlass/Termin: " + f("#anlass") : "",
+      f("#wunsch") ? "• Wünsche: " + f("#wunsch") : "",
+      "• Richtpreis laut Seite: " + $("#betrag").textContent,
+      "",
+      "Viele Grüße",
+      f("#name") || ""
+    ].filter((z, i, a) => z !== "" || a[i - 1] !== "").join("\n");
+  }
+
+  form.addEventListener("input", rechnen);
+  form.addEventListener("change", rechnen);
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const betreff = "Dirndl-Anfrage" + ($("#name").value.trim() ? " von " + $("#name").value.trim() : "");
+    location.href = "mailto:" + KONTAKT_EMAIL + "?subject=" + encodeURIComponent(betreff) + "&body=" + encodeURIComponent(text());
+    status.textContent = "Dein E-Mail-Programm sollte sich jetzt öffnen. Falls nicht: Text kopieren und an " + KONTAKT_EMAIL + " schicken.";
+  });
+
+  $("#kopieren").addEventListener("click", () => {
+    const t = text();
+    navigator.clipboard?.writeText(t).then(
+      () => { status.textContent = "Kopiert. Füge den Text in eine Mail oder Nachricht ein."; },
+      () => { status.textContent = "Kopieren hat nicht geklappt. Hier der Text zum Markieren:\n" + t; }
+    ) ?? (status.textContent = t);
+  });
+
+  document.querySelectorAll("[data-verein]").forEach((a) => a.addEventListener("click", () => {
+    $("#druck").checked = true;
+    if (anzahl() < 4) $("#anzahl").value = 4;
+    rechnen();
+  }));
+
+  rechnen();
+})();
+</script>
+</body>
+</html>
