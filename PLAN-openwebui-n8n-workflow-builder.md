@@ -1,5 +1,8 @@
 # Plan: „n8n Workflow Builder“ als Open-WebUI-Modell
 
+> **Stand der Entscheidungen:** Es werden immer die aktuellen Versionen von Open WebUI und n8n eingesetzt, n8n mindestens in der Enterprise-Edition. Microsoft war nur ein Beispiel. Das Tool behandelt **alle Credential-Typen generisch** (siehe 3.3).
+> Umsetzung Phase 1: `openwebui/` (Tool, System-Prompt, Knowledge, Einrichtung) und `tests/`.
+
 Ziel: Ein Modell in Open WebUI, das **alle Nutzer** verwenden können. Man beschreibt in normaler Sprache, was automatisiert werden soll, und das Modell legt daraus einen **n8n-Workflow im eigenen n8n-Konto** an. Jeder Nutzer hinterlegt dafür einmal seinen eigenen n8n-API-Key. Damit sieht und ändert jeder nur seine eigenen Workflows.
 
 ---
@@ -142,6 +145,10 @@ SETUP_HINT = """Kein n8n API-Key hinterlegt. So geht's:
 
 Wenn n8n einen Fehler meldet, gibt das Tool den Fehlertext (gekürzt) an das LLM zurück. Das LLM korrigiert dann selbst das JSON und versucht es ein- oder zweimal neu.
 
+### 3.1a Umgesetzter Funktionsumfang (v0.2, `openwebui/tools/n8n_workflows.py`)
+
+`check_connection`, `list_my_workflows`, `get_workflow`, `create_workflow` (inaktiv, mit Tag, optional in ein Projekt verschoben), `update_workflow`, `set_workflow_active` (nur mit `user_confirmed`), `list_executions`, `get_execution_error`, `list_my_credentials`, `get_credential_requirements`, `create_credential`, `attach_credential`, `list_my_projects`.
+
 ### 3.2 Workspace-Modell „n8n Workflow Builder“
 
 Anlegen unter Workspace → Models → New:
@@ -167,9 +174,20 @@ Du bist ein n8n-Workflow-Architekt. Ablauf:
 Sprache: Deutsch, verständlich für Nicht-Techniker.
 ```
 
+### 3.3 Generisches Anlegen von Credentials
+
+Das Verfahren funktioniert für jeden Credential-Typ in n8n:
+
+1. `get_credential_requirements(typ)` fragt bei n8n das Schema ab (`GET /credentials/schema/{typ}`). Ergebnis: Pflichtfelder, welche Felder geheim sind, ob es OAuth ist, und die Redirect-URL.
+2. `create_credential(typ, name, nicht_geheime_felder)`: Geheime Felder (Passwort, Secret, Token, Key) fragt das Tool über `__event_call__` in einem **eigenen Eingabedialog** direkt beim Nutzer ab. Sie laufen also nie durch das LLM und stehen nicht im Chatverlauf. Versucht das LLM trotzdem, ein Geheimnis zu übergeben, lehnt das Tool den Aufruf ab.
+3. Bei **static**-Typen (SMTP, API-Key, Datenbank …) ist das Credential sofort nutzbar. Bei **OAuth** klickt der Nutzer danach im Credential auf „Connect my account“. Den Link dazu liefert das Tool.
+4. `attach_credential(workflow, node, credential_id)` setzt das Credential am Node ein. Den Typ-Schlüssel nimmt das Tool vom Credential selbst, das LLM muss ihn nicht kennen.
+
+Mit Enterprise lassen sich OAuth-Apps zusätzlich **zentral vom Admin anlegen und teilen** (Credential Sharing). Die Nutzer verbinden dann nur noch ihr Konto, oder nutzen ein geteiltes Service-Credential.
+
 ---
 
-## 4. Credentials und Anleitungen (z. B. Microsoft 365)
+## 4. Credentials und Anleitungen (Beispiel Microsoft 365)
 
 **Grundsatz:** OAuth-Verbindungen wie Microsoft, Google oder Slack kann **das Modell nicht selbst anlegen**. Der Nutzer muss sich einmal in n8n im Browser anmelden und zustimmen. Das Modell erstellt deshalb den Workflow **ohne Credentials** und schickt eine genaue Anleitung mit. Der Nutzer klickt in n8n auf den rot markierten Node, wählt „Create new credential“ und meldet sich an.
 
@@ -271,6 +289,8 @@ Neuere n8n-Versionen haben einen eingebauten **MCP-Server** mit persönlichen Zu
 
 ## 9. Nächste Schritte
 
-1. Versionen von Open WebUI und n8n mitteilen sowie die n8n-Lizenz (Community / Enterprise wegen Projekten und Scopes).
-2. Klären, wer in Azure eine App-Registrierung anlegen und Admin-Consent erteilen darf.
-3. Danach: Tool-Code (Phase 1) vollständig ausprogrammieren und gegen eine Test-Instanz prüfen.
+1. ~~Versionen und Lizenz klären~~: immer aktuellste Versionen, Enterprise.
+2. ~~Phase 1: Tool ausprogrammieren~~: erledigt (`openwebui/`), mit Tests gegen eine simulierte n8n-API.
+3. Tool in einer Test-Instanz installieren (siehe `openwebui/README.md`) und mit einem Member-Key Ende-zu-Ende testen.
+4. 5 bis 10 laufende Beispiel-Workflows exportieren und als Knowledge hochladen.
+5. Pro Anbieter, der häufig gebraucht wird, eine zentrale OAuth-App anlegen und das Credential bei Bedarf teilen.
