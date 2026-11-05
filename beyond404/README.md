@@ -1,4 +1,4 @@
-# Beyond 404 — beyond404.io
+# beyond404.io
 
 Statische One-Page-Website nach dem [Website-Briefing](https://claude.ai/artifact/5xaoX8ifFBXE4GtQuwojrq).
 Kein Backend, keine Cookies, keine externen Schriften oder Skripte.
