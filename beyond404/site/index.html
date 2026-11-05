@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beyond 404 — Not found. Yet.</title>
+  <meta name="description" content="Beyond 404 works where things are not yet thought and not yet built. Strategy, prototypes, AI agents and products that move the standard.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f1ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#11161d" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="https://beyond404.io/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="Beyond 404 — Not found. Yet.">
+  <meta property="og:description" content="Not yet thought. Not yet built. That's where we feel at home.">
+  <meta property="og:url" content="https://beyond404.io/">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="top">
+    <div class="wrap top__inner">
+      <a class="wordmark" href="/" aria-label="Beyond 404, home">Beyond&nbsp;<span>404</span></a>
+      <nav aria-label="Main">
+        <ul class="nav">
+          <li><a href="#what">What we do</a></li>
+          <li><a href="#standards">Proof</a></li>
+          <li><a href="#contact" class="nav__cta">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- 1. Hero -->
+    <section class="hero" aria-labelledby="hero-title">
+      <svg class="chart" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+        <defs>
+          <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+            <path d="M60 0H0V60" fill="none" stroke="currentColor" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="1200" height="700" fill="url(#grid)" class="chart__grid"/>
+        <!-- charted coastline: known territory -->
+        <path class="chart__line draw" d="M-20 520 C 80 500, 140 560, 230 530 S 360 430, 420 470 S 520 560, 600 520"/>
+        <path class="chart__line chart__line--thin draw" d="M-20 560 C 90 545, 150 600, 240 572 S 370 475, 430 510 S 525 595, 600 560"/>
+        <!-- uncharted continuation: dashed -->
+        <path class="chart__line chart__line--open fade" d="M600 520 C 680 485, 740 420, 820 440 S 960 520, 1040 470 S 1160 380, 1230 400"/>
+        <!-- bearing lines from compass -->
+        <g class="chart__rhumb">
+          <line x1="930" y1="210" x2="200" y2="-40"/>
+          <line x1="930" y1="210" x2="1260" y2="-60"/>
+          <line x1="930" y1="210" x2="300" y2="760"/>
+          <line x1="930" y1="210" x2="1260" y2="640"/>
+          <line x1="930" y1="210" x2="-40" y2="260"/>
+        </g>
+        <!-- compass mark -->
+        <g class="chart__compass" transform="translate(930 210)">
+          <circle r="64" fill="none"/>
+          <circle r="48" fill="none" class="thin"/>
+          <path d="M0 -84 L9 0 L0 84 L-9 0 Z"/>
+          <path d="M-84 0 L0 -7 L84 0 L0 7 Z" class="thin"/>
+          <text y="-96" text-anchor="middle">N</text>
+        </g>
+        <!-- the point beyond the map -->
+        <g class="chart__mark" transform="translate(1040 470)">
+          <circle r="7"/>
+          <circle r="18" fill="none" class="pulse"/>
+        </g>
+      </svg>
+
+      <div class="wrap hero__inner">
+        <p class="coord" aria-hidden="true">N 40°4′ · E 4°4′ — uncharted</p>
+        <h1 id="hero-title" class="claim">Not found.<br><span>Yet.</span></h1>
+        <p class="stance">Not yet thought. Not yet built.<br>That's where we feel at home.</p>
+        <p class="hero__links">
+          <a class="btn" href="#contact">Bring us your 404</a>
+          <a class="link" href="#standards">See what we've built</a>
+        </p>
+      </div>
+    </section>
+
+    <!-- 2. What we do -->
+    <section id="what" class="section" aria-labelledby="what-title">
+      <div class="wrap">
+        <p class="eyebrow">What we do</p>
+        <h2 id="what-title" class="h2">Two kinds of blank space.</h2>
+        <p class="lede">Some problems have no answer yet. Others have an answer nobody has built. We work on both, using AI and new ways of working.</p>
+        <div class="fields">
+          <article class="field">
+            <svg class="field__icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18"/><path d="M24 6v6M24 36v6M6 24h6M36 24h6"/><path d="M24 14l4 10-4 10-4-10z" class="fill"/></svg>
+            <h3 class="h3">Not yet thought</h3>
+            <p>Strategy, workshops, keynotes and new ways of working. We help you see the question clearly before anyone writes a line of code.</p>
+          </article>
+          <article class="field">
+            <svg class="field__icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40h36M10 40V22l14-10 14 10v18"/><path d="M19 40V28h10v12" class="fill"/></svg>
+            <h3 class="h3">Not yet built</h3>
+            <p>Prototypes, AI agents and products. We build working things fast, then make them hold up in daily use.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Moved standards -->
+    <section id="standards" class="section section--alt" aria-labelledby="standards-title">
+      <div class="wrap">
+        <p class="eyebrow">Moved standards</p>
+        <h2 id="standards-title" class="h2">We move the standard.</h2>
+        <p class="lede">Our proof comes from tourism, because that's where we've already shipped. The pattern works anywhere.</p>
+
+        <ul class="legend" aria-label="Status labels">
+          <li><span class="status status--charted">Charted</span> Live and in use.</li>
+          <li><span class="status status--surveying">Surveying</span> Working prototype.</li>
+        </ul>
+
+        <ol class="cards">
+          <li class="card">
+            <div class="card__head">
+              <h3 class="h3">FairShare Tourismus</h3>
+              <span class="status status--charted">Charted</span>
+            </div>
+            <dl class="shift">
+              <div class="shift__row shift__row--old"><dt>Standard so far</dt><dd>Visitor tax is checked by random sampling.</dd></div>
+              <div class="shift__row shift__row--new"><dt>New standard</dt><dd>Anomalies are flagged automatically.</dd></div>
+            </dl>
+            <a class="card__link" href="https://fairshare-tourismus.de" rel="noopener">fairshare-tourismus.de</a>
+          </li>
+          <li class="card">
+            <div class="card__head">
+              <h3 class="h3">Source Builder</h3>
+              <span class="status status--charted">Charted</span>
+            </div>
+            <dl class="shift">
+              <div class="shift__row shift__row--old"><dt>Standard so far</dt><dd>Every new event source needs a developer.</dd></div>
+              <div class="shift__row shift__row--new"><dt>New standard</dt><dd>The tourism board enters a URL. The rest runs on its own.</dd></div>
+            </dl>
+            <a class="card__link" href="https://quellen.imbastian.de" rel="noopener">quellen.imbastian.de</a>
+          </li>
+          <li class="card">
+            <div class="card__head">
+              <h3 class="h3">Accessibility Check</h3>
+              <span class="status status--surveying">Surveying</span>
+            </div>
+            <dl class="shift">
+              <div class="shift__row shift__row--old"><dt>Standard so far</dt><dd>Surveyed on site, one business at a time.</dd></div>
+              <div class="shift__row shift__row--new"><dt>New standard</dt><dd>492 criteria are pre-surveyed automatically.</dd></div>
+            </dl>
+            <a class="card__link" href="https://barrierefrei.imbastian.de" rel="noopener">barrierefrei.imbastian.de</a>
+          </li>
+          <li class="card">
+            <div class="card__head">
+              <h3 class="h3">Funding Guide</h3>
+              <span class="status status--surveying">Surveying</span>
+            </div>
+            <dl class="shift">
+              <div class="shift__row shift__row--old"><dt>Standard so far</dt><dd>Finding the right funding takes days of research.</dd></div>
+              <div class="shift__row shift__row--new"><dt>New standard</dt><dd>A chat advises on 594 programmes.</dd></div>
+            </dl>
+            <span class="card__link card__link--none">No public page yet</span>
+          </li>
+        </ol>
+
+        <div class="more">
+          <h3 class="more__title">More products and prototypes</h3>
+          <ul class="more__list">
+            <li><a href="https://shared-priorities.imbastian.de" rel="noopener">Shared Priorities</a></li>
+            <li><a href="https://workforce.imbastian.de" rel="noopener">Workforce</a></li>
+            <li><a href="https://isochron.imbastian.de" rel="noopener">Isochron</a></li>
+            <li><a href="https://eifelsteig.imbastian.de" rel="noopener">Eifelsteig</a></li>
+            <li><a href="https://genuss.imbastian.de" rel="noopener">Genuss-Herkunft</a></li>
+            <li><a href="https://shade.imbastian.de" rel="noopener">Sun &amp; Shade</a></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Contact -->
+    <section id="contact" class="section contact" aria-labelledby="contact-title">
+      <div class="wrap contact__inner">
+        <svg class="contact__route" viewBox="0 0 400 120" aria-hidden="true">
+          <path class="route fade" d="M10 100 C 80 100, 90 30, 170 40 S 280 110, 330 60"/>
+          <circle cx="352" cy="40" r="10" class="target"/>
+          <path d="M346 34l12 12M358 34l-12 12" class="target-x"/>
+        </svg>
+        <h2 id="contact-title" class="h2 contact__title">Bring us your 404.</h2>
+        <p class="lede">The problem nobody has solved yet. The idea nobody has built yet. Tell us about it in a few lines.</p>
+        <!-- TODO: Kontaktadresse ist noch offen (siehe Briefing). Platzhalter ersetzen. -->
+        <p><a class="btn btn--big" href="mailto:hello@beyond404.io">hello@beyond404.io</a></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 5. Footer -->
+  <footer class="foot">
+    <div class="wrap foot__inner">
+      <p class="wordmark wordmark--small">Beyond&nbsp;<span>404</span></p>
+      <ul class="foot__links">
+        <li><a href="/impressum.html">Impressum</a></li>
+        <li><a href="/datenschutz.html">Datenschutz</a></li>
+        <li><a href="https://imbastian.de" rel="noopener">imbastian.de</a></li>
+      </ul>
+      <p class="foot__note">No cookies. No tracking.</p>
+    </div>
+  </footer>
+
+  <script src="/main.js" defer></script>
+</body>
+</html>

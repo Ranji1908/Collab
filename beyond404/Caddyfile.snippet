@@ -1,0 +1,10 @@
+beyond404.io, www.beyond404.io {
+	@www host www.beyond404.io
+	redir @www https://beyond404.io{uri} permanent
+	encode zstd gzip
+	reverse_proxy beyond404:80
+}
+
+beyond404.de, www.beyond404.de {
+	redir https://beyond404.io{uri} permanent
+}

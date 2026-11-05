@@ -1,0 +1,11 @@
+services:
+  beyond404:
+    build: .
+    container_name: beyond404
+    restart: unless-stopped
+    networks: [caddy]
+
+# Anpassen: Name des Netzwerks, in dem Caddy läuft.
+networks:
+  caddy:
+    external: true
