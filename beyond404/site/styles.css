@@ -110,8 +110,8 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .link:hover { text-decoration-color: var(--accent); }
 
 /* Sections */
-.section { padding: clamp(4.5rem, 10vw, 8rem) 0; }
-.section--alt { background: var(--paper-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.section { --bg: var(--paper); padding: clamp(4.5rem, 10vw, 8rem) 0; }
+.section--alt { --bg: var(--paper-2); background: var(--paper-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .eyebrow { font: 500 .8rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 0 0 1rem; }
 .h2 { font-size: clamp(2rem, 5.5vw, 3.75rem); line-height: 1; letter-spacing: -.035em; font-weight: 800; margin: 0 0 1.25rem; }
 .h3 { font-size: 1.3rem; letter-spacing: -.015em; line-height: 1.2; margin: 0; font-weight: 750; }
@@ -162,7 +162,7 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .card { background: var(--paper); border: 1px solid var(--line); padding: 1.75rem; display: flex; flex-direction: column; gap: 1.5rem; position: relative; }
 .card::before {
   counter-increment: card; content: "0" counter(card);
-  position: absolute; top: -.6rem; left: 1.75rem; background: var(--paper-2); padding: 0 .4rem;
+  position: absolute; top: -.6rem; left: 1.75rem; background: var(--bg); padding: 0 .4rem;
   font: 500 .75rem/1.2 var(--mono); color: var(--ink-2);
 }
 .card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
@@ -188,7 +188,7 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .more__list a:hover { border-bottom-color: var(--accent); }
 
 /* Contact */
-.contact { text-align: left; }
+.contact { text-align: left; border-top: 1px solid var(--line); }
 .contact__route { width: min(100%, 24rem); height: auto; margin-bottom: 1.5rem; overflow: visible; }
 .contact__route .route { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 5 8; opacity: .6; }
 .contact__route .target { fill: none; stroke: var(--accent); stroke-width: 2; }
