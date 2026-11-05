@@ -193,6 +193,11 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 @media (min-width: 56rem) { .who__inner { grid-template-columns: 1fr 1.4fr; } }
 .who .h2 { margin-bottom: .5rem; }
 .who__role { font: 500 .85rem/1.5 var(--mono); color: var(--ink-2); margin: 0; }
+.who__photo { margin: 1.75rem 0 0; max-width: 22rem; position: relative; }
+.who__photo img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+.who__photo::after { content: ""; position: absolute; inset: .75rem -.75rem -.75rem .75rem; border: 1px solid var(--accent); z-index: -1; }
+.who { position: relative; z-index: 0; }
+@media (max-width: 55.99rem) { .who__photo { max-width: 16rem; } }
 .who__text p { margin: 0 0 1rem; max-width: 52ch; }
 .who__text p:first-child { font-size: 1.15rem; }
 .who__text a:not(.link) { text-underline-offset: .2em; }
