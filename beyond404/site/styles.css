@@ -89,7 +89,7 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .hero__inner { position: relative; padding-top: 4rem; padding-bottom: 5rem; width: 100%; }
 .coord { font: 500 .8rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 1.5rem; }
 .claim {
-  font-size: clamp(3.4rem, 13vw, 10.5rem);
+  font-size: clamp(2.8rem, 12vw, 9rem);
   line-height: .9;
   font-weight: 850;
   letter-spacing: -.055em;
