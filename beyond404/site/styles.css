@@ -58,7 +58,11 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 .top.is-scrolled { border-bottom-color: var(--line); }
 .top__inner { display: flex; align-items: center; justify-content: space-between; height: 4rem; }
 .wordmark { font-weight: 800; letter-spacing: -.02em; font-size: 1.15rem; text-decoration: none; margin: 0; }
-.wordmark span { color: var(--accent); font-family: var(--mono); font-weight: 600; }
+.wordmark { display: inline-flex; align-items: center; color: var(--ink); }
+.wordmark__svg { display: block; height: 1.15em; width: auto; overflow: visible; }
+.wm-ink { fill: currentColor; }
+.wm-acc { fill: var(--accent); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
 .wordmark--small { font-size: 1rem; }
 .nav { display: flex; gap: clamp(.75rem, 3vw, 2rem); list-style: none; margin: 0; padding: 0; font-size: .95rem; }
 .nav a { text-decoration: none; color: var(--ink-2); }
