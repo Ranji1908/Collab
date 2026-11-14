@@ -170,6 +170,7 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
   font: 500 .75rem/1.2 var(--mono); color: var(--ink-2);
 }
 .card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.card__what { margin: .3rem 0 0; font: 500 .8rem/1.4 var(--mono); color: var(--ink-2); }
 .shift { margin: 0; display: grid; gap: .9rem; }
 .shift__row { display: grid; grid-template-columns: 1.25rem 1fr; column-gap: .75rem; }
 .shift__row::before { content: ""; grid-row: span 2; width: 1.25rem; height: 1.25rem; margin-top: .15rem; }
@@ -188,6 +189,7 @@ a:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-
 @media (min-width: 44rem) { .more { grid-template-columns: 16rem 1fr; } }
 .more__title { font: 500 .8rem/1.6 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); margin: 0; font-weight: 500; }
 .more__list { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: .6rem 1.75rem; }
+.more__list li { font-weight: 600; color: var(--ink-2); }
 .more__list a { font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--line); }
 .more__list a:hover { border-bottom-color: var(--accent); }
 
